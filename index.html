@@ -8,7 +8,6 @@
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #ffffff;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -40,7 +39,11 @@
             color: green;
             position: absolute;
             text-align: center;
-            width: 100%;
+        }
+        #nightModeButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
         }
     </style>
 </head>
@@ -50,6 +53,7 @@
     <div class="controls">
         <button class="button" id="jumpButton">قفز</button>
         <button class="button" id="restartButton" style="display:none;">إعادة اللعب</button>
+        <button class="button" id="nightModeButton">الوضع الليلي</button>
     </div>
     <h2 id="score">النقاط: 0</h2>
     <script>
@@ -57,50 +61,60 @@
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
         const restartButton = document.getElementById('restartButton');
+        const jumpButton = document.getElementById('jumpButton');
+        const nightModeButton = document.getElementById('nightModeButton');
         const messageElement = document.getElementById('message');
 
         let playerX = canvas.width / 2 - 25;
         let playerY = canvas.height - 50;
         let playerYChange = 0;
-        let gravity = 0.5;
-        let jumpStrength = 12; // زيادة قوة القفز
+        let gravity = 0.6;
+        let jumpStrength = 14;
         let isJumping = false;
 
-        let obstacleX = Math.random() * (canvas.width - 50);
-        let obstacleHeight = 50;
+        let obstacleX;
+        let obstacleHeight;
         let obstacleBase = 50;
-
         let score = 0;
         let gameOver = false;
+        let gameStarted = false;
+
+        let nightMode = false;
+        const messages = ["أحسنت", "كفوو", "استمر", "عيب تخسر بلعبة أطفال", "حي عينك"];
 
         function resetGame() {
             playerY = canvas.height - 50;
             playerYChange = 0;
             isJumping = false;
-            obstacleX = Math.random() * (canvas.width - obstacleBase);
+            obstacleX = canvas.width;
             score = 0;
             gameOver = false;
+            gameStarted = false;
             scoreElement.textContent = 'النقاط: ' + score;
             restartButton.style.display = 'none';
             messageElement.textContent = '';
+            setTimeout(() => {
+                gameStarted = true;
+            }, 3000);
             gameLoop();
         }
 
-        function showMessage(msg) {
-            messageElement.textContent = msg;
+        function showMessage() {
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+            messageElement.textContent = randomMsg;
+            messageElement.style.top = (playerY - 50) + 'px';
+            messageElement.style.left = playerX + 'px';
             setTimeout(() => {
                 messageElement.textContent = '';
-            }, 5000);
+            }, 2000);
         }
 
         function drawCat(x, y) {
             ctx.fillStyle = 'orange';
             ctx.beginPath();
-            ctx.arc(x + 25, y, 25, 0, Math.PI * 2); // جسم دائري للقطة
-
+            ctx.arc(x + 25, y, 25, 0, Math.PI * 2);
             ctx.fill();
 
-            // آذان القطة
             ctx.fillStyle = 'orange';
             ctx.beginPath();
             ctx.moveTo(x + 10, y - 15);
@@ -113,16 +127,14 @@
             ctx.lineTo(x + 40, y - 15);
             ctx.fill();
 
-            // عيون القطة
             ctx.fillStyle = 'black';
             ctx.beginPath();
-            ctx.arc(x + 15, y - 5, 3, 0, Math.PI * 2); // عين يسار
+            ctx.arc(x + 15, y - 5, 3, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(x + 35, y - 5, 3, 0, Math.PI * 2); // عين يمين
+            ctx.arc(x + 35, y - 5, 3, 0, Math.PI * 2);
             ctx.fill();
 
-            // أنف القطة
             ctx.fillStyle = 'pink';
             ctx.beginPath();
             ctx.moveTo(x + 25, y + 5);
@@ -130,7 +142,6 @@
             ctx.lineTo(x + 28, y + 10);
             ctx.fill();
 
-            // فم القطة
             ctx.fillStyle = 'black';
             ctx.beginPath();
             ctx.moveTo(x + 22, y + 10);
@@ -141,7 +152,6 @@
 
         function gameLoop() {
             if (gameOver) return;
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             if (isJumping) {
@@ -153,39 +163,38 @@
                 }
             }
 
-            obstacleX -= 5;
+            if (gameStarted) {
+                obstacleX -= 5;
+                if (obstacleX < -obstacleBase) {
+                    obstacleX = canvas.width;
+                    obstacleHeight = Math.random() * 70 + 20;
+                    score++;
+                    scoreElement.textContent = 'النقاط: ' + score;
+                    showMessage();
+                }
+                if (obstacleX < playerX + 50 && 
+                    obstacleX + obstacleBase > playerX && 
+                    canvas.height - obstacleHeight < playerY + 50) {
+                    gameOver = true;
+                    restartButton.style.display = 'block';
+                }
 
-            if (obstacleX < -obstacleBase) {
-                obstacleX = canvas.width;
-                obstacleHeight = Math.random() * 70 + 20;
-                score++;
-                scoreElement.textContent = 'النقاط: ' + score;
-                showMessage("استمر!");
-            }
-
-            if (obstacleX < playerX + 50 && 
-                obstacleX + obstacleBase > playerX && 
-                canvas.height - obstacleHeight < playerY + 50) {
-                gameOver = true;
-                restartButton.style.display = 'block';
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.moveTo(obstacleX, canvas.height);
+                ctx.lineTo(obstacleX + obstacleBase / 2, canvas.height - obstacleHeight);
+                ctx.lineTo(obstacleX + obstacleBase, canvas.height);
+                ctx.closePath();
+                ctx.fill();
             }
 
             drawCat(playerX, playerY);
-
-            ctx.fillStyle = 'red';
-            ctx.beginPath();
-            ctx.moveTo(obstacleX, canvas.height);
-            ctx.lineTo(obstacleX + obstacleBase / 2, canvas.height - obstacleHeight);
-            ctx.lineTo(obstacleX + obstacleBase, canvas.height);
-            ctx.closePath();
-            ctx.fill();
-
-            messageElement.style.top = (playerY - 30) + 'px'; // وضع الرسالة فوق اللاعب مباشرة
-
-            requestAnimationFrame(gameLoop);
         }
 
-        document.getElementById('jumpButton').addEventListener('click', () => {
+        // تشغيل اللعبة عند 120 إطار في الثانية
+        setInterval(gameLoop, 1000 / 120);
+
+        jumpButton.addEventListener('click', () => {
             if (!isJumping && !gameOver) {
                 isJumping = true;
                 playerYChange = -jumpStrength;
@@ -193,6 +202,12 @@
         });
 
         restartButton.addEventListener('click', resetGame);
+
+        nightModeButton.addEventListener('click', () => {
+            nightMode = !nightMode;
+            document.body.style.backgroundColor = nightMode ? '#222' : '#ffffff';
+            nightModeButton.textContent = nightMode ? 'الوضع الصباحي' : 'الوضع الليلي';
+        });
 
         resetGame();
     </script>
