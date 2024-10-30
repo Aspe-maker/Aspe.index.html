@@ -13,7 +13,7 @@
             align-items: center;
             height: 100vh;
             overflow: hidden;
-            background-color: #87CEEB;
+            background-color: #87CEEB; /* خلفية اللعبة */
         }
         canvas {
             border: 2px solid #333;
@@ -21,17 +21,19 @@
             width: 600px;
             height: 300px;
             background-color: #87CEEB; /* خلفية اللعبة */
+            position: relative;
         }
         .controls {
             position: absolute;
             bottom: 70px;
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
             width: 100%;
+            padding: 0 10px;
         }
         .button {
-            font-size: 18px;
-            padding: 10px;
+            font-size: 20px; /* زيادة حجم الخط */
+            padding: 15px; /* زيادة padding */
             border-radius: 8px;
             background-color: #4CAF50;
             color: #fff;
@@ -39,6 +41,8 @@
             cursor: pointer;
             transition: background-color 0.3s;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100px; /* عرض الزر */
+            margin: 0 5px; /* مسافة بين الأزرار */
         }
         .button:hover {
             background-color: #45a049;
@@ -58,6 +62,14 @@
             margin-top: 10px;
             width: 200px;
             font-size: 16px;
+            position: absolute;
+            top: 10px; /* وضع كلمة السر في الزاوية اليسرى */
+            left: 10px;
+        }
+        #nightModeButton {
+            position: absolute;
+            top: 10px; /* وضع زر الوضع الليلي في الزاوية اليمنى */
+            right: 10px;
         }
         .message {
             position: absolute;
@@ -73,30 +85,52 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+        /* تصميم الألعاب النارية */
+        .fireworks {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 999;
+        }
+        .firework {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: red;
+            animation: explode 0.5s forwards;
+        }
+        @keyframes explode {
+            0% { transform: scale(1); }
+            100% { transform: scale(5); opacity: 0; }
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="600" height="300"></canvas>
     <div class="controls">
         <input type="text" id="passwordInput" placeholder="أدخل كلمة السر">
-        <button id="jumpButton" class="button">قفز</button>
         <button id="nightModeButton" class="button">الوضع الليلي</button>
-        <button id="resetButton" class="button">إعادة اللعبة</button>
     </div>
     <div id="score">النقاط: 0</div>
     <div id="message" class="message"></div> <!-- رسالة تحفيزية -->
+    <div class="fireworks" id="fireworks"></div> <!-- منطقة الألعاب النارية -->
+    <div class="controls">
+        <button id="jumpButton" class="button">قفز</button> <!-- زر القفز -->
+    </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const jumpButton = document.getElementById('jumpButton');
         const nightModeButton = document.getElementById('nightModeButton');
-        const resetButton = document.getElementById('resetButton');
         const scoreElement = document.getElementById('score');
         const passwordInput = document.getElementById('passwordInput');
         const messageElement = document.getElementById('message');
+        const fireworksContainer = document.getElementById('fireworks');
+        const jumpButton = document.getElementById('jumpButton');
 
-        let playerX = 100;
+        let playerX = canvas.width - 100; // عكس الاتجاه
         let playerY = canvas.height - 70;
         let playerSize = 30;
         let playerYChange = 0;
@@ -115,6 +149,7 @@
         let gameOver = false;
         let nightMode = false;
         let clouds = []; // مصفوفة الغيوم
+        let stars = []; // مصفوفة النجوم
 
         // إنشاء الغيوم
         function createClouds() {
@@ -123,6 +158,17 @@
                     x: Math.random() * canvas.width,
                     y: Math.random() * (canvas.height / 2),
                     speed: 0.05 + Math.random() * 0.1 // سرعة الغيوم
+                });
+            }
+        }
+
+        // إنشاء النجوم
+        function createStars() {
+            for (let i = 0; i < 20; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 3 + 2 // حجم النجوم
                 });
             }
         }
@@ -145,6 +191,14 @@
                     cloud.x = -20; // إعادة الغيم إلى اليسار
                     cloud.y = Math.random() * (canvas.height / 2); // تغيير ارتفاع الغيم
                 }
+            }
+
+            // رسم النجوم
+            ctx.fillStyle = 'white';
+            for (const star of stars) {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
             }
         }
 
@@ -209,6 +263,27 @@
             }, 3000);
         }
 
+        function showFireworks() {
+            fireworksContainer.style.display = 'block';
+            for (let i = 0; i < 10; i++) {
+                createFirework();
+            }
+            setTimeout(() => {
+                fireworksContainer.style.display = 'none';
+            }, 3000); // إخفاء الألعاب النارية بعد 3 ثوانٍ
+        }
+
+        function createFirework() {
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            firework.style.left = Math.random() * canvas.width + 'px';
+            firework.style.top = Math.random() * canvas.height + 'px';
+            fireworksContainer.appendChild(firework);
+            setTimeout(() => {
+                firework.remove();
+            }, 500); // إزالة الألعاب النارية بعد 0.5 ثانية
+        }
+
         function resetGame() {
             playerY = canvas.height - groundHeight - playerSize / 2;
             playerYChange = 0;
@@ -220,25 +295,24 @@
             updateGame();
         }
 
-        jumpButton.addEventListener('click', () => {
-            if (!isJumping) {
-                isJumping = true;
-                playerYChange = -jumpStrength;
-            }
-        });
-
         nightModeButton.addEventListener('click', () => {
             nightMode = !nightMode;
             nightModeButton.textContent = nightMode ? 'الوضع الصباحي' : 'الوضع الليلي';
         });
 
-        resetButton.addEventListener('click', resetGame);
+        jumpButton.addEventListener('click', () => {
+            if (!isJumping && !gameOver) {
+                playerYChange = -jumpStrength;
+                isJumping = true;
+            }
+        });
 
         passwordInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 if (passwordInput.value === "أنا شمري") {
                     obstacleSpeed = 0; // إيقاف العقبات
-                    showMessage("كلمات السر صحيحة! العقبات متوقفة.");
+                    showFireworks(); // عرض قائمة الفوز
+                    showMessage("مبروك الفوز!");
                 } else if (passwordInput.value === "أمزح ماني شمري") {
                     obstacleSpeed = 3; // إعادة العقبات لوضعها الطبيعي
                     resetGame(); // إعادة تشغيل اللعبة
@@ -249,6 +323,7 @@
         });
 
         createClouds(); // إنشاء الغيوم
+        createStars(); // إنشاء النجوم
         resetGame(); // بدء اللعبة
     </script>
 </body>
