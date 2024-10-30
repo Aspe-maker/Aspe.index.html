@@ -39,7 +39,6 @@
             font-size: 20px;
             color: green;
             position: absolute;
-            top: 20px;
             text-align: center;
             width: 100%;
         }
@@ -64,7 +63,7 @@
         let playerY = canvas.height - 50;
         let playerYChange = 0;
         let gravity = 0.5;
-        let jumpStrength = 10;
+        let jumpStrength = 12; // زيادة قوة القفز
         let isJumping = false;
 
         let obstacleX = Math.random() * (canvas.width - 50);
@@ -96,11 +95,12 @@
 
         function drawCat(x, y) {
             ctx.fillStyle = 'orange';
-            ctx.fillRect(x, y, 50, 30);
-            ctx.fillStyle = 'orange';
             ctx.beginPath();
-            ctx.arc(x + 25, y - 10, 20, 0, Math.PI * 2);
+            ctx.arc(x + 25, y, 25, 0, Math.PI * 2); // جسم دائري للقطة
+
             ctx.fill();
+
+            // آذان القطة
             ctx.fillStyle = 'orange';
             ctx.beginPath();
             ctx.moveTo(x + 10, y - 15);
@@ -112,19 +112,31 @@
             ctx.lineTo(x + 35, y - 30);
             ctx.lineTo(x + 40, y - 15);
             ctx.fill();
+
+            // عيون القطة
             ctx.fillStyle = 'black';
             ctx.beginPath();
-            ctx.arc(x + 15, y - 10, 3, 0, Math.PI * 2);
+            ctx.arc(x + 15, y - 5, 3, 0, Math.PI * 2); // عين يسار
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(x + 35, y - 10, 3, 0, Math.PI * 2);
+            ctx.arc(x + 35, y - 5, 3, 0, Math.PI * 2); // عين يمين
             ctx.fill();
+
+            // أنف القطة
             ctx.fillStyle = 'pink';
             ctx.beginPath();
-            ctx.moveTo(x + 25, y - 5);
-            ctx.lineTo(x + 22, y);
-            ctx.lineTo(x + 28, y);
+            ctx.moveTo(x + 25, y + 5);
+            ctx.lineTo(x + 22, y + 10);
+            ctx.lineTo(x + 28, y + 10);
             ctx.fill();
+
+            // فم القطة
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.moveTo(x + 22, y + 10);
+            ctx.lineTo(x + 25, y + 12);
+            ctx.lineTo(x + 28, y + 10);
+            ctx.stroke();
         }
 
         function gameLoop() {
@@ -153,7 +165,7 @@
 
             if (obstacleX < playerX + 50 && 
                 obstacleX + obstacleBase > playerX && 
-                canvas.height - obstacleHeight < playerY + 30) {
+                canvas.height - obstacleHeight < playerY + 50) {
                 gameOver = true;
                 restartButton.style.display = 'block';
             }
@@ -167,6 +179,8 @@
             ctx.lineTo(obstacleX + obstacleBase, canvas.height);
             ctx.closePath();
             ctx.fill();
+
+            messageElement.style.top = (playerY - 30) + 'px'; // وضع الرسالة فوق اللاعب مباشرة
 
             requestAnimationFrame(gameLoop);
         }
