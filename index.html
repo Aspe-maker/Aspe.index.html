@@ -35,10 +35,19 @@
             cursor: pointer;
             font-size: 16px;
         }
+        #message {
+            font-size: 20px;
+            color: green;
+            position: absolute;
+            top: 20px;
+            text-align: center;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div id="message"></div>
+    <canvas id="gameCanvas" width="400" height="800"></canvas>
     <div class="controls">
         <button class="button" id="jumpButton">قفز</button>
         <button class="button" id="restartButton" style="display:none;">إعادة اللعب</button>
@@ -49,33 +58,73 @@
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
         const restartButton = document.getElementById('restartButton');
+        const messageElement = document.getElementById('message');
 
-        let playerRadius = 25;
-        let playerX = 100;
-        let playerY = canvas.height - playerRadius;
+        let playerX = canvas.width / 2 - 25;
+        let playerY = canvas.height - 50;
         let playerYChange = 0;
         let gravity = 0.5;
         let jumpStrength = 10;
         let isJumping = false;
 
-        let obstacleWidth = 50;
-        let obstacleHeight = Math.random() * 70 + 20;
-        let obstacleX = canvas.width;
+        let obstacleX = Math.random() * (canvas.width - 50);
+        let obstacleHeight = 50;
+        let obstacleBase = 50;
 
         let score = 0;
         let gameOver = false;
 
         function resetGame() {
-            playerY = canvas.height - playerRadius;
+            playerY = canvas.height - 50;
             playerYChange = 0;
             isJumping = false;
-            obstacleX = canvas.width;
-            obstacleHeight = Math.random() * 70 + 20;
+            obstacleX = Math.random() * (canvas.width - obstacleBase);
             score = 0;
             gameOver = false;
             scoreElement.textContent = 'النقاط: ' + score;
             restartButton.style.display = 'none';
+            messageElement.textContent = '';
             gameLoop();
+        }
+
+        function showMessage(msg) {
+            messageElement.textContent = msg;
+            setTimeout(() => {
+                messageElement.textContent = '';
+            }, 5000);
+        }
+
+        function drawCat(x, y) {
+            ctx.fillStyle = 'orange';
+            ctx.fillRect(x, y, 50, 30);
+            ctx.fillStyle = 'orange';
+            ctx.beginPath();
+            ctx.arc(x + 25, y - 10, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'orange';
+            ctx.beginPath();
+            ctx.moveTo(x + 10, y - 15);
+            ctx.lineTo(x + 15, y - 30);
+            ctx.lineTo(x + 20, y - 15);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(x + 30, y - 15);
+            ctx.lineTo(x + 35, y - 30);
+            ctx.lineTo(x + 40, y - 15);
+            ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(x + 15, y - 10, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 35, y - 10, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'pink';
+            ctx.beginPath();
+            ctx.moveTo(x + 25, y - 5);
+            ctx.lineTo(x + 22, y);
+            ctx.lineTo(x + 28, y);
+            ctx.fill();
         }
 
         function gameLoop() {
@@ -86,39 +135,38 @@
             if (isJumping) {
                 playerY += playerYChange;
                 playerYChange += gravity;
-                if (playerY >= canvas.height - playerRadius) {
-                    playerY = canvas.height - playerRadius;
+                if (playerY >= canvas.height - 50) {
+                    playerY = canvas.height - 50;
                     isJumping = false;
                 }
             }
 
             obstacleX -= 5;
 
-            if (obstacleX < 0) {
+            if (obstacleX < -obstacleBase) {
                 obstacleX = canvas.width;
                 obstacleHeight = Math.random() * 70 + 20;
                 score++;
                 scoreElement.textContent = 'النقاط: ' + score;
+                showMessage("استمر!");
             }
 
-            if (obstacleX < playerX + playerRadius * 2 && 
-                obstacleX + obstacleWidth > playerX && 
-                canvas.height - obstacleHeight < playerY + playerRadius * 2) {
+            if (obstacleX < playerX + 50 && 
+                obstacleX + obstacleBase > playerX && 
+                canvas.height - obstacleHeight < playerY + 30) {
                 gameOver = true;
                 restartButton.style.display = 'block';
             }
 
-            ctx.fillStyle = 'blue';
-            ctx.beginPath();
-            ctx.arc(playerX + playerRadius, playerY + playerRadius, playerRadius, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = 'brown';
-            ctx.fillRect(playerX + playerRadius - 10, playerY + playerRadius, 20, 10); // رجل اليسار
-            ctx.fillRect(playerX + playerRadius - 5, playerY + playerRadius + 10, 10, 10); // رجل اليمين
+            drawCat(playerX, playerY);
 
             ctx.fillStyle = 'red';
-            ctx.fillRect(obstacleX, canvas.height - obstacleHeight, obstacleWidth, obstacleHeight);
+            ctx.beginPath();
+            ctx.moveTo(obstacleX, canvas.height);
+            ctx.lineTo(obstacleX + obstacleBase / 2, canvas.height - obstacleHeight);
+            ctx.lineTo(obstacleX + obstacleBase, canvas.height);
+            ctx.closePath();
+            ctx.fill();
 
             requestAnimationFrame(gameLoop);
         }
