@@ -50,10 +50,9 @@
         const scoreElement = document.getElementById('score');
         const restartButton = document.getElementById('restartButton');
 
-        let playerWidth = 50;
-        let playerHeight = 50;
+        let playerRadius = 25;
         let playerX = 100;
-        let playerY = canvas.height - playerHeight;
+        let playerY = canvas.height - playerRadius;
         let playerYChange = 0;
         let gravity = 0.5;
         let jumpStrength = 10;
@@ -67,7 +66,7 @@
         let gameOver = false;
 
         function resetGame() {
-            playerY = canvas.height - playerHeight;
+            playerY = canvas.height - playerRadius;
             playerYChange = 0;
             isJumping = false;
             obstacleX = canvas.width;
@@ -87,8 +86,8 @@
             if (isJumping) {
                 playerY += playerYChange;
                 playerYChange += gravity;
-                if (playerY >= canvas.height - playerHeight) {
-                    playerY = canvas.height - playerHeight;
+                if (playerY >= canvas.height - playerRadius) {
+                    playerY = canvas.height - playerRadius;
                     isJumping = false;
                 }
             }
@@ -102,16 +101,21 @@
                 scoreElement.textContent = 'النقاط: ' + score;
             }
 
-            // Collision detection
-            if (obstacleX < playerX + playerWidth && 
+            if (obstacleX < playerX + playerRadius * 2 && 
                 obstacleX + obstacleWidth > playerX && 
-                canvas.height - obstacleHeight < playerY + playerHeight) {
+                canvas.height - obstacleHeight < playerY + playerRadius * 2) {
                 gameOver = true;
                 restartButton.style.display = 'block';
             }
 
-            ctx.fillStyle = 'black';
-            ctx.fillRect(playerX, playerY, playerWidth, playerHeight);
+            ctx.fillStyle = 'blue';
+            ctx.beginPath();
+            ctx.arc(playerX + playerRadius, playerY + playerRadius, playerRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'brown';
+            ctx.fillRect(playerX + playerRadius - 10, playerY + playerRadius, 20, 10); // رجل اليسار
+            ctx.fillRect(playerX + playerRadius - 5, playerY + playerRadius + 10, 10, 10); // رجل اليمين
 
             ctx.fillStyle = 'red';
             ctx.fillRect(obstacleX, canvas.height - obstacleHeight, obstacleWidth, obstacleHeight);
@@ -128,7 +132,6 @@
 
         restartButton.addEventListener('click', resetGame);
 
-        // Start the game
         resetGame();
     </script>
 </body>
