@@ -9,19 +9,46 @@
             margin: 0;
             overflow: hidden;
             background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
         canvas {
             display: block;
-            margin: auto;
             background: #ffffff;
+            border: 1px solid black;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px;
+            margin: 0 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div class="controls">
+        <button class="button" id="jumpButton">قفز</button>
+        <button class="button" id="restartButton" style="display:none;">إعادة اللعب</button>
+    </div>
+    <h2 id="score">النقاط: 0</h2>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const restartButton = document.getElementById('restartButton');
 
         let playerWidth = 50;
         let playerHeight = 50;
@@ -36,11 +63,27 @@
         let obstacleHeight = Math.random() * 70 + 20;
         let obstacleX = canvas.width;
 
+        let score = 0;
+        let gameOver = false;
+
+        function resetGame() {
+            playerY = canvas.height - playerHeight;
+            playerYChange = 0;
+            isJumping = false;
+            obstacleX = canvas.width;
+            obstacleHeight = Math.random() * 70 + 20;
+            score = 0;
+            gameOver = false;
+            scoreElement.textContent = 'النقاط: ' + score;
+            restartButton.style.display = 'none';
+            gameLoop();
+        }
+
         function gameLoop() {
-            // Clear the canvas
+            if (gameOver) return;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Handle player jump
             if (isJumping) {
                 playerY += playerYChange;
                 playerYChange += gravity;
@@ -50,32 +93,43 @@
                 }
             }
 
-            // Move obstacle
             obstacleX -= 5;
+
             if (obstacleX < 0) {
                 obstacleX = canvas.width;
                 obstacleHeight = Math.random() * 70 + 20;
+                score++;
+                scoreElement.textContent = 'النقاط: ' + score;
             }
 
-            // Draw player
+            // Collision detection
+            if (obstacleX < playerX + playerWidth && 
+                obstacleX + obstacleWidth > playerX && 
+                canvas.height - obstacleHeight < playerY + playerHeight) {
+                gameOver = true;
+                restartButton.style.display = 'block';
+            }
+
             ctx.fillStyle = 'black';
             ctx.fillRect(playerX, playerY, playerWidth, playerHeight);
 
-            // Draw obstacle
             ctx.fillStyle = 'red';
             ctx.fillRect(obstacleX, canvas.height - obstacleHeight, obstacleWidth, obstacleHeight);
 
             requestAnimationFrame(gameLoop);
         }
 
-        document.addEventListener('keydown', (event) => {
-            if (event.code === 'Space' && !isJumping) {
+        document.getElementById('jumpButton').addEventListener('click', () => {
+            if (!isJumping && !gameOver) {
                 isJumping = true;
                 playerYChange = -jumpStrength;
             }
         });
 
-        gameLoop();
+        restartButton.addEventListener('click', resetGame);
+
+        // Start the game
+        resetGame();
     </script>
 </body>
 </html>
