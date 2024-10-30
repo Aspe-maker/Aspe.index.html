@@ -18,6 +18,8 @@
         canvas {
             border: 2px solid #333;
             border-radius: 10px;
+            width: 600px;  /* حجم إطار اللعبة مصغر */
+            height: 300px; /* حجم إطار اللعبة مصغر */
         }
         .controls {
             position: absolute;
@@ -35,22 +37,31 @@
             border: none;
             cursor: pointer;
         }
+        #score {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: black;
+        }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <canvas id="gameCanvas" width="600" height="300"></canvas>
     <div class="controls">
         <button id="jumpButton" class="button">قفز</button>
         <button id="nightModeButton" class="button">الوضع الليلي</button>
     </div>
+    <div id="score">النقاط: 0</div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const jumpButton = document.getElementById('jumpButton');
         const nightModeButton = document.getElementById('nightModeButton');
+        const scoreElement = document.getElementById('score');
 
-        let playerX = canvas.width / 5;
+        let playerX = 100;
         let playerY = canvas.height - 60;
         let playerSize = 30;
         let playerYChange = 0;
@@ -75,6 +86,13 @@
 
             ctx.fillStyle = 'green';
             ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
+
+            // رسم الغيوم بشكل عشوائي
+            ctx.fillStyle = 'white';
+            for (let i = 0; i < 3; i++) {
+                ctx.font = '20px Arial';
+                ctx.fillText('☁️', Math.random() * canvas.width, Math.random() * (canvas.height / 2));
+            }
         }
 
         function drawPlayer() {
@@ -121,6 +139,7 @@
 
             drawPlayer();
             drawObstacle();
+            scoreElement.textContent = 'النقاط: ' + score; // تحديث النقاط
             requestAnimationFrame(updateGame);
         }
 
