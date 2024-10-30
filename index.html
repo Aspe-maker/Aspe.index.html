@@ -130,7 +130,7 @@
         const fireworksContainer = document.getElementById('fireworks');
         const jumpButton = document.getElementById('jumpButton');
 
-        let playerX = canvas.width - 100; // عكس الاتجاه
+        let playerX = 550; // عكس الاتجاه ليكون إلى اليسار
         let playerY = canvas.height - 70;
         let playerSize = 30;
         let playerYChange = 0;
@@ -157,7 +157,7 @@
                 clouds.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * (canvas.height / 2),
-                    speed: 0.05 + Math.random() * 0.1 // سرعة الغيوم
+                    speed: 0.01 + Math.random() * 0.05 // سرعة الغيوم
                 });
             }
         }
@@ -233,98 +233,13 @@
                 }
             }
 
-            if (!document.getElementById('passwordInput').value) { // إذا لم يتم إدخال كلمة السر
+            if (obstacleX < -obstacleWidth) {
+                obstacleX = canvas.width; // إعادة ظهور العقبة
+                score++;
+                obstacleSpeed += 0.1; // تسريع العقبات مع تقدم المرحلة
+            } else {
                 obstacleX -= obstacleSpeed;
-                if (obstacleX < -obstacleWidth) {
-                    obstacleX = canvas.width;
-                    score++;
-                    obstacleSpeed += 0.2;
-                }
-
-                if (obstacleX < playerX + playerSize / 2 &&
-                    obstacleX + obstacleWidth > playerX - playerSize / 2 &&
-                    playerY + playerSize / 2 >= canvas.height - groundHeight - obstacleHeight) {
-                    gameOver = true;
-                }
-
-                drawObstacle();
             }
 
-            drawPlayer();
-            scoreElement.textContent = 'النقاط: ' + score;
-            requestAnimationFrame(updateGame);
-        }
-
-        function showMessage(message) {
-            messageElement.textContent = message;
-            messageElement.style.display = 'block';
-            setTimeout(() => {
-                messageElement.style.display = 'none';
-            }, 3000);
-        }
-
-        function showFireworks() {
-            fireworksContainer.style.display = 'block';
-            for (let i = 0; i < 10; i++) {
-                createFirework();
-            }
-            setTimeout(() => {
-                fireworksContainer.style.display = 'none';
-            }, 3000); // إخفاء الألعاب النارية بعد 3 ثوانٍ
-        }
-
-        function createFirework() {
-            const firework = document.createElement('div');
-            firework.className = 'firework';
-            firework.style.left = Math.random() * canvas.width + 'px';
-            firework.style.top = Math.random() * canvas.height + 'px';
-            fireworksContainer.appendChild(firework);
-            setTimeout(() => {
-                firework.remove();
-            }, 500); // إزالة الألعاب النارية بعد 0.5 ثانية
-        }
-
-        function resetGame() {
-            playerY = canvas.height - groundHeight - playerSize / 2;
-            playerYChange = 0;
-            isJumping = false;
-            obstacleX = canvas.width;
-            score = 0;
-            gameOver = false;
-            obstacleSpeed = 3;
-            updateGame();
-        }
-
-        nightModeButton.addEventListener('click', () => {
-            nightMode = !nightMode;
-            nightModeButton.textContent = nightMode ? 'الوضع الصباحي' : 'الوضع الليلي';
-        });
-
-        jumpButton.addEventListener('click', () => {
-            if (!isJumping && !gameOver) {
-                playerYChange = -jumpStrength;
-                isJumping = true;
-            }
-        });
-
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                if (passwordInput.value === "أنا شمري") {
-                    obstacleSpeed = 0; // إيقاف العقبات
-                    showFireworks(); // عرض قائمة الفوز
-                    showMessage("مبروك الفوز!");
-                } else if (passwordInput.value === "أمزح ماني شمري") {
-                    obstacleSpeed = 3; // إعادة العقبات لوضعها الطبيعي
-                    resetGame(); // إعادة تشغيل اللعبة
-                    showMessage("عودة اللعبة لوضعها الطبيعي.");
-                }
-                passwordInput.value = ""; // مسح خانة كلمة السر
-            }
-        });
-
-        createClouds(); // إنشاء الغيوم
-        createStars(); // إنشاء النجوم
-        resetGame(); // بدء اللعبة
-    </script>
-</body>
-</html>
+            if (obstacleX < playerX + playerSize / 2 && obstacleX + obstacleWidth > playerX - playerSize / 2 && playerY >= canvas.height - groundHeight - playerSize / 2) {
+                game
