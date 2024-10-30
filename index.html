@@ -18,12 +18,13 @@
         canvas {
             border: 2px solid #333;
             border-radius: 10px;
-            width: 600px;  /* حجم إطار اللعبة مصغر */
-            height: 300px; /* حجم إطار اللعبة مصغر */
+            width: 600px;
+            height: 300px;
+            background-color: #87CEEB; /* خلفية اللعبة */
         }
         .controls {
             position: absolute;
-            bottom: 10px;
+            bottom: 70px;
             display: flex;
             justify-content: space-around;
             width: 100%;
@@ -36,6 +37,10 @@
             color: #fff;
             border: none;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #45a049;
         }
         #score {
             position: absolute;
@@ -44,11 +49,20 @@
             font-size: 20px;
             color: black;
         }
+        #passwordInput {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            margin-top: 10px;
+            width: 200px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="600" height="300"></canvas>
     <div class="controls">
+        <input type="text" id="passwordInput" placeholder="أدخل كلمة السر">
         <button id="jumpButton" class="button">قفز</button>
         <button id="nightModeButton" class="button">الوضع الليلي</button>
     </div>
@@ -60,25 +74,38 @@
         const jumpButton = document.getElementById('jumpButton');
         const nightModeButton = document.getElementById('nightModeButton');
         const scoreElement = document.getElementById('score');
+        const passwordInput = document.getElementById('passwordInput');
 
-        let playerX = 100;  // موقع اللاعب
-        let playerY = canvas.height - 70; // موقع اللاعب
-        let playerSize = 30; // حجم اللاعب
-        let playerYChange = 0; // حركة اللاعب
-        let isJumping = false; // حالة القفز
-        let gravity = 0.4; // قوة الجاذبية
-        let jumpStrength = 8; // قوة القفز
-        let groundHeight = 40; // ارتفاع الأرض
+        let playerX = 100;
+        let playerY = canvas.height - 70;
+        let playerSize = 30;
+        let playerYChange = 0;
+        let isJumping = false;
+        let gravity = 0.4;
+        let jumpStrength = 8;
+        let groundHeight = 40;
 
-        let obstacleX = canvas.width; // موقع العقبة
-        let obstacleY = canvas.height - groundHeight; // ارتفاع العقبة
-        let obstacleWidth = 40; // عرض العقبة
-        let obstacleHeight = 40; // ارتفاع العقبة
-        let obstacleSpeed = 3; // سرعة العقبة
+        let obstacleX = canvas.width;
+        let obstacleY = canvas.height - groundHeight;
+        let obstacleWidth = 40;
+        let obstacleHeight = 40;
+        let obstacleSpeed = 3;
 
-        let score = 0; // النقاط
-        let gameOver = false; // حالة اللعبة
-        let nightMode = false; // حالة الوضع الليلي
+        let score = 0;
+        let gameOver = false;
+        let nightMode = false;
+        let clouds = []; // مصفوفة الغيوم
+
+        // إنشاء الغيوم
+        function createClouds() {
+            for (let i = 0; i < 5; i++) {
+                clouds.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * (canvas.height / 2),
+                    speed: 0.1 + Math.random() * 0.2 // سرعة الغيوم
+                });
+            }
+        }
 
         function drawBackground() {
             ctx.fillStyle = nightMode ? '#000033' : '#87CEEB';
@@ -91,8 +118,13 @@
             // رسم الغيوم
             ctx.fillStyle = 'white';
             ctx.font = '20px Arial';
-            for (let i = 0; i < 3; i++) {
-                ctx.fillText('☁️', Math.random() * canvas.width, Math.random() * (canvas.height / 2));
+            for (const cloud of clouds) {
+                ctx.fillText('☁️', cloud.x, cloud.y);
+                cloud.x += cloud.speed; // حركة الغيم
+                if (cloud.x > canvas.width) {
+                    cloud.x = -20; // إعادة الغيم إلى اليسار
+                    cloud.y = Math.random() * (canvas.height / 2); // تغيير ارتفاع الغيم
+                }
             }
         }
 
@@ -128,22 +160,25 @@
                 }
             }
 
-            obstacleX -= obstacleSpeed;
-            if (obstacleX < -obstacleWidth) {
-                obstacleX = canvas.width;
-                score++;
-                obstacleSpeed += 0.2; // زيادة سرعة العقبات مع كل نقطة
-            }
+            if (!document.getElementById('passwordInput').value) { // إذا لم يتم إدخال كلمة السر
+                obstacleX -= obstacleSpeed;
+                if (obstacleX < -obstacleWidth) {
+                    obstacleX = canvas.width;
+                    score++;
+                    obstacleSpeed += 0.2;
+                }
 
-            if (obstacleX < playerX + playerSize / 2 &&
-                obstacleX + obstacleWidth > playerX - playerSize / 2 &&
-                playerY + playerSize / 2 >= canvas.height - groundHeight - obstacleHeight) {
-                gameOver = true;
+                if (obstacleX < playerX + playerSize / 2 &&
+                    obstacleX + obstacleWidth > playerX - playerSize / 2 &&
+                    playerY + playerSize / 2 >= canvas.height - groundHeight - obstacleHeight) {
+                    gameOver = true;
+                }
+
+                drawObstacle();
             }
 
             drawPlayer();
-            drawObstacle();
-            scoreElement.textContent = 'النقاط: ' + score; // تحديث النقاط
+            scoreElement.textContent = 'النقاط: ' + score;
             requestAnimationFrame(updateGame);
         }
 
@@ -170,6 +205,19 @@
             nightModeButton.textContent = nightMode ? 'الوضع الصباحي' : 'الوضع الليلي';
         });
 
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (passwordInput.value === "أنا شمري") {
+                    obstacleSpeed = 0; // إيقاف العقبات
+                } else if (passwordInput.value === "أمزح ماني شمري") {
+                    obstacleSpeed = 3; // إعادة العقبات لوضعها الطبيعي
+                    resetGame(); // إعادة تشغيل اللعبة
+                }
+                passwordInput.value = ""; // مسح خانة كلمة السر
+            }
+        });
+
+        createClouds(); // إنشاء الغيوم
         resetGame(); // بدء اللعبة
     </script>
 </body>
