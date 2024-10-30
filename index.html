@@ -5,250 +5,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>قفز الحواجز</title>
     <style>
-        body {
+        body, html {
             margin: 0;
-            overflow: hidden;
+            padding: 0;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
+            overflow: hidden;
             background-color: #87CEEB;
         }
         canvas {
-            display: block;
-            border: 2px solid black;
+            border: 2px solid #333;
             border-radius: 10px;
         }
         .controls {
+            position: absolute;
+            bottom: 10px;
             display: flex;
             justify-content: space-around;
-            position: absolute;
-            bottom: 20px;
-            width: 80%;
+            width: 100%;
         }
         .button {
+            font-size: 18px;
+            padding: 10px;
+            border-radius: 8px;
             background-color: #4CAF50;
-            color: white;
-            border: 2px solid #333;
-            padding: 15px;
-            margin: 0 10px;
-            border-radius: 50%;
+            color: #fff;
+            border: none;
             cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
-            transition: all 0.2s;
-        }
-        .button:active {
-            transform: scale(0.95);
-            box-shadow: 0px 2px 4px rgba(0,0,0,0.2);
-        }
-        #score {
-            font-size: 20px;
-            color: black;
-            font-weight: bold;
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-        #restartButton {
-            display: none;
-            font-size: 24px;
-            color: red;
-            font-weight: bold;
-            text-align: center;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        #message {
-            font-size: 18px;
-            color: green;
-            position: absolute;
-            text-align: center;
-        }
-        #passwordInput {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 16px;
-            padding: 5px;
         }
     </style>
 </head>
 <body>
-    <div id="message"></div>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
     <div class="controls">
-        <button class="button" id="jumpButton">قفز</button>
-        <button class="button" id="nightModeButton">🌙</button>
+        <button id="jumpButton" class="button">قفز</button>
+        <button id="nightModeButton" class="button">الوضع الليلي</button>
     </div>
-    <h2 id="score">النقاط: 0</h2>
-    <input type="text" id="passwordInput" placeholder="أدخل كلمة السر">
-    <div id="restartButton">
-        تخسر بلعبة أطفال!!<br>
-        <button class="button" onclick="resetGame()">إعادة اللعب</button>
-    </div>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const scoreElement = document.getElementById('score');
-        const restartButton = document.getElementById('restartButton');
         const jumpButton = document.getElementById('jumpButton');
         const nightModeButton = document.getElementById('nightModeButton');
-        const messageElement = document.getElementById('message');
-        const passwordInput = document.getElementById('passwordInput');
 
         let playerX = canvas.width / 5;
-        let playerY = canvas.height - 80;
+        let playerY = canvas.height - 60;
+        let playerSize = 30;
         let playerYChange = 0;
-        let gravity = 0.5;
-        let jumpStrength = 10;
         let isJumping = false;
+        let gravity = 0.4;
+        let jumpStrength = 8;
+        let groundHeight = 40;
 
-        let obstacleX;
-        let obstacleHeight;
-        let obstacleBase = 40;
+        let obstacleX = canvas.width;
+        let obstacleY = canvas.height - groundHeight;
+        let obstacleWidth = 40;
+        let obstacleHeight = 40;
+        let obstacleSpeed = 3;
+
         let score = 0;
         let gameOver = false;
-        let gameStarted = false;
-
         let nightMode = false;
-        const messages = ["أحسنت", "كفوو", "استمر", "عيب تخسر بلعبة أطفال", "حي عينك"];
-        let obstacleSpeed = 3;
-        let obstaclesEnabled = true;
-        let scoreMultiplier = 1;
-
-        const stars = Array.from({ length: 20 }, () => ({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            speed: 0.1 + Math.random() * 0.3,
-            size: Math.random() * 2 + 1
-        }));
-
-        const clouds = Array.from({ length: 5 }, () => ({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height / 2,
-            size: Math.random() * 50 + 30
-        }));
-
-        function resetGame() {
-            playerY = canvas.height - 80;
-            playerYChange = 0;
-            isJumping = false;
-            obstacleX = canvas.width;
-            score = 0;
-            gameOver = false;
-            gameStarted = false;
-            obstaclesEnabled = true;
-            scoreMultiplier = 1;
-            scoreElement.textContent = 'النقاط: ' + score;
-            restartButton.style.display = 'none';
-            messageElement.textContent = '';
-            obstacleSpeed = 3;
-            setTimeout(() => {
-                gameStarted = true;
-            }, 3000);
-            gameLoop();
-        }
-
-        function showMessage() {
-            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-            messageElement.textContent = randomMsg;
-            messageElement.style.top = (playerY - 50) + 'px';
-            messageElement.style.left = playerX + 'px';
-            setTimeout(() => {
-                messageElement.textContent = '';
-            }, 2000);
-        }
 
         function drawBackground() {
             ctx.fillStyle = nightMode ? '#000033' : '#87CEEB';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.fillStyle = 'green';
-            ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
-
-            if (nightMode) {
-                ctx.fillStyle = 'yellow';
-                ctx.beginPath();
-                ctx.arc(50, 50, 20, 0, Math.PI * 2);
-                ctx.fill();
-
-                stars.forEach(star => {
-                    ctx.fillStyle = 'white';
-                    ctx.beginPath();
-                    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                    ctx.fill();
-                    star.x += star.speed;
-                    if (star.x > canvas.width) star.x = 0;
-                });
-            } else {
-                ctx.fillStyle = 'yellow';
-                ctx.beginPath();
-                ctx.arc(canvas.width - 60, 50, 30, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = 'white';
-                clouds.forEach(cloud => {
-                    ctx.beginPath();
-                    ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
-                    ctx.fill();
-                    cloud.x -= 0.2;
-                    if (cloud.x < -cloud.size) cloud.x = canvas.width + cloud.size;
-                });
-            }
+            ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
         }
 
-        function drawCat(x, y) {
+        function drawPlayer() {
             ctx.fillStyle = 'orange';
             ctx.beginPath();
-            ctx.arc(x + 20, y, 20, 0, Math.PI * 2);
+            ctx.arc(playerX, playerY, playerSize / 2, 0, Math.PI * 2);
             ctx.fill();
-
-            ctx.fillStyle = 'orange';
-            ctx.beginPath();
-            ctx.moveTo(x + 10, y - 15);
-            ctx.lineTo(x + 13, y - 25);
-            ctx.lineTo(x + 16, y - 15);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(x + 24, y - 15);
-            ctx.lineTo(x + 27, y - 25);
-            ctx.lineTo(x + 30, y - 15);
-            ctx.fill();
-
-            ctx.fillStyle = 'black';
-            ctx.beginPath();
-            ctx.arc(x + 14, y - 5, 2, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x + 26, y - 5, 2, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = 'pink';
-            ctx.beginPath();
-            ctx.moveTo(x + 20, y + 3);
-            ctx.lineTo(x + 17, y + 8);
-            ctx.lineTo(x + 23, y + 8);
-            ctx.fill();
-
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(x + 17, y + 8);
-            ctx.lineTo(x + 20, y + 10);
-            ctx.lineTo(x + 23, y + 8);
-            ctx.stroke();
         }
 
-        function gameLoop() {
+        function drawObstacle() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(obstacleX, obstacleY - obstacleHeight, obstacleWidth, obstacleHeight);
+        }
+
+        function updateGame() {
             if (gameOver) return;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBackground();
 
             if (isJumping) {
                 playerY += playerYChange;
                 playerYChange += gravity;
-                if (playerY >=
+                if (playerY >= canvas.height - groundHeight - playerSize / 2) {
+                    playerY = canvas.height - groundHeight - playerSize / 2;
+                    isJumping = false;
+                }
+            }
+
+            obstacleX -= obstacleSpeed;
+            if (obstacleX < -obstacleWidth) {
+                obstacleX = canvas.width;
+                score++;
+                obstacleSpeed += 0.2;
+            }
+
+            if (obstacleX < playerX + playerSize / 2 &&
+                obstacleX + obstacleWidth > playerX - playerSize / 2 &&
+                playerY + playerSize / 2 >= canvas.height - groundHeight - obstacleHeight) {
+                gameOver = true;
+                alert("تخسر بلعبة أطفال!! النقاط: " + score);
+                resetGame();
+            }
+
+            drawPlayer();
+            drawObstacle();
+            requestAnimationFrame(updateGame);
+        }
+
+        function resetGame() {
+            playerY = canvas.height - groundHeight - playerSize / 2;
+            playerYChange = 0;
+            isJumping = false;
+            obstacleX = canvas.width;
+            score = 0;
+            gameOver = false;
+            obstacleSpeed = 3;
+            updateGame();
+        }
+
+        jumpButton.addEventListener('click', () => {
+            if (!isJumping) {
+                isJumping = true;
+                playerYChange = -jumpStrength;
+            }
+        });
+
+        nightModeButton.addEventListener('click', () => {
+            nightMode = !nightMode;
+            nightModeButton.textContent = nightMode ? 'الوضع الصباحي' : 'الوضع الليلي';
+        });
+
+        updateGame();
+    </script>
+</body>
+</html>
