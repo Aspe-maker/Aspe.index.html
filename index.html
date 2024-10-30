@@ -38,16 +38,18 @@
             border: none;
             cursor: pointer;
             transition: background-color 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .button:hover {
             background-color: #45a049;
         }
         #score {
             position: absolute;
-            top: 10px;
+            bottom: 30px; /* تعديل الموقع للأسفل قليلاً */
             right: 10px;
             font-size: 20px;
             color: black;
+            transition: transform 0.3s;
         }
         #passwordInput {
             padding: 10px;
@@ -57,6 +59,20 @@
             width: 200px;
             font-size: 16px;
         }
+        .message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: white;
+            display: none; /* مخفي في البداية */
+            animation: fadeIn 2s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -65,16 +81,20 @@
         <input type="text" id="passwordInput" placeholder="أدخل كلمة السر">
         <button id="jumpButton" class="button">قفز</button>
         <button id="nightModeButton" class="button">الوضع الليلي</button>
+        <button id="resetButton" class="button">إعادة اللعبة</button>
     </div>
     <div id="score">النقاط: 0</div>
+    <div id="message" class="message"></div> <!-- رسالة تحفيزية -->
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const jumpButton = document.getElementById('jumpButton');
         const nightModeButton = document.getElementById('nightModeButton');
+        const resetButton = document.getElementById('resetButton');
         const scoreElement = document.getElementById('score');
         const passwordInput = document.getElementById('passwordInput');
+        const messageElement = document.getElementById('message');
 
         let playerX = 100;
         let playerY = canvas.height - 70;
@@ -102,7 +122,7 @@
                 clouds.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * (canvas.height / 2),
-                    speed: 0.1 + Math.random() * 0.2 // سرعة الغيوم
+                    speed: 0.05 + Math.random() * 0.1 // سرعة الغيوم
                 });
             }
         }
@@ -129,15 +149,14 @@
         }
 
         function drawPlayer() {
-            ctx.fillStyle = 'orange';
-            ctx.beginPath();
-            ctx.arc(playerX, playerY, playerSize / 2, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillStyle = 'orange'; // لون القطة
+            ctx.font = '30px Arial';
+            ctx.fillText('🐈', playerX - 15, playerY + 10); // رسم القطة
         }
 
         function drawObstacle() {
-            ctx.fillStyle = 'red';
-            ctx.fillRect(obstacleX, obstacleY - obstacleHeight, obstacleWidth, obstacleHeight);
+            ctx.fillStyle = 'brown'; // لون الحواجز
+            ctx.fillText('🪨', obstacleX - 15, obstacleY - 10); // رسم الحواجز
         }
 
         function updateGame() {
@@ -182,6 +201,14 @@
             requestAnimationFrame(updateGame);
         }
 
+        function showMessage(message) {
+            messageElement.textContent = message;
+            messageElement.style.display = 'block';
+            setTimeout(() => {
+                messageElement.style.display = 'none';
+            }, 3000);
+        }
+
         function resetGame() {
             playerY = canvas.height - groundHeight - playerSize / 2;
             playerYChange = 0;
@@ -205,13 +232,17 @@
             nightModeButton.textContent = nightMode ? 'الوضع الصباحي' : 'الوضع الليلي';
         });
 
+        resetButton.addEventListener('click', resetGame);
+
         passwordInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 if (passwordInput.value === "أنا شمري") {
                     obstacleSpeed = 0; // إيقاف العقبات
+                    showMessage("كلمات السر صحيحة! العقبات متوقفة.");
                 } else if (passwordInput.value === "أمزح ماني شمري") {
                     obstacleSpeed = 3; // إعادة العقبات لوضعها الطبيعي
                     resetGame(); // إعادة تشغيل اللعبة
+                    showMessage("عودة اللعبة لوضعها الطبيعي.");
                 }
                 passwordInput.value = ""; // مسح خانة كلمة السر
             }
