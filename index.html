@@ -2,250 +2,108 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قفز الحواجز</title>
+    <title>لعبة ثلاثية الأبعاد بسيطة</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            background-color: #87CEEB;
-        }
-        canvas {
-            border: 2px solid #333;
-            border-radius: 10px;
-            width: 600px;
-            height: 300px;
-            position: relative;
-        }
-        .controls {
-            position: absolute;
-            width: 100%;
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .button {
-            font-size: 20px;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: #4CAF50;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 100px;
-        }
-        .button:hover {
-            background-color: #45a049;
-        }
-        #score {
-            position: absolute;
-            bottom: 30px;
-            right: 10px;
-            font-size: 20px;
-            color: black;
-        }
-        #passwordInput {
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            width: 200px;
-            font-size: 16px;
-            position: absolute;
-            top: 10px;
-            left: 10px;
-        }
-        #nightModeButton {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-        #jumpButton {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-        }
-        .message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            color: white;
-            display: none;
-            animation: fadeIn 2s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .fog {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.5);
-            top: 0;
-            left: 0;
-            z-index: 1;
-            display: none;
-        }
+        body { margin: 0; overflow: hidden; }
+        #gameCanvas { display: block; }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="600" height="300"></canvas>
-    <div class="controls">
-        <input type="text" id="passwordInput" placeholder="أدخل كلمة السر">
-        <button id="nightModeButton" class="button">الوضع الليلي</button>
-    </div>
-    <div id="score">النقاط: 0</div>
-    <div id="message" class="message"></div>
-    <div class="fog" id="fog"></div>
-    <button id="jumpButton" class="button">قفز</button>
-
+    <canvas id="gameCanvas"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const nightModeButton = document.getElementById('nightModeButton');
-        const scoreElement = document.getElementById('score');
-        const passwordInput = document.getElementById('passwordInput');
-        const messageElement = document.getElementById('message');
-        const fog = document.getElementById('fog');
-        const jumpButton = document.getElementById('jumpButton');
+        // إعداد المشهد
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB);
 
-        let playerX = 50;
-        let playerY = canvas.height - 70;
-        let playerSize = 30;
-        let playerYChange = 0;
-        let isJumping = false;
-        let gravity = 0.4;
-        let jumpStrength = 8;
-        let groundHeight = 40;
+        // إعداد الكاميرا
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
 
-        let obstacleX = canvas.width;
-        let obstacleY = canvas.height - groundHeight;
-        let obstacleWidth = 40;
-        let obstacleHeight = 40;
-        let obstacleSpeed = 3;
+        // إعداد الإضاءة
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 5);
+        scene.add(light);
 
-        let score = 0;
-        let gameOver = false;
-        let nightMode = false;
+        // إعداد المحرك
+        const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#gameCanvas') });
+        renderer.setSize(window.innerWidth, window.innerHeight);
 
-        // تغيير الخلفية للوضع الليلي أو الصباحي
-        nightModeButton.onclick = () => {
-            nightMode = !nightMode;
-            if (nightMode) {
-                fog.style.display = "block";
-                nightModeButton.innerText = "الوضع الصباحي";
-                canvas.style.backgroundColor = "#000033";
-            } else {
-                fog.style.display = "none";
-                nightModeButton.innerText = "الوضع الليلي";
-                canvas.style.backgroundColor = "#87CEEB";
-            }
-        };
+        // إنشاء اللاعب
+        const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const playerMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+        const player = new THREE.Mesh(playerGeometry, playerMaterial);
+        player.position.z = -5;
+        scene.add(player);
 
-        // التحقق من كلمة السر
-        passwordInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                if (passwordInput.value === "أنا شمري") {
-                    messageElement.innerText = "مبروك الفوز!";
-                    messageElement.style.display = "block";
-                    setTimeout(() => { messageElement.style.display = "none"; }, 3000);
-                }
-            }
+        // إنشاء العقبات
+        const obstacles = [];
+        function createObstacle() {
+            const obstacleGeometry = new THREE.BoxGeometry(1, 1, 1);
+            const obstacleMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+            obstacle.position.x = (Math.random() - 0.5) * 10;
+            obstacle.position.z = -20;
+            scene.add(obstacle);
+            obstacles.push(obstacle);
+        }
+
+        // متغير التحكم في حركة اللاعب
+        let playerSpeed = 0;
+
+        // الاستماع للأزرار
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowLeft') playerSpeed = -0.1;
+            if (event.key === 'ArrowRight') playerSpeed = 0.1;
         });
 
-        function drawBackground() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = nightMode ? '#000033' : '#87CEEB';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = 'green';
-            ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
-        }
+        document.addEventListener('keyup', (event) => {
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') playerSpeed = 0;
+        });
 
-        function drawPlayer() {
-            ctx.fillStyle = 'orange';
-            ctx.font = '30px Arial';
-            ctx.fillText('🐈', playerX - 15, playerY + 10);
-        }
-
-        function drawObstacle() {
-            ctx.fillStyle = 'brown';
-            ctx.fillText('🪨', obstacleX - 15, obstacleY - 10);
-        }
-
-        function updateGame() {
-            if (gameOver) {
-                ctx.fillStyle = 'black';
-                ctx.font = '30px Arial';
-                ctx.fillText("تخسر بلعبة أطفال!! النقاط: " + score, canvas.width / 4, canvas.height / 2);
-                return;
-            }
-
-            drawBackground();
-
-            if (isJumping) {
-                playerY += playerYChange;
-                playerYChange += gravity;
-                if (playerY >= canvas.height - groundHeight - playerSize / 2) {
-                    playerY = canvas.height - groundHeight - playerSize / 2;
-                    isJumping = false;
+        // تحديث العقبات
+        function updateObstacles() {
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].position.z += 0.1;
+                if (obstacles[i].position.z > camera.position.z) {
+                    scene.remove(obstacles[i]);
+                    obstacles.splice(i, 1);
+                    i--;
+                    createObstacle();
                 }
             }
-
-            if (obstacleX < -obstacleWidth) {
-                obstacleX = canvas.width;
-                score++;
-                obstacleSpeed += 0.1;
-            } else {
-                obstacleX -= obstacleSpeed;
-            }
-
-            if (obstacleX < playerX + playerSize / 2 && obstacleX + obstacleWidth > playerX - playerSize / 2 && playerY >= canvas.height - groundHeight - playerSize / 2) {
-                gameOver = true;
-                setTimeout(() => {
-                    if (confirm("لقد خسرت! هل ترغب في إعادة اللعبة؟")) {
-                        resetGame();
-                    }
-                }, 100);
-            }
-
-            drawPlayer();
-            drawObstacle();
-            scoreElement.innerText = "النقاط: " + score;
         }
 
-        function resetGame() {
-            playerY = canvas.height - groundHeight - playerSize / 2;
-            obstacleX = canvas.width;
-            score = 0;
-            obstacleSpeed = 3;
-            gameOver = false;
-            fog.style.display = nightMode ? "block" : "none";
-            messageElement.style.display = "none";
+        // تحديث اللاعب
+        function updatePlayer() {
+            player.position.x += playerSpeed;
+            if (player.position.x > 5) player.position.x = 5;
+            if (player.position.x < -5) player.position.x = -5;
         }
 
-        function gameLoop() {
-            updateGame();
-            requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
-
-        jumpButton.onclick = () => {
-            if (!isJumping && !gameOver) {
-                isJumping = true;
-                playerYChange = -jumpStrength;
+        // دالة للكشف عن التصادمات
+        function checkCollisions() {
+            for (const obstacle of obstacles) {
+                const distance = player.position.distanceTo(obstacle.position);
+                if (distance < 1) {
+                    alert("Game Over!");
+                    window.location.reload();
+                }
             }
-        };
+        }
+
+        // إنشاء العقبات الأولى
+        for (let i = 0; i < 5; i++) createObstacle();
+
+        // حلقة التحديث
+        function animate() {
+            requestAnimationFrame(animate);
+            updatePlayer();
+            updateObstacles();
+            checkCollisions();
+            renderer.render(scene, camera);
+        }
+        animate();
     </script>
 </body>
 </html>
