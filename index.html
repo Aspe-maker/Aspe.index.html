@@ -13,27 +13,25 @@
             align-items: center;
             height: 100vh;
             overflow: hidden;
-            background-color: #87CEEB; /* خلفية اللعبة */
+            background-color: #87CEEB;
         }
         canvas {
             border: 2px solid #333;
             border-radius: 10px;
             width: 600px;
             height: 300px;
-            background-color: #87CEEB; /* خلفية اللعبة */
             position: relative;
         }
         .controls {
             position: absolute;
-            bottom: 70px;
+            width: 100%;
+            padding: 10px;
             display: flex;
             justify-content: space-between;
-            width: 100%;
-            padding: 0 10px;
         }
         .button {
-            font-size: 20px; /* زيادة حجم الخط */
-            padding: 15px; /* زيادة padding */
+            font-size: 20px;
+            padding: 10px;
             border-radius: 8px;
             background-color: #4CAF50;
             color: #fff;
@@ -41,34 +39,36 @@
             cursor: pointer;
             transition: background-color 0.3s;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 100px; /* عرض الزر */
-            margin: 0 5px; /* مسافة بين الأزرار */
+            width: 100px;
         }
         .button:hover {
             background-color: #45a049;
         }
         #score {
             position: absolute;
-            bottom: 30px; /* تعديل الموقع للأسفل قليلاً */
+            bottom: 30px;
             right: 10px;
             font-size: 20px;
             color: black;
-            transition: transform 0.3s;
         }
         #passwordInput {
             padding: 10px;
             border-radius: 8px;
             border: 1px solid #333;
-            margin-top: 10px;
             width: 200px;
             font-size: 16px;
             position: absolute;
-            top: 10px; /* وضع كلمة السر في الزاوية اليسرى */
+            top: 10px;
             left: 10px;
         }
         #nightModeButton {
             position: absolute;
-            top: 10px; /* وضع زر الوضع الليلي في الزاوية اليمنى */
+            top: 10px;
+            right: 10px;
+        }
+        #jumpButton {
+            position: absolute;
+            bottom: 10px;
             right: 10px;
         }
         .message {
@@ -78,32 +78,22 @@
             transform: translate(-50%, -50%);
             font-size: 24px;
             color: white;
-            display: none; /* مخفي في البداية */
+            display: none;
             animation: fadeIn 2s;
         }
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        /* تصميم الألعاب النارية */
-        .fireworks {
+        .fog {
             position: absolute;
             width: 100%;
             height: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            top: 0;
+            left: 0;
+            z-index: 1;
             display: none;
-            z-index: 999;
-        }
-        .firework {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: red;
-            animation: explode 0.5s forwards;
-        }
-        @keyframes explode {
-            0% { transform: scale(1); }
-            100% { transform: scale(5); opacity: 0; }
         }
     </style>
 </head>
@@ -114,11 +104,9 @@
         <button id="nightModeButton" class="button">الوضع الليلي</button>
     </div>
     <div id="score">النقاط: 0</div>
-    <div id="message" class="message"></div> <!-- رسالة تحفيزية -->
-    <div class="fireworks" id="fireworks"></div> <!-- منطقة الألعاب النارية -->
-    <div class="controls">
-        <button id="jumpButton" class="button">قفز</button> <!-- زر القفز -->
-    </div>
+    <div id="message" class="message"></div>
+    <div class="fog" id="fog"></div>
+    <button id="jumpButton" class="button">قفز</button>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -127,10 +115,10 @@
         const scoreElement = document.getElementById('score');
         const passwordInput = document.getElementById('passwordInput');
         const messageElement = document.getElementById('message');
-        const fireworksContainer = document.getElementById('fireworks');
+        const fog = document.getElementById('fog');
         const jumpButton = document.getElementById('jumpButton');
 
-        let playerX = 550; // عكس الاتجاه ليكون إلى اليسار
+        let playerX = 50;
         let playerY = canvas.height - 70;
         let playerSize = 30;
         let playerYChange = 0;
@@ -148,69 +136,50 @@
         let score = 0;
         let gameOver = false;
         let nightMode = false;
-        let clouds = []; // مصفوفة الغيوم
-        let stars = []; // مصفوفة النجوم
 
-        // إنشاء الغيوم
-        function createClouds() {
-            for (let i = 0; i < 5; i++) {
-                clouds.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * (canvas.height / 2),
-                    speed: 0.01 + Math.random() * 0.05 // سرعة الغيوم
-                });
+        // تغيير الخلفية للوضع الليلي أو الصباحي
+        nightModeButton.onclick = () => {
+            nightMode = !nightMode;
+            if (nightMode) {
+                fog.style.display = "block";
+                nightModeButton.innerText = "الوضع الصباحي";
+                canvas.style.backgroundColor = "#000033";
+            } else {
+                fog.style.display = "none";
+                nightModeButton.innerText = "الوضع الليلي";
+                canvas.style.backgroundColor = "#87CEEB";
             }
-        }
+        };
 
-        // إنشاء النجوم
-        function createStars() {
-            for (let i = 0; i < 20; i++) {
-                stars.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: Math.random() * 3 + 2 // حجم النجوم
-                });
-            }
-        }
-
-        function drawBackground() {
-            ctx.fillStyle = nightMode ? '#000033' : '#87CEEB';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // رسم الأرض
-            ctx.fillStyle = 'green';
-            ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
-
-            // رسم الغيوم
-            ctx.fillStyle = 'white';
-            ctx.font = '20px Arial';
-            for (const cloud of clouds) {
-                ctx.fillText('☁️', cloud.x, cloud.y);
-                cloud.x += cloud.speed; // حركة الغيم
-                if (cloud.x > canvas.width) {
-                    cloud.x = -20; // إعادة الغيم إلى اليسار
-                    cloud.y = Math.random() * (canvas.height / 2); // تغيير ارتفاع الغيم
+        // التحقق من كلمة السر
+        passwordInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                if (passwordInput.value === "أنا شمري") {
+                    messageElement.innerText = "مبروك الفوز!";
+                    messageElement.style.display = "block";
+                    setTimeout(() => { messageElement.style.display = "none"; }, 3000);
                 }
             }
+        });
 
-            // رسم النجوم
-            ctx.fillStyle = 'white';
-            for (const star of stars) {
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
+        function drawBackground() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = nightMode ? '#000033' : '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = 'green';
+            ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
         }
 
         function drawPlayer() {
-            ctx.fillStyle = 'orange'; // لون القطة
+            ctx.fillStyle = 'orange';
             ctx.font = '30px Arial';
-            ctx.fillText('🐈', playerX - 15, playerY + 10); // رسم القطة
+            ctx.fillText('🐈', playerX - 15, playerY + 10);
         }
 
         function drawObstacle() {
-            ctx.fillStyle = 'brown'; // لون الحواجز
-            ctx.fillText('🪨', obstacleX - 15, obstacleY - 10); // رسم الحواجز
+            ctx.fillStyle = 'brown';
+            ctx.fillText('🪨', obstacleX - 15, obstacleY - 10);
         }
 
         function updateGame() {
@@ -221,7 +190,6 @@
                 return;
             }
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBackground();
 
             if (isJumping) {
@@ -234,12 +202,50 @@
             }
 
             if (obstacleX < -obstacleWidth) {
-                obstacleX = canvas.width; // إعادة ظهور العقبة
+                obstacleX = canvas.width;
                 score++;
-                obstacleSpeed += 0.1; // تسريع العقبات مع تقدم المرحلة
+                obstacleSpeed += 0.1;
             } else {
                 obstacleX -= obstacleSpeed;
             }
 
             if (obstacleX < playerX + playerSize / 2 && obstacleX + obstacleWidth > playerX - playerSize / 2 && playerY >= canvas.height - groundHeight - playerSize / 2) {
-                game
+                gameOver = true;
+                setTimeout(() => {
+                    if (confirm("لقد خسرت! هل ترغب في إعادة اللعبة؟")) {
+                        resetGame();
+                    }
+                }, 100);
+            }
+
+            drawPlayer();
+            drawObstacle();
+            scoreElement.innerText = "النقاط: " + score;
+        }
+
+        function resetGame() {
+            playerY = canvas.height - groundHeight - playerSize / 2;
+            obstacleX = canvas.width;
+            score = 0;
+            obstacleSpeed = 3;
+            gameOver = false;
+            fog.style.display = nightMode ? "block" : "none";
+            messageElement.style.display = "none";
+        }
+
+        function gameLoop() {
+            updateGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+
+        jumpButton.onclick = () => {
+            if (!isJumping && !gameOver) {
+                isJumping = true;
+                playerYChange = -jumpStrength;
+            }
+        };
+    </script>
+</body>
+</html>
