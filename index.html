@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>لعبة شبيهة بماين كرافت</title>
+    <title>لعبة 3D شبيهة بماين كرافت للجوال</title>
     <style>
         body { margin: 0; overflow: hidden; }
         #instructions {
@@ -15,10 +15,38 @@
             font-family: Arial, sans-serif;
             z-index: 10;
         }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        .button {
+            width: 50px;
+            height: 50px;
+            background-color: #00aa00;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 50px;
+            border-radius: 5px;
+            user-select: none;
+            touch-action: manipulation;
+        }
     </style>
 </head>
 <body>
-    <div id="instructions">استخدم WASD للتحرك، الماوس للنظر حولك</div>
+    <div id="instructions">استخدم الأزرار للتحكم</div>
+    <div id="controls">
+        <div id="left" class="button">⬅️</div>
+        <div id="up" class="button">⬆️</div>
+        <div id="down" class="button">⬇️</div>
+        <div id="right" class="button">➡️</div>
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/PointerLockControls.min.js"></script>
 
@@ -30,7 +58,6 @@
         animate();
 
         function init() {
-            // إنشاء المشهد والكاميرا
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x87CEEB); // سماء زرقاء
 
@@ -39,29 +66,33 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            // التحكم في منظور الشخص الأول
             controls = new THREE.PointerLockControls(camera, document.body);
             document.body.addEventListener('click', () => controls.lock(), false);
 
-            // إعداد الإضاءة
             const light = new THREE.DirectionalLight(0xffffff, 1);
             light.position.set(10, 10, 10).normalize();
             scene.add(light);
 
-            // إعداد الأرضية (شبكة من المكعبات)
             createGround();
 
-            // إضافة معالجة WASD للتحكم في الحركة
             const moveSpeed = 0.1;
-            const keyState = {};
-            document.addEventListener('keydown', (event) => keyState[event.code] = true);
-            document.addEventListener('keyup', (event) => keyState[event.code] = false);
+            const keyState = { left: false, right: false, up: false, down: false };
+
+            document.getElementById('left').addEventListener('touchstart', () => keyState.left = true);
+            document.getElementById('right').addEventListener('touchstart', () => keyState.right = true);
+            document.getElementById('up').addEventListener('touchstart', () => keyState.up = true);
+            document.getElementById('down').addEventListener('touchstart', () => keyState.down = true);
+
+            document.getElementById('left').addEventListener('touchend', () => keyState.left = false);
+            document.getElementById('right').addEventListener('touchend', () => keyState.right = false);
+            document.getElementById('up').addEventListener('touchend', () => keyState.up = false);
+            document.getElementById('down').addEventListener('touchend', () => keyState.down = false);
 
             function handleMovement() {
-                if (keyState['KeyW']) controls.moveForward(moveSpeed);
-                if (keyState['KeyS']) controls.moveForward(-moveSpeed);
-                if (keyState['KeyA']) controls.moveRight(-moveSpeed);
-                if (keyState['KeyD']) controls.moveRight(moveSpeed);
+                if (keyState.up) controls.moveForward(moveSpeed);
+                if (keyState.down) controls.moveForward(-moveSpeed);
+                if (keyState.left) controls.moveRight(-moveSpeed);
+                if (keyState.right) controls.moveRight(moveSpeed);
             }
 
             function animate() {
@@ -78,7 +109,7 @@
             const groundY = -1;
 
             const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-            const blockMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 }); // لون بني للأرضية
+            const blockMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 }); // أرضية خضراء
 
             for (let x = -groundSize; x < groundSize; x++) {
                 for (let z = -groundSize; z < groundSize; z++) {
