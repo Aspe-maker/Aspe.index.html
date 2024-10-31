@@ -2,9 +2,10 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>لعبة 3D بمنظور أول - محاكاة ماين كرافت</title>
+    <title>لعبة منظور أول بتكسير وبناء</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+        canvas { display: block; }
         
         #controls {
             position: absolute;
@@ -57,44 +58,51 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
-        let scene, camera, renderer, controls, player;
-        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false, canJump = true;
-
+        let scene, camera, renderer;
+        let controls, player, clock;
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let canJump = true, isJumping = false, velocityY = 0;
+        
+        // إعداد العالم
         init();
         animate();
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB); // خلفية السماء
-            
-            // إعداد الكاميرا
+            scene.background = new THREE.Color(0x87CEEB);
+
+            // الكاميرا
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.y = 1.5; // ارتفاع الكاميرا
+            camera.position.y = 1.5;
 
             renderer = new THREE.WebGLRenderer();
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            // إضافة ضوء
-            const light = new THREE.DirectionalLight(0xffffff, 0.5);
-            light.position.set(10, 10, 10).normalize();
+            // ضوء الشمس
+            const light = new THREE.DirectionalLight(0xffffff, 0.8);
+            light.position.set(10, 10, 10);
             scene.add(light);
 
-            // إنشاء الأرضية
-            const groundGeometry = new THREE.PlaneGeometry(500, 500);
-            const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 }); // لون أخضر للعشب
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            // إعداد الأرضية
+            const groundTexture = new THREE.TextureLoader().load('https://threejsfundamentals.org/threejs/resources/images/grasslight-big.jpg');
+            groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+            groundTexture.repeat.set(50, 50);
+
+            const groundMaterial = new THREE.MeshLambertMaterial({ map: groundTexture });
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), groundMaterial);
             ground.rotation.x = -Math.PI / 2;
             scene.add(ground);
 
-            // إضافة لاعب
-            const playerGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-            const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-            player = new THREE.Mesh(playerGeometry, playerMaterial);
-            player.position.y = 0.5;
+            // جسم اللاعب (غير مرئي - للتمركز فقط)
+            player = new THREE.Object3D();
+            player.position.set(0, 1, 5);
             scene.add(player);
 
-            // تحكم عبر الأزرار
+            // ضبط الكاميرا على اللاعب
+            player.add(camera);
+
+            // عناصر التحكم
             document.getElementById('up').addEventListener('touchstart', () => moveForward = true);
             document.getElementById('down').addEventListener('touchstart', () => moveBackward = true);
             document.getElementById('left').addEventListener('touchstart', () => moveLeft = true);
@@ -106,6 +114,13 @@
             document.getElementById('left').addEventListener('touchend', () => moveLeft = false);
             document.getElementById('right').addEventListener('touchend', () => moveRight = false);
 
+            // التكسير والبناء
+            window.addEventListener('click', interactWithBlock);
+
+            // إعداد الفيزياء
+            clock = new THREE.Clock();
+
+            // تحديث عند تغيير حجم النافذة
             window.addEventListener('resize', onWindowResize);
         }
 
@@ -116,25 +131,37 @@
         }
 
         function jump() {
-            if (canJump) {
-                player.position.y += 1;
-                canJump = false;
-                setTimeout(() => {
-                    player.position.y -= 1;
-                    canJump = true;
-                }, 500);
+            if (canJump && !isJumping) {
+                velocityY = 0.15;
+                isJumping = true;
             }
+        }
+
+        function interactWithBlock() {
+            // هنا يمكن إضافة تكسير وبناء للكتل
+            console.log("التكسير أو البناء"); // استخدم console لمتابعة النقرات
         }
 
         function animate() {
             requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            
+            // حركة اللاعب
+            if (moveForward) player.position.z -= 0.1;
+            if (moveBackward) player.position.z += 0.1;
+            if (moveLeft) player.position.x -= 0.1;
+            if (moveRight) player.position.x += 0.1;
 
-            if (moveForward) camera.position.z -= 0.1;
-            if (moveBackward) camera.position.z += 0.1;
-            if (moveLeft) camera.position.x -= 0.1;
-            if (moveRight) camera.position.x += 0.1;
+            // الجاذبية والقفز
+            if (isJumping) {
+                player.position.y += velocityY;
+                velocityY -= 0.01;
+                if (player.position.y <= 1.5) {
+                    player.position.y = 1.5;
+                    isJumping = false;
+                }
+            }
 
-            camera.lookAt(player.position);
             renderer.render(scene, camera);
         }
     </script>
