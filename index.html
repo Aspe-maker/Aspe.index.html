@@ -2,135 +2,141 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>لعبة 3D شبيهة بماين كرافت للجوال</title>
+    <title>لعبة 3D بمنظور أول - محاكاة ماين كرافت</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        #instructions {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            font-family: Arial, sans-serif;
-            z-index: 10;
-        }
+        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+        
         #controls {
             position: absolute;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 10px;
+            flex-direction: column;
+            align-items: center;
             z-index: 10;
         }
+        
+        #arrows {
+            display: flex;
+            gap: 10px;
+        }
+
         .button {
-            width: 50px;
-            height: 50px;
-            background-color: #00aa00;
+            width: 60px;
+            height: 60px;
+            background-color: rgba(50, 50, 50, 0.5);
             color: white;
             font-size: 24px;
             font-weight: bold;
             text-align: center;
-            line-height: 50px;
-            border-radius: 5px;
+            line-height: 60px;
+            border-radius: 10px;
             user-select: none;
             touch-action: manipulation;
+            border: 1px solid white;
+        }
+        
+        #jump {
+            margin-top: 10px;
+            width: 60px;
         }
     </style>
 </head>
 <body>
-    <div id="instructions">استخدم الأزرار للتحكم</div>
     <div id="controls">
-        <div id="left" class="button">⬅️</div>
-        <div id="up" class="button">⬆️</div>
-        <div id="down" class="button">⬇️</div>
-        <div id="right" class="button">➡️</div>
+        <div id="arrows">
+            <div id="left" class="button">⬅️</div>
+            <div id="up" class="button">⬆️</div>
+            <div id="down" class="button">⬇️</div>
+            <div id="right" class="button">➡️</div>
+        </div>
+        <div id="jump" class="button">🔼</div>
     </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/PointerLockControls.min.js"></script>
 
     <script>
-        let scene, camera, renderer, controls;
-        let blocks = [];
+        let scene, camera, renderer, controls, player;
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false, canJump = true;
 
         init();
         animate();
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB); // سماء زرقاء
-
+            scene.background = new THREE.Color(0x87CEEB); // خلفية السماء
+            
+            // إعداد الكاميرا
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.y = 1.5; // ارتفاع الكاميرا
+
             renderer = new THREE.WebGLRenderer();
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            controls = new THREE.PointerLockControls(camera, document.body);
-            document.body.addEventListener('click', () => controls.lock(), false);
-
-            const light = new THREE.DirectionalLight(0xffffff, 1);
+            // إضافة ضوء
+            const light = new THREE.DirectionalLight(0xffffff, 0.5);
             light.position.set(10, 10, 10).normalize();
             scene.add(light);
 
-            createGround();
+            // إنشاء الأرضية
+            const groundGeometry = new THREE.PlaneGeometry(500, 500);
+            const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 }); // لون أخضر للعشب
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            scene.add(ground);
 
-            const moveSpeed = 0.1;
-            const keyState = { left: false, right: false, up: false, down: false };
+            // إضافة لاعب
+            const playerGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            player = new THREE.Mesh(playerGeometry, playerMaterial);
+            player.position.y = 0.5;
+            scene.add(player);
 
-            document.getElementById('left').addEventListener('touchstart', () => keyState.left = true);
-            document.getElementById('right').addEventListener('touchstart', () => keyState.right = true);
-            document.getElementById('up').addEventListener('touchstart', () => keyState.up = true);
-            document.getElementById('down').addEventListener('touchstart', () => keyState.down = true);
+            // تحكم عبر الأزرار
+            document.getElementById('up').addEventListener('touchstart', () => moveForward = true);
+            document.getElementById('down').addEventListener('touchstart', () => moveBackward = true);
+            document.getElementById('left').addEventListener('touchstart', () => moveLeft = true);
+            document.getElementById('right').addEventListener('touchstart', () => moveRight = true);
+            document.getElementById('jump').addEventListener('touchstart', jump);
 
-            document.getElementById('left').addEventListener('touchend', () => keyState.left = false);
-            document.getElementById('right').addEventListener('touchend', () => keyState.right = false);
-            document.getElementById('up').addEventListener('touchend', () => keyState.up = false);
-            document.getElementById('down').addEventListener('touchend', () => keyState.down = false);
+            document.getElementById('up').addEventListener('touchend', () => moveForward = false);
+            document.getElementById('down').addEventListener('touchend', () => moveBackward = false);
+            document.getElementById('left').addEventListener('touchend', () => moveLeft = false);
+            document.getElementById('right').addEventListener('touchend', () => moveRight = false);
 
-            function handleMovement() {
-                if (keyState.up) controls.moveForward(moveSpeed);
-                if (keyState.down) controls.moveForward(-moveSpeed);
-                if (keyState.left) controls.moveRight(-moveSpeed);
-                if (keyState.right) controls.moveRight(moveSpeed);
-            }
-
-            function animate() {
-                requestAnimationFrame(animate);
-                handleMovement();
-                renderer.render(scene, camera);
-            }
-            animate();
+            window.addEventListener('resize', onWindowResize);
         }
 
-        function createGround() {
-            const blockSize = 1;
-            const groundSize = 20;
-            const groundY = -1;
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
 
-            const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-            const blockMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 }); // أرضية خضراء
-
-            for (let x = -groundSize; x < groundSize; x++) {
-                for (let z = -groundSize; z < groundSize; z++) {
-                    const block = new THREE.Mesh(blockGeometry, blockMaterial);
-                    block.position.set(x, groundY, z);
-                    scene.add(block);
-                    blocks.push(block);
-                }
+        function jump() {
+            if (canJump) {
+                player.position.y += 1;
+                canJump = false;
+                setTimeout(() => {
+                    player.position.y -= 1;
+                    canJump = true;
+                }, 500);
             }
         }
 
         function animate() {
             requestAnimationFrame(animate);
+
+            if (moveForward) camera.position.z -= 0.1;
+            if (moveBackward) camera.position.z += 0.1;
+            if (moveLeft) camera.position.x -= 0.1;
+            if (moveRight) camera.position.x += 0.1;
+
+            camera.lookAt(player.position);
             renderer.render(scene, camera);
         }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     </script>
 </body>
 </html>
