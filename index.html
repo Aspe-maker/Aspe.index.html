@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mini Minecraft 3D</title>
+  <title>عبدالله لبرمجة الألعاب عديمة الفائدة</title>
   <style>
     body { 
       margin: 0; 
@@ -17,6 +17,9 @@
       left: 10px; 
       color: white; 
       font-size: 20px; 
+      background-color: rgba(0, 0, 0, 0.7); 
+      padding: 10px; 
+      border-radius: 5px; 
     }
     .button {
       position: absolute; 
@@ -40,11 +43,10 @@
     #right { bottom: 50px; left: 100px; }
     #forward { bottom: 110px; left: 60px; }
     #backward { bottom: 10px; left: 60px; }
-    #trees { position: absolute; }
   </style>
 </head>
 <body>
-  <div id="info">Mini Minecraft 3D</div>
+  <div id="info">عبدالله لبرمجة الألعاب عديمة الفائدة</div>
   <div id="left" class="button">←</div>
   <div id="right" class="button">→</div>
   <div id="forward" class="button">↑</div>
@@ -53,7 +55,7 @@
   <script>
     let scene, camera, renderer, player, controls;
     const speed = 0.15, rotationSpeed = 0.05;
-    
+
     // Initialize the scene
     function init() {
       scene = new THREE.Scene();
@@ -61,7 +63,7 @@
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
-      
+
       // Create a player (sphere)
       const playerGeometry = new THREE.SphereGeometry(0.5, 32, 32);
       const playerMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
@@ -85,7 +87,7 @@
       directionalLight.position.set(5, 10, 7.5);
       scene.add(directionalLight);
 
-      camera.position.set(0, 1, 5);
+      camera.position.set(0, 1.5, 5); // رفع الكاميرا قليلاً
       camera.lookAt(player.position);
 
       // Responsive handling
