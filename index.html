@@ -5,14 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mini Minecraft 3D</title>
   <style>
-    body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
-    #info { position: absolute; top: 10px; left: 10px; color: white; }
-    .button { position: absolute; width: 50px; height: 50px; background: rgba(255, 255, 255, 0.7); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: black; transition: background 0.2s; }
-    .button:active { background: rgba(255, 255, 255, 0.5); }
-    #left { bottom: 50px; left: 10px; }
-    #right { bottom: 50px; left: 70px; }
-    #forward { bottom: 110px; left: 40px; }
-    #backward { bottom: 10px; left: 40px; }
+    body { 
+      margin: 0; 
+      overflow: hidden; 
+      font-family: Arial, sans-serif; 
+      background-color: #87CEEB; /* لون السماء */
+    }
+    #info { 
+      position: absolute; 
+      top: 10px; 
+      left: 10px; 
+      color: white; 
+      font-size: 20px; 
+    }
+    .button {
+      position: absolute; 
+      width: 60px; 
+      height: 60px; 
+      background: rgba(255, 255, 255, 0.7); 
+      border-radius: 50%; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 24px; 
+      color: black; 
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      transition: background 0.2s, transform 0.1s;
+    }
+    .button:active { 
+      background: rgba(255, 255, 255, 0.5); 
+      transform: scale(0.9);
+    }
+    #left { bottom: 50px; left: 20px; }
+    #right { bottom: 50px; left: 100px; }
+    #forward { bottom: 110px; left: 60px; }
+    #backward { bottom: 10px; left: 60px; }
+    #trees { position: absolute; }
   </style>
 </head>
 <body>
@@ -24,8 +52,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
     let scene, camera, renderer, player, controls;
-    const speed = 0.1, rotationSpeed = 0.05;
-
+    const speed = 0.15, rotationSpeed = 0.05;
+    
     // Initialize the scene
     function init() {
       scene = new THREE.Scene();
@@ -47,6 +75,9 @@
       ground.rotation.x = - Math.PI / 2;
       scene.add(ground);
 
+      // Create some trees
+      createTrees();
+
       // Add light to the scene
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
       scene.add(ambientLight);
@@ -61,6 +92,22 @@
       window.addEventListener('resize', onWindowResize, false);
       addControls();
       animate();
+    }
+
+    function createTrees() {
+      const treeGeometry = new THREE.CylinderGeometry(0.1, 0.5, 2, 8);
+      const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+      const leavesMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+      
+      for (let i = 0; i < 10; i++) {
+        const trunk = new THREE.Mesh(treeGeometry, trunkMaterial);
+        trunk.position.set(Math.random() * 50 - 25, 1, Math.random() * 50 - 25);
+        scene.add(trunk);
+        
+        const leaves = new THREE.Mesh(new THREE.SphereGeometry(0.75, 16, 16), leavesMaterial);
+        leaves.position.set(trunk.position.x, trunk.position.y + 1.5, trunk.position.z);
+        scene.add(leaves);
+      }
     }
 
     function onWindowResize() {
