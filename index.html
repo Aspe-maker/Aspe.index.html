@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Ball Game</title>
+    <title>Mini Minecraft</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
         canvas { display: block; }
-        
-        /* أزرار التحكم */
         #controls {
-            position: absolute;
+            position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
@@ -28,7 +26,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
             cursor: pointer;
         }
         .control-button:active {
@@ -38,7 +35,6 @@
 </head>
 <body>
 
-    <!-- أزرار التحكم -->
     <div id="controls">
         <button id="left" class="control-button">←</button>
         <button id="forward" class="control-button">↑</button>
@@ -55,75 +51,66 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // إنشاء الأرضية الخضراء
-        const floorGeometry = new THREE.PlaneGeometry(100, 100);
-        const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.rotation.x = - Math.PI / 2;
-        scene.add(floor);
+        // إعداد الإضاءة
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
 
-        // إعداد اللاعب على شكل كرة
-        const playerGeometry = new THREE.SphereGeometry(1, 32, 32);
-        const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const player = new THREE.Mesh(playerGeometry, playerMaterial);
-        player.position.y = 1;
-        scene.add(player);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(10, 10, 10);
+        scene.add(directionalLight);
 
-        // متغيرات التحكم بالحركة
+        // إنشاء أرضية بسيطة من المكعبات
+        const blockSize = 1;
+        const gridSize = 10;
+        for (let x = -gridSize; x <= gridSize; x++) {
+            for (let z = -gridSize; z <= gridSize; z++) {
+                const blockGeometry = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+                const blockMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
+                const block = new THREE.Mesh(blockGeometry, blockMaterial);
+                block.position.set(x * blockSize, -0.5, z * blockSize);
+                scene.add(block);
+            }
+        }
+
+        // إعداد متغيرات التحكم في الحركة
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
-        let velocity = new THREE.Vector3();
-        let velocityY = 0;
-        let isJumping = false;
+        const velocity = new THREE.Vector3();
 
-        // التحكم في الحركة للأزرار
+        // التحكم في الأزرار
         document.getElementById("forward").addEventListener("mousedown", () => moveForward = true);
         document.getElementById("backward").addEventListener("mousedown", () => moveBackward = true);
         document.getElementById("left").addEventListener("mousedown", () => moveLeft = true);
         document.getElementById("right").addEventListener("mousedown", () => moveRight = true);
-        
+
         document.getElementById("forward").addEventListener("mouseup", () => moveForward = false);
         document.getElementById("backward").addEventListener("mouseup", () => moveBackward = false);
         document.getElementById("left").addEventListener("mouseup", () => moveLeft = false);
         document.getElementById("right").addEventListener("mouseup", () => moveRight = false);
 
-        // حلقة الرسوم المتحركة
+        // ضبط موقع الكاميرا
+        camera.position.y = 1.5;
+
+        // حلقة الرسوم المتحركة لتحديث الحركة والمشهد
         function animate() {
             requestAnimationFrame(animate);
 
-            const speed = 0.1;
+            const speed = 0.05;
             if (moveForward) velocity.z = -speed;
             if (moveBackward) velocity.z = speed;
             if (moveLeft) velocity.x = -speed;
             if (moveRight) velocity.x = speed;
 
-            // جاذبية بسيطة وحركة القفز
-            player.position.y += velocityY;
-            velocityY -= 0.01;
-            if (player.position.y <= 1) {
-                player.position.y = 1;
-                isJumping = false;
-                velocityY = 0;
-            }
+            // تحديث موقع الكاميرا
+            camera.position.add(velocity);
 
-            // تحديث موقع اللاعب
-            player.position.x += velocity.x;
-            player.position.z += velocity.z;
-
-            // تخفيف الحركة
+            // تخفيف السرعة تدريجيًا
             velocity.x *= 0.9;
             velocity.z *= 0.9;
-
-            // متابعة الكاميرا للاعب
-            camera.position.x = player.position.x;
-            camera.position.z = player.position.z + 5;
-            camera.position.y = player.position.y + 6; // ارتفاع الكاميرا أعلى قليلاً
-            camera.lookAt(player.position);
 
             renderer.render(scene, camera);
         }
 
         animate();
     </script>
-
 </body>
 </html>
