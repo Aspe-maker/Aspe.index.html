@@ -68,6 +68,7 @@
         let scene, camera, renderer;
         let player, ground;
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let velocity = { x: 0, y: 0, z: 0 };
         let velocityY = 0, isJumping = false;
 
         // إعداد اللعبة
@@ -138,14 +139,14 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // حركة سلسة للاعب
-            const speed = 0.1;
-            if (moveForward) player.position.z -= speed;
-            if (moveBackward) player.position.z += speed;
-            if (moveLeft) player.position.x -= speed;
-            if (moveRight) player.position.x += speed;
+            // تسريع حركة اللاعب
+            const speed = 0.05;
+            if (moveForward) velocity.z -= speed;
+            if (moveBackward) velocity.z += speed;
+            if (moveLeft) velocity.x -= speed;
+            if (moveRight) velocity.x += speed;
 
-            // الجاذبية والقفز
+            // تطبيق الجاذبية والقفز
             player.position.y += velocityY;
             velocityY -= 0.01;
             if (player.position.y <= 1) {
@@ -153,7 +154,15 @@
                 isJumping = false;
             }
 
-            // اجعل الكاميرا تتبع اللاعب بسلاسة
+            // تحديث مواقع اللاعب
+            player.position.x += velocity.x;
+            player.position.z += velocity.z;
+
+            // إبطاء الحركة تدريجيًا لجعل الحركة سلسة
+            velocity.x *= 0.9;
+            velocity.z *= 0.9;
+
+            // اجعل الكاميرا تتبع اللاعب
             camera.position.x = player.position.x;
             camera.position.z = player.position.z + 5;
             camera.lookAt(player.position);
