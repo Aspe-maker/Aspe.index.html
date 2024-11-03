@@ -1,171 +1,182 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>عبدالله لبرمجة الألعاب عديمة الفائدة</title>
+  <title>لعبة XO جميلة</title>
   <style>
-    body { 
-      margin: 0; 
-      overflow: hidden; 
-      font-family: Arial, sans-serif; 
-      background-color: #87CEEB; /* لون السماء */
+    /* تنسيق الخط الأساسي */
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
     }
-    #info { 
-      position: absolute; 
-      top: 10px; 
-      left: 10px; 
-      color: white; 
-      font-size: 20px; 
-      background-color: rgba(0, 0, 0, 0.7); 
-      padding: 10px; 
-      border-radius: 5px; 
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #e09, #d0e);
     }
-    .button {
-      position: absolute; 
-      width: 60px; 
-      height: 60px; 
-      background: rgba(255, 255, 255, 0.7); 
-      border-radius: 50%; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      font-size: 24px; 
-      color: black; 
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-      transition: background 0.2s, transform 0.1s;
+
+    .menu {
+      text-align: center;
     }
-    .button:active { 
-      background: rgba(255, 255, 255, 0.5); 
-      transform: scale(0.9);
+
+    .menu h1 {
+      font-size: 3rem;
+      color: #fff;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
     }
-    #left { bottom: 50px; left: 20px; }
-    #right { bottom: 50px; left: 100px; }
-    #forward { bottom: 110px; left: 60px; }
-    #backward { bottom: 10px; left: 60px; }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1.5rem;
+      margin-top: 20px;
+      border: none;
+      color: #fff;
+      background-color: #333;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #555;
+    }
+
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .cell:hover {
+      transform: scale(1.1);
+    }
+
+    .result {
+      font-size: 1.8rem;
+      color: #fff;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
   </style>
 </head>
 <body>
-  <div id="info">عبدالله لبرمجة الألعاب عديمة الفائدة</div>
-  <div id="left" class="button">←</div>
-  <div id="right" class="button">→</div>
-  <div id="forward" class="button">↑</div>
-  <div id="backward" class="button">↓</div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- قائمة البداية -->
+  <div class="menu" id="menu">
+    <h1>لعبة XO</h1>
+    <button onclick="startGame()">بدء اللعبة</button>
+  </div>
+
+  <!-- لوحة اللعبة -->
+  <div class="game-container" id="gameContainer" style="display: none;">
+    <div class="game-board">
+      <div class="cell" onclick="makeMove(0)"></div>
+      <div class="cell" onclick="makeMove(1)"></div>
+      <div class="cell" onclick="makeMove(2)"></div>
+      <div class="cell" onclick="makeMove(3)"></div>
+      <div class="cell" onclick="makeMove(4)"></div>
+      <div class="cell" onclick="makeMove(5)"></div>
+      <div class="cell" onclick="makeMove(6)"></div>
+      <div class="cell" onclick="makeMove(7)"></div>
+      <div class="cell" onclick="makeMove(8)"></div>
+    </div>
+    <div class="result" id="result"></div>
+    <button onclick="resetGame()">إعادة اللعبة</button>
+  </div>
+
   <script>
-    let scene, camera, renderer, player, monster, controls;
-    const speed = 0.15, rotationSpeed = 0.05, monsterSpeed = 0.02;
+    let board = ["", "", "", "", "", "", "", "", ""];
+    let currentPlayer = "X";
+    let gameActive = true;
+    const resultDisplay = document.getElementById("result");
 
-    // Initialize the scene
-    function init() {
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
-
-      // Create a player (sphere)
-      const playerGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-      const playerMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-      player = new THREE.Mesh(playerGeometry, playerMaterial);
-      scene.add(player);
-
-      // Create a monster (cube)
-      const monsterGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-      const monsterMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-      monster = new THREE.Mesh(monsterGeometry, monsterMaterial);
-      monster.position.set(Math.random() * 50 - 25, 0.3, Math.random() * 50 - 25); // وضع الوحش في مكان عشوائي
-      scene.add(monster);
-
-      // Create grass-like ground
-      const groundGeometry = new THREE.PlaneGeometry(100, 100, 10, 10);
-      const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-      const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-      ground.rotation.x = - Math.PI / 2;
-      scene.add(ground);
-
-      // Add light to the scene
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-      scene.add(ambientLight);
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-      directionalLight.position.set(5, 10, 7.5);
-      scene.add(directionalLight);
-
-      camera.position.set(0, 1.5, 5); // رفع الكاميرا قليلاً
-      camera.lookAt(player.position);
-
-      // Responsive handling
-      window.addEventListener('resize', onWindowResize, false);
-      addControls();
-      animate();
+    function startGame() {
+      document.getElementById("menu").style.display = "none";
+      document.getElementById("gameContainer").style.display = "flex";
     }
 
-    function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+    function makeMove(index) {
+      if (board[index] === "" && gameActive) {
+        board[index] = currentPlayer;
+        document.getElementsByClassName("cell")[index].innerText = currentPlayer;
+        document.getElementsByClassName("cell")[index].style.color =
+          currentPlayer === "X" ? "#e09" : "#d0e";
+        checkWinner();
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+      }
     }
 
-    function animate() {
-      requestAnimationFrame(animate);
-      
-      // تحريك الكاميرا لتتبع اللاعب
-      camera.position.x = player.position.x;
-      camera.position.z = player.position.z + 5; // تبقي الكاميرا خلف اللاعب
-      camera.position.y = 1.5; // ارتفاع الكاميرا
-      
-      // تحريك الوحش نحو اللاعب
-      const direction = new THREE.Vector3().subVectors(player.position, monster.position).normalize();
-      monster.position.add(direction.multiplyScalar(monsterSpeed));
+    function checkWinner() {
+      const winPatterns = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+      ];
 
-      // ضبط الكاميرا للنظر إلى اللاعب
-      camera.lookAt(player.position);
-
-      renderer.render(scene, camera);
-    }
-
-    function addControls() {
-      document.getElementById('left').addEventListener('click', () => {
-        player.position.x -= speed;
-      });
-      document.getElementById('right').addEventListener('click', () => {
-        player.position.x += speed;
-      });
-      document.getElementById('forward').addEventListener('click', () => {
-        player.position.z -= speed;
-      });
-      document.getElementById('backward').addEventListener('click', () => {
-        player.position.z += speed;
-      });
-
-      // Improved touch sensitivity for mobile
-      let touchStartX = null;
-      let touchStartY = null;
-      document.addEventListener('touchstart', function(e) {
-        if (e.touches.length === 1) {
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
+      for (let i = 0; i < winPatterns.length; i++) {
+        const [a, b, c] = winPatterns[i];
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          gameActive = false;
+          resultDisplay.innerText = `الفائز هو ${board[a]}!`;
+          animateWinningCells([a, b, c]);
+          return;
         }
-      });
+      }
 
-      document.addEventListener('touchmove', function(e) {
-        if (!touchStartX || !touchStartY) return;
+      if (!board.includes("")) {
+        gameActive = false;
+        resultDisplay.innerText = "تعادل!";
+      }
+    }
 
-        let touchEndX = e.touches[0].clientX;
-        let touchEndY = e.touches[0].clientY;
-        let dx = touchEndX - touchStartX;
-        let dy = touchEndY - touchStartY;
-
-        // Rotate player based on swipe
-        player.rotation.y += dx * rotationSpeed * 0.001;
-        player.rotation.x += dy * rotationSpeed * 0.001;
-
-        touchStartX = touchEndX;
-        touchStartY = touchEndY;
+    function animateWinningCells(cells) {
+      cells.forEach(index => {
+        document.getElementsByClassName("cell")[index].style.backgroundColor = "#0e9";
+        document.getElementsByClassName("cell")[index].style.transform = "scale(1.2)";
       });
     }
 
-    init();
+    function resetGame() {
+      board = ["", "", "", "", "", "", "", "", ""];
+      currentPlayer = "X";
+      gameActive = true;
+      resultDisplay.innerText = "";
+      Array.from(document.getElementsByClassName("cell")).forEach(cell => {
+        cell.innerText = "";
+        cell.style.backgroundColor = "#fff";
+        cell.style.transform = "scale(1)";
+      });
+    }
   </script>
+
 </body>
 </html>
