@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة مطاردة الوحوش</title>
+    <title>لعبة مطاردة الوحوش - عالم مفتوح</title>
     <style>
         body { margin: 0; overflow: hidden; }
         #hp-bar {
@@ -42,7 +42,7 @@
 </head>
 <body>
     <div id="hp-bar"></div>
-    <div id="hud-text">عبدالله لبرمجة الألعاب عديمة القيمة</div>
+    <div id="hud-text">عبدالله لتصميم الألعاب عديمة الفائدة</div>
 
     <!-- أزرار التحكم للهاتف -->
     <div id="up" class="button">▲</div>
@@ -54,36 +54,46 @@
     <script>
         // إعدادات البيئة
         let scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xffffff);  // خلفية بيضاء
-        
+        scene.background = new THREE.Color(0xa0a0a0);  // خلفية بلون رمادي فاتح لتشبه عالم مفتوح
+
         // إعداد الكاميرا
         let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.z = 5;
-        
+        camera.position.y = 3;
+
         // إعداد وحدة التحكّم
         let renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
-        
+
+        // إعداد أرضية كبيرة مثل ماين كرافت
+        let planeGeometry = new THREE.PlaneGeometry(500, 500);
+        let planeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+        let plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.rotation.x = Math.PI / 2;
+        scene.add(plane);
+
         // إعداد اللاعب
         let player = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1),
             new THREE.MeshBasicMaterial({ color: 0x00ff00 })
         );
+        player.position.y = 0.5;
         scene.add(player);
 
         // إعداد الوحوش
         let monsters = [];
-        function createMonster() {
+        function spawnMonster() {
             let monster = new THREE.Mesh(
                 new THREE.SphereGeometry(0.5, 16, 16),
                 new THREE.MeshBasicMaterial({ color: 0xff0000 })
             );
-            monster.position.set(Math.random() * 10 - 5, 0, Math.random() * -10);
+            // جعل الوحش يظهر في مكان عشوائي في العالم
+            monster.position.set((Math.random() - 0.5) * 50, 0.5, (Math.random() - 0.5) * 50);
             monsters.push(monster);
             scene.add(monster);
         }
-        for (let i = 0; i < 3; i++) createMonster();  // إنشاء 3 وحوش
+        setInterval(spawnMonster, 3000);  // ترسبن وحش كل 3 ثوانٍ
 
         // إعداد عداد HP
         let hp = 3;
@@ -93,7 +103,7 @@
 
         // التحكم باللمس للهاتف
         function movePlayer(direction) {
-            const speed = 0.1;
+            const speed = 0.5;
             if (direction === "up") player.position.z -= speed;
             if (direction === "down") player.position.z += speed;
             if (direction === "left") player.position.x -= speed;
@@ -125,7 +135,11 @@
         // تحديثات الرسومات
         function animate() {
             requestAnimationFrame(animate);
-            monsters.forEach(monster => monster.position.z += 0.01);  // تحريك الوحوش باتجاه اللاعب
+            monsters.forEach(monster => {
+                // تحريك الوحش باتجاه اللاعب (مطاردة)
+                let direction = new THREE.Vector3().subVectors(player.position, monster.position).normalize();
+                monster.position.add(direction.multiplyScalar(0.02));
+            });
             checkCollisions();
             renderer.render(scene, camera);
         }
