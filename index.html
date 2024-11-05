@@ -68,6 +68,10 @@
             line-height: 50px;
             font-size: 18px;
             cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .control-button:active {
+            background-color: #555;
         }
     </style>
 </head>
@@ -80,21 +84,22 @@
 
     <!-- شاشة إعادة اللعب -->
     <div id="restartScreen">
-        <div>لقد ماتت! 😢</div>
+        <div>اذا ما فزت بهذي اللعبة تاكد انك فاشل! 😢</div>
         <button onclick="restartGame()">إعادة اللعب</button>
     </div>
 
     <!-- لوحة التحكم -->
     <div class="controls">
-        <div class="control-button" onclick="movePlayer('left')">◀</div>
-        <div class="control-button" onclick="movePlayer('right')">▶</div>
+        <div class="control-button" onclick="movePlayer('up')">⬆</div>
+        <div class="control-button" onclick="movePlayer('down')">⬇</div>
+        <div class="control-button" onclick="movePlayer('left')">⬅</div>
+        <div class="control-button" onclick="movePlayer('right')">➡</div>
         <div class="control-button" onclick="shootBullet()">🔫</div>
     </div>
 
     <!-- مكتبة Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // إعدادات اللعبة
         let scene, camera, renderer, ground;
         let player, enemy;
         let bullets = [];
@@ -104,13 +109,13 @@
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer();
+            renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
             // أرضية خضراء
-            const groundGeometry = new THREE.PlaneGeometry(50, 50);
-            const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const groundGeometry = new THREE.PlaneGeometry(100, 100);
+            const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
             ground = new THREE.Mesh(groundGeometry, groundMaterial);
             ground.rotation.x = -Math.PI / 2;
             scene.add(ground);
@@ -118,30 +123,27 @@
             // اللاعب
             player = new THREE.Mesh(
                 new THREE.BoxGeometry(1, 1, 1),
-                new THREE.MeshBasicMaterial({ color: 0x0000ff })
+                new THREE.MeshLambertMaterial({ color: 0x0000ff })
             );
             player.position.y = 0.5;
-            player.position.z = 5;
             scene.add(player);
 
             // الكاميرا
-            camera.position.set(0, 5, 15);
-            camera.lookAt(0, 0, 0);
+            camera.position.set(0, 5, 10);
+            camera.lookAt(player.position);
 
-            // إضافة الأشجار
-            for (let i = 0; i < 5; i++) {
-                const tree = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.5, 0.5, 3),
-                    new THREE.MeshBasicMaterial({ color: 0x8B4513 })
-                );
-                const foliage = new THREE.Mesh(
-                    new THREE.SphereGeometry(1.5),
-                    new THREE.MeshBasicMaterial({ color: 0x006400 })
-                );
-                tree.position.set(Math.random() * 40 - 20, 1.5, Math.random() * -20);
-                foliage.position.set(tree.position.x, 3.5, tree.position.z);
+            // إضاءة
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(0, 10, 10).normalize();
+            scene.add(directionalLight);
+
+            // توزيع الأشجار بشكل عشوائي
+            for (let i = 0; i < 20; i++) {
+                const tree = createTree();
+                tree.position.set(Math.random() * 80 - 40, 0, Math.random() * 80 - 40);
                 scene.add(tree);
-                scene.add(foliage);
             }
 
             // بدء ظهور الأعداء
@@ -152,6 +154,20 @@
             animate();
         }
 
+        function createTree() {
+            const trunk = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.5, 0.5, 3),
+                new THREE.MeshLambertMaterial({ color: 0x8B4513 })
+            );
+            const foliage = new THREE.Mesh(
+                new THREE.SphereGeometry(1.5),
+                new THREE.MeshLambertMaterial({ color: 0x006400 })
+            );
+            trunk.add(foliage);
+            foliage.position.y = 2.5;
+            return trunk;
+        }
+
         function updateLifeCounter() {
             document.getElementById('lifeCounter').textContent = 'الحياة: ' + playerHealth;
         }
@@ -159,9 +175,9 @@
         function spawnEnemy() {
             const newEnemy = new THREE.Mesh(
                 new THREE.BoxGeometry(1, 1, 1),
-                new THREE.MeshBasicMaterial({ color: 0xff0000 })
+                new THREE.MeshLambertMaterial({ color: 0xff0000 })
             );
-            newEnemy.position.set(Math.random() * 20 - 10, 0.5, -10);
+            newEnemy.position.set(Math.random() * 20 - 10, 0.5, Math.random() * -20);
             enemies.push(newEnemy);
             scene.add(newEnemy);
         }
@@ -171,14 +187,27 @@
                 new THREE.SphereGeometry(0.1, 8, 8),
                 new THREE.MeshBasicMaterial({ color: 0xffff00 })
             );
-            bullet.position.set(player.position.x, player.position.y, player.position.z - 1);
+            bullet.position.copy(player.position);
+            bullet.target = findClosestEnemy(bullet);
             bullets.push(bullet);
             scene.add(bullet);
         }
 
+        function findClosestEnemy(bullet) {
+            let closestEnemy = null;
+            let minDistance = Infinity;
+            enemies.forEach(enemy => {
+                const distance = bullet.position.distanceTo(enemy.position);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestEnemy = enemy;
+                }
+            });
+            return closestEnemy;
+        }
+
         function checkCollision(bullet, enemy) {
-            const distance = bullet.position.distanceTo(enemy.position);
-            return distance < 0.5;
+            return bullet.position.distanceTo(enemy.position) < 0.5;
         }
 
         function showRestartScreen() {
@@ -194,28 +223,35 @@
         }
 
         function movePlayer(direction) {
-            const speed = 0.5;
+            const speed = 0.3;
             if (direction === 'left') player.position.x -= speed;
             if (direction === 'right') player.position.x += speed;
+            if (direction === 'up') player.position.z -= speed;
+            if (direction === 'down') player.position.z += speed;
         }
 
         function animate() {
             requestAnimationFrame(animate);
 
+            // جعل الكاميرا تتبع اللاعب
+            camera.position.set(player.position.x, player.position.y + 5, player.position.z + 10);
+            camera.lookAt(player.position);
+
             bullets.forEach((bullet, index) => {
-                bullet.position.z -= 0.5;
-                if (bullet.position.z < -10) {
-                    scene.remove(bullet);
-                    bullets.splice(index, 1);
+                if (bullet.target) {
+                    bullet.position.lerp(bullet.target.position, 0.1);
+                    if (checkCollision(bullet, bullet.target)) {
+                        scene.remove(bullet);
+                        scene.remove(bullet.target);
+                        bullets.splice(index, 1);
+                        enemies.splice(enemies.indexOf(bullet.target), 1);
+                    }
                 } else {
-                    enemies.forEach((enemy, enemyIndex) => {
-                        if (checkCollision(bullet, enemy)) {
-                            scene.remove(bullet);
-                            scene.remove(enemy);
-                            bullets.splice(index, 1);
-                            enemies.splice(enemyIndex, 1);
-                        }
-                    });
+                    bullet.position.z -= 0.5;
+                    if (bullet.position.z < -10) {
+                        scene.remove(bullet);
+                        bullets.splice(index, 1);
+                    }
                 }
             });
 
@@ -236,6 +272,8 @@
         window.addEventListener('keydown', (event) => {
             if (event.key === 'ArrowLeft') movePlayer('left');
             if (event.key === 'ArrowRight') movePlayer('right');
+            if (event.key === 'ArrowUp') movePlayer('up');
+            if (event.key === 'ArrowDown') movePlayer('down');
             if (event.key === ' ') shootBullet();
         });
 
