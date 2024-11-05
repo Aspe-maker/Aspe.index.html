@@ -1,101 +1,109 @@
+```html
 <!DOCTYPE html>
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة شبيهة بماين كرافت</title>
+    <title>لعبة تشبه ماين كرافت</title>
     <style>
         body {
             margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #e0e0e0;
-            font-family: Arial, sans-serif;
+            overflow: hidden;
         }
-        #gameCanvas {
-            border: 2px solid #000;
-            background-color: #fff;
+        canvas {
+            display: block;
         }
-        .button {
+        #buttons {
             position: absolute;
-            padding: 10px;
-            background-color: #007bff;
-            color: #fff;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 15px;
+            background-color: #333;
+            color: white;
             border: none;
             border-radius: 5px;
+            font-size: 16px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
-        #restartButton {
-            display: none;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        .btn:hover {
+            background-color: #555;
         }
-        .credit {
+        #credit {
             position: absolute;
-            bottom: 10px;
+            top: 10px;
             right: 10px;
-            font-size: 12px;
-            color: #555;
+            font-size: 14px;
+            color: #888;
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <button id="restartButton" class="button">إعادة اللعبة</button>
-    <div class="credit">عبدالله لتصميم الالعاب عديمة الفائدة</div>
-
+    <canvas id="gameCanvas"></canvas>
+    <div id="buttons">
+        <button class="btn" onclick="moveLeft()">يسار</button>
+        <button class="btn" onclick="moveRight()">يمين</button>
+        <button class="btn" onclick="jump()">قفز</button>
+        <button class="btn" onclick="attack()">هجوم</button>
+    </div>
+    <div id="credit">عبدالله لتصميم الالعاب عديمة الفائدة</div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const restartButton = document.getElementById('restartButton');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        let playerHealth = 3;
-        let gameOver = false;
+        let player = {
+            x: canvas.width / 2,
+            y: canvas.height - 50,
+            width: 50,
+            height: 50,
+            health: 3
+        };
 
         function drawPlayer() {
             ctx.fillStyle = 'blue';
-            ctx.fillRect(375, 275, 50, 50);
+            ctx.fillRect(player.x, player.y, player.width, player.height);
         }
 
-        function drawEnemies() {
-            ctx.fillStyle = 'red';
-            ctx.fillRect(Math.random() * 750, Math.random() * 550, 50, 50);
+        function moveLeft() {
+            player.x -= 10;
         }
 
-        function checkCollision() {
-            // Simplified collision detection
-            if (Math.random() > 0.7) { // Random collision chance
-                playerHealth--;
-                if (playerHealth <= 0) {
-                    gameOver = true;
-                }
+        function moveRight() {
+            player.x += 10;
+        }
+
+        function jump() {
+            player.y -= 100;
+            setTimeout(() => player.y += 100, 500);
+        }
+
+        function attack() {
+            console.log('Attack');
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            requestAnimationFrame(update);
+        }
+
+        function gameOver() {
+            if (player.health <= 0) {
+                alert('لقد ماتت الشخصية! إعادة اللعبة؟');
+                player.health = 3;
+                player.x = canvas.width / 2;
             }
         }
 
-        function updateGame() {
-            if (!gameOver) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                drawPlayer();
-                drawEnemies();
-                checkCollision();
-            } else {
-                restartButton.style.display = 'block';
-            }
-        }
-
-        function restartGame() {
-            playerHealth = 3;
-            gameOver = false;
-            restartButton.style.display = 'none';
-            updateGame();
-        }
-
-        restartButton.addEventListener('click', restartGame);
-
-        setInterval(updateGame, 1000);
+        update();
     </script>
 </body>
 </html>
+```
