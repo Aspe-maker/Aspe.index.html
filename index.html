@@ -18,6 +18,7 @@
             height: 100vh;
             margin: 0;
             color: #333;
+            flex-direction: column;
         }
 
         /* تنسيق الرأس */
@@ -32,12 +33,17 @@
             margin: 0;
         }
 
-        header p {
+        /* تنسيق الوصف */
+        .description {
             font-size: 1.2em;
             color: #666;
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            transform: translateY(-50%);
         }
 
-        /* تنسيق روابط وسائل التواصل الاجتماعي */
+        /* روابط وسائل التواصل الاجتماعي */
         .social-links {
             display: flex;
             flex-direction: column;
@@ -71,8 +77,10 @@
 
         /* تنسيق التذييل */
         footer {
+            position: absolute;
+            bottom: 10px;
             text-align: center;
-            margin-top: 30px;
+            width: 100%;
             color: #444;
             font-size: 1em;
         }
@@ -82,8 +90,12 @@
     <!-- الرأس -->
     <header>
         <h1>حسابات عبدالله</h1>
-        <p>الحسابات الشخصية لـ عبدالله</p>
     </header>
+
+    <!-- الوصف في الجانب -->
+    <div class="description">
+        <p>الحسابات الشخصية لـ عبدالله</p>
+    </div>
 
     <!-- الروابط الاجتماعية -->
     <div class="social-links">
