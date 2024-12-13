@@ -82,22 +82,25 @@
       scheduleDiv.innerHTML = ""; // مسح الجدول السابق
 
       const rounds = [];
-      const numberOfRounds = teams.length - 1; // عدد الجولات
-      const numberOfMatchesPerRound = Math.floor(teams.length / 2); // مباريات لكل جولة
+      const numberOfRounds = 4; // عدد الجولات
 
-      // نسخ الفرق لإنشاء نظام دائري
-      const rotatedTeams = [...teams];
-
-      // إنشاء الجولات باستخدام Round Robin
+      // إنشاء الجولات مع ضمان أن يلعب كل فريق مباراة واحدة فقط في كل جولة
       for (let round = 0; round < numberOfRounds; round++) {
         const matches = [];
-        for (let match = 0; match < numberOfMatchesPerRound; match++) {
-          const home = rotatedTeams[match];
-          const away = rotatedTeams[rotatedTeams.length - 1 - match];
-          matches.push(`${home} × ${away}`);
+        const usedTeams = new Set();
+
+        while (usedTeams.size < teams.length) {
+          for (let i = 0; i < teams.length; i++) {
+            for (let j = i + 1; j < teams.length; j++) {
+              if (!usedTeams.has(teams[i]) && !usedTeams.has(teams[j])) {
+                matches.push(`${teams[i]} × ${teams[j]}`);
+                usedTeams.add(teams[i]);
+                usedTeams.add(teams[j]);
+                break;
+              }
+            }
+          }
         }
-        // تدوير الفرق للحفاظ على توازن الجولات
-        rotatedTeams.splice(1, 0, rotatedTeams.pop());
         rounds.push(matches);
       }
 
