@@ -67,6 +67,25 @@
       font-size: 1rem;
       color: rgba(255, 255, 255, 0.7);
     }
+    .points-table {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #ffffff;
+    }
+    .points-table th, .points-table td {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    .points-table th {
+      background-color: #444;
+    }
+    .points-table td {
+      background-color: #333;
+    }
+    .points-table .team {
+      font-weight: bold;
+    }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -77,23 +96,37 @@
   <h2>دوري ثانوية ابن شريم</h2>
   <h1>جدول المباريات</h1>
   <button onclick="generateSchedule()">إنشاء الجدول</button>
+  <div style="height: 100px;"></div> <!-- مسافة فارغة أسفل الزر -->
   <div id="schedule"></div>
+  
+  <!-- جدول النقاط -->
+  <div id="points-table" class="points-table"></div>
+  
   <footer>© 2024 عبدالله محمد</footer>
+  
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
+    const points = {
+      "ريال مدريد": 1,
+      "الهلال": 1,
+      "النصر": 1,
+      "الاتحاد": 1,
+      "العمدة": 1
+    };
 
     // إنشاء الجدول الدوري مع راحة الفرق
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
+      const pointsTableDiv = document.getElementById('points-table');
       scheduleDiv.innerHTML = ""; // مسح الجدول السابق
+      pointsTableDiv.innerHTML = ""; // مسح جدول النقاط السابق
 
-      // ترتيب المباريات في الجولات مع راحة كل فريق في جولة واحدة
+      // ترتيب المباريات في الجولات مع راحة كل فريق
       const rounds = [
-        // الجولات الأربع حيث كل فريق يحصل على راحة في جولة واحدة
-        ["ريال مدريد", "الهلال", "النصر", "الاتحاد"],   // الجولة 1: العمدة في راحة
-        ["ريال مدريد", "الهلال", "النصر", "العمدة"],   // الجولة 2: الاتحاد في راحة
-        ["ريال مدريد", "الاتحاد", "النصر", "العمدة"],   // الجولة 3: الهلال في راحة
-        ["الهلال", "الاتحاد", "العمدة", "النصر"]        // الجولة 4: ريال مدريد في راحة
+        ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"],   // الجولة 1: العمدة في راحة
+        ["ريال مدريد", "الهلال", "النصر", "العمدة", "الاتحاد"],   // الجولة 2: الاتحاد في راحة
+        ["ريال مدريد", "الهلال", "الاتحاد", "العمدة", "النصر"],   // الجولة 3: النصر في راحة
+        ["الهلال", "الاتحاد", "العمدة", "النصر", "ريال مدريد"]    // الجولة 4: ريال مدريد في راحة
       ];
 
       // تنظيم المباريات في الجولات
@@ -111,6 +144,8 @@
           } else {
             matchElement.classList.add('match');
             matchElement.textContent = `${matches[i]} × ${matches[i + 1]}`;
+            // أضف النقاط بناءً على نتيجة المباراة (افتراض فوز أو تعادل)
+            updatePoints(matches[i], matches[i + 1]);
           }
           matchElement.style.animationDelay = `${i * 0.5}s`; // إضافة تأثيرات حركية لكل مباراة
           roundDiv.appendChild(matchElement);
@@ -118,6 +153,34 @@
 
         scheduleDiv.appendChild(roundDiv);
       });
+
+      // تحديث جدول النقاط
+      updatePointsTable();
+    }
+
+    // تحديث النقاط بناءً على نتيجة المباراة
+    function updatePoints(team1, team2) {
+      const result = Math.random(); // لمحاكاة نتيجة عشوائية (فوز أو تعادل)
+      if (result < 0.33) {
+        points[team1] += 3; // فوز الفريق الأول
+      } else if (result < 0.66) {
+        points[team2] += 3; // فوز الفريق الثاني
+      } else {
+        points[team1] += 1; // تعادل
+        points[team2] += 1; // تعادل
+      }
+    }
+
+    // تحديث جدول النقاط
+    function updatePointsTable() {
+      const pointsTableDiv = document.getElementById('points-table');
+      let tableHTML = "<table class='points-table'>";
+      tableHTML += "<tr><th>الفريق</th><th>النقاط</th></tr>";
+      for (const team in points) {
+        tableHTML += `<tr><td class="team">${team}</td><td>${points[team]}</td></tr>`;
+      }
+      tableHTML += "</table>";
+      pointsTableDiv.innerHTML = tableHTML;
     }
   </script>
 </body>
