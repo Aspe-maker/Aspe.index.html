@@ -77,26 +77,26 @@
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
 
+    // إنشاء الجدول الدوري
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = ""; // مسح الجدول السابق
 
-      // ترتيب المباريات بحيث يلعب كل فريق مباراة واحدة فقط في كل جولة
-      const rounds = [];
-      const roundMatches = [
+      // ترتيب المباريات في الجولات
+      const rounds = [
         ["ريال مدريد", "الهلال", "النصر", "الاتحاد"], // الجولة الأولى
         ["ريال مدريد", "العمدة", "الهلال", "النصر"], // الجولة الثانية
         ["ريال مدريد", "الاتحاد", "العمدة", "الهلال"], // الجولة الثالثة
         ["النصر", "الاتحاد", "العمدة", "ريال مدريد"] // الجولة الرابعة
       ];
 
-      // إنشاء المباريات بناءً على الجولات
-      roundMatches.forEach((matches, roundIndex) => {
+      // تنظيم المباريات في الجولات
+      rounds.forEach((matches, roundIndex) => {
         const roundDiv = document.createElement('div');
         roundDiv.classList.add('round');
         roundDiv.innerHTML = `<h3>الجولة ${roundIndex + 1}</h3>`;
 
-        // خلق المباريات
+        // خلق المباريات بين الفرق
         for (let i = 0; i < matches.length; i += 2) {
           const matchElement = document.createElement('div');
           matchElement.classList.add('match');
