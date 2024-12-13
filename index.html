@@ -81,31 +81,24 @@
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = ""; // مسح الجدول السابق
 
+      // إنشاء الجولات مع ضمان أن كل فريق يلعب مباراة واحدة في كل جولة
       const rounds = [];
-      const numberOfRounds = 4; // عدد الجولات
+      let roundMatches = [];
+      let roundCount = 0;
 
-      // إنشاء الجولات مع ضمان أن يلعب كل فريق مباراة واحدة فقط في كل جولة
-      for (let round = 0; round < numberOfRounds; round++) {
-        const matches = [];
-        const usedTeams = new Set();
-
-        while (usedTeams.size < teams.length) {
-          for (let i = 0; i < teams.length; i++) {
-            for (let j = i + 1; j < teams.length; j++) {
-              if (!usedTeams.has(teams[i]) && !usedTeams.has(teams[j])) {
-                matches.push(`${teams[i]} × ${teams[j]}`);
-                usedTeams.add(teams[i]);
-                usedTeams.add(teams[j]);
-                break;
-              }
-            }
+      // تقسيم الفرق على الجولات
+      for (let i = 0; i < teams.length; i++) {
+        for (let j = i + 1; j < teams.length; j++) {
+          if (!roundMatches[roundCount]) roundMatches[roundCount] = [];
+          roundMatches[roundCount].push(`${teams[i]} × ${teams[j]}`);
+          if (roundMatches[roundCount].length == 2) {
+            roundCount++;
           }
         }
-        rounds.push(matches);
       }
 
-      // عرض الجولات
-      rounds.forEach((matches, index) => {
+      // تنظيم المباريات في الجولات
+      roundMatches.forEach((matches, index) => {
         const roundDiv = document.createElement('div');
         roundDiv.classList.add('round');
         roundDiv.innerHTML = `<h3>الجولة ${index + 1}</h3>`;
