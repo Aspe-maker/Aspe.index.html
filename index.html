@@ -12,7 +12,7 @@
       text-align: center;
       margin: 0;
       padding: 0;
-      overflow: hidden;
+      overflow-x: hidden;
     }
     h1, h2 {
       margin-top: 20px;
@@ -39,15 +39,30 @@
     button:hover {
       transform: scale(1.1);
     }
-    #results {
+    .round {
       margin-top: 30px;
-      font-size: 1.2rem;
+      font-size: 1.5rem;
+      color: #ffffff;
+      text-transform: uppercase;
     }
-    p.match {
-      opacity: 0;
-      transform: scale(0.8);
-      color: #ffcc00;
-      animation: zoomIn 1s ease forwards, colorChange 2s infinite alternate;
+    .match {
+      font-size: 1.2rem;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      animation: fadeIn 1s ease-out;
+    }
+    .match:nth-child(1) {
+      background-color: #ff5733;
+    }
+    .match:nth-child(2) {
+      background-color: #ffc300;
+    }
+    .match:nth-child(3) {
+      background-color: #28a745;
+    }
+    .match:nth-child(4) {
+      background-color: #007bff;
     }
     footer {
       margin-top: 50px;
@@ -55,57 +70,59 @@
       color: rgba(255, 255, 255, 0.7);
     }
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes zoomIn {
-      from {
-        opacity: 0;
-        transform: scale(0.8);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-    @keyframes colorChange {
-      from { color: #ffcc00; }
-      to { color: #ff5733; }
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
   <h2>دوري ثانوية ابن شريم</h2>
-  <h1>قرعة دوري بين الفرق</h1>
-  <button onclick="draw()">إجراء القرعة</button>
-  <div id="results"></div>
+  <h1>جدول المباريات</h1>
+  <button onclick="generateSchedule()">إنشاء الجدول</button>
+  <div id="schedule"></div>
   <footer>© 2024 عبدالله محمد</footer>
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
-    function draw() {
-      const resultsDiv = document.getElementById('results');
-      resultsDiv.innerHTML = ""; // مسح النتائج السابقة
 
-      // إنشاء قائمة المباريات دون تكرار
-      const matches = [];
-      for (let i = 0; i < teams.length; i++) {
-        for (let j = i + 1; j < teams.length; j++) {
-          matches.push(`${teams[i]} × ${teams[j]}`);
+    function generateSchedule() {
+      const scheduleDiv = document.getElementById('schedule');
+      scheduleDiv.innerHTML = ""; // مسح الجدول السابق
+
+      // ترتيب الجولات
+      const rounds = [];
+      for (let round = 0; round < 4; round++) {
+        const matches = [];
+        const usedTeams = new Set();
+
+        for (let i = 0; i < teams.length; i++) {
+          for (let j = i + 1; j < teams.length; j++) {
+            // تحقق من أن الفريقين لم يتم استخدامهما في هذه الجولة
+            if (!usedTeams.has(teams[i]) && !usedTeams.has(teams[j])) {
+              matches.push(`${teams[i]} × ${teams[j]}`);
+              usedTeams.add(teams[i]);
+              usedTeams.add(teams[j]);
+              break;
+            }
+          }
         }
+        rounds.push(matches);
       }
 
-      // خلط قائمة المباريات
-      matches.sort(() => Math.random() - 0.5);
+      // عرض الجولات
+      rounds.forEach((matches, index) => {
+        const roundDiv = document.createElement('div');
+        roundDiv.classList.add('round');
+        roundDiv.innerHTML = `<h3>الجولة ${index + 1}</h3>`;
 
-      // عرض المباريات واحدة تلو الأخرى مع تأثير حماسي
-      matches.forEach((match, index) => {
-        setTimeout(() => {
-          const matchElement = document.createElement('p');
+        matches.forEach((match, matchIndex) => {
+          const matchElement = document.createElement('div');
+          matchElement.classList.add('match');
           matchElement.textContent = match;
-          matchElement.className = 'match';
-          matchElement.style.animationDelay = `${index * 2}s`; // تأثير لكل مباراة
-          resultsDiv.appendChild(matchElement);
-        }, index * 2000); // تأخير زمني بين المباريات
+          matchElement.style.animationDelay = `${matchIndex * 0.5}s`; // تأخير لكل مباراة
+          roundDiv.appendChild(matchElement);
+        });
+
+        scheduleDiv.appendChild(roundDiv);
       });
     }
   </script>
