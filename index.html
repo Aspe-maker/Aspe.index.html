@@ -1,103 +1,89 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حسابات عبدالله</title>
-    <style>
-        /* استيراد الخط */
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-        
-        /* تنسيق الصفحة العامة */
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: #f0f8ff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            color: #333;
-            flex-direction: column;
-        }
-
-        /* تنسيق الرأس */
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        header h1 {
-            font-size: 2.5em;
-            color: #444;
-            margin: 0;
-        }
-
-        /* روابط وسائل التواصل الاجتماعي */
-        .social-links {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .social-links a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
-        }
-
-        .social-links a:hover {
-            transform: scale(1.1);
-            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.3);
-            background-color: #e6f7ff;
-        }
-
-        /* تنسيق الأيقونات */
-        .social-links a img {
-            width: 40px;
-            height: 40px;
-        }
-
-        /* تنسيق التذييل */
-        footer {
-            position: absolute;
-            bottom: 20px;
-            text-align: center;
-            width: 100%;
-            color: #444;
-            font-size: 1em;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>قرعة دوري ثانوية ابن شريم</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    h1, h2 {
+      margin-top: 20px;
+      animation: fadeIn 2s ease-in-out;
+    }
+    h1 {
+      font-size: 2.5rem;
+    }
+    h2 {
+      font-size: 1.8rem;
+      color: #ffcc00;
+      margin-bottom: 10px;
+    }
+    button {
+      background-color: #ffcc00;
+      color: #1e3c72;
+      font-size: 1.5rem;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    button:hover {
+      transform: scale(1.1);
+    }
+    #results {
+      margin-top: 30px;
+      font-size: 1.2rem;
+      animation: slideIn 2s ease-out;
+    }
+    footer {
+      margin-top: 50px;
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideIn {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
 </head>
 <body>
-    <!-- الرأس -->
-    <header>
-        <h1>حسابات عبدالله</h1>
-    </header>
-
-    <!-- الروابط الاجتماعية -->
-    <div class="social-links">
-        <a href="https://www.instagram.com/nonms49/profilecard/?igsh=M21zeW1wemM3Znd5" target="_blank">
-            <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
-        </a>
-        <a href="https://www.youtube.com/yourprofile" target="_blank">
-            <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube">
-        </a>
-        <a href="https://www.twitter.com/yourprofile" target="_blank">
-            <img src="https://cdn-icons-png.flaticon.com/512/3670/3670226.png" alt="X">
-        </a>
-    </div>
-
-    <!-- التذييل -->
-    <footer>
-        <p>© 2024 جميع الحقوق محفوظة - عبدالله</p>
-    </footer>
+  <h2>دوري ثانوية ابن شريم</h2>
+  <h1>قرعة دوري بين الفرق</h1>
+  <button onclick="draw()">إجراء القرعة</button>
+  <div id="results"></div>
+  <footer>© 2024 عبدالله محمد</footer>
+  <script>
+    const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
+    function draw() {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = ""; // مسح النتائج السابقة
+      const matches = [];
+      for (let i = 0; i < teams.length; i++) {
+        for (let j = i + 1; j < teams.length; j++) {
+          matches.push(`${teams[i]} × ${teams[j]}`);
+        }
+      }
+      // خلط النتائج
+      matches.sort(() => Math.random() - 0.5);
+      matches.forEach(match => {
+        const matchElement = document.createElement('p');
+        matchElement.textContent = match;
+        resultsDiv.appendChild(matchElement);
+      });
+    }
+  </script>
 </body>
 </html>
