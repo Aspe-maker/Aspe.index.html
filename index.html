@@ -81,35 +81,29 @@
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = ""; // مسح الجدول السابق
 
-      // إنشاء الجولات مع ضمان أن كل فريق يلعب مباراة واحدة في كل جولة
+      // ترتيب المباريات بحيث يلعب كل فريق مباراة واحدة فقط في كل جولة
       const rounds = [];
-      let roundMatches = [];
-      let roundCount = 0;
+      const roundMatches = [
+        ["ريال مدريد", "الهلال", "النصر", "الاتحاد"], // الجولة الأولى
+        ["ريال مدريد", "العمدة", "الهلال", "النصر"], // الجولة الثانية
+        ["ريال مدريد", "الاتحاد", "العمدة", "الهلال"], // الجولة الثالثة
+        ["النصر", "الاتحاد", "العمدة", "ريال مدريد"] // الجولة الرابعة
+      ];
 
-      // تقسيم الفرق على الجولات
-      for (let i = 0; i < teams.length; i++) {
-        for (let j = i + 1; j < teams.length; j++) {
-          if (!roundMatches[roundCount]) roundMatches[roundCount] = [];
-          roundMatches[roundCount].push(`${teams[i]} × ${teams[j]}`);
-          if (roundMatches[roundCount].length == 2) {
-            roundCount++;
-          }
-        }
-      }
-
-      // تنظيم المباريات في الجولات
-      roundMatches.forEach((matches, index) => {
+      // إنشاء المباريات بناءً على الجولات
+      roundMatches.forEach((matches, roundIndex) => {
         const roundDiv = document.createElement('div');
         roundDiv.classList.add('round');
-        roundDiv.innerHTML = `<h3>الجولة ${index + 1}</h3>`;
+        roundDiv.innerHTML = `<h3>الجولة ${roundIndex + 1}</h3>`;
 
-        matches.forEach((match, matchIndex) => {
+        // خلق المباريات
+        for (let i = 0; i < matches.length; i += 2) {
           const matchElement = document.createElement('div');
           matchElement.classList.add('match');
-          matchElement.textContent = match;
-          matchElement.style.animationDelay = `${matchIndex * 0.5}s`; // تأثير لكل مباراة
+          matchElement.textContent = `${matches[i]} × ${matches[i + 1]}`;
+          matchElement.style.animationDelay = `${i * 0.5}s`; // تأثير لكل مباراة
           roundDiv.appendChild(matchElement);
-        });
+        }
 
         scheduleDiv.appendChild(roundDiv);
       });
