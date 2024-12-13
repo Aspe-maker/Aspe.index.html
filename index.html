@@ -57,6 +57,11 @@
     .match:nth-child(3) { background-color: #28a745; }
     .match:nth-child(4) { background-color: #007bff; }
     .match:nth-child(5) { background-color: #6f42c1; }
+    .rest {
+      font-style: italic;
+      background-color: #444;
+      color: #bbb;
+    }
     footer {
       margin-top: 50px;
       font-size: 1rem;
@@ -77,17 +82,18 @@
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
 
-    // إنشاء الجدول الدوري
+    // إنشاء الجدول الدوري مع راحة الفرق
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = ""; // مسح الجدول السابق
 
-      // ترتيب المباريات في الجولات
+      // ترتيب المباريات في الجولات مع راحة كل فريق في جولة واحدة
       const rounds = [
-        ["ريال مدريد", "الهلال", "النصر", "الاتحاد"], // الجولة الأولى
-        ["ريال مدريد", "العمدة", "الهلال", "النصر"], // الجولة الثانية
-        ["ريال مدريد", "الاتحاد", "العمدة", "الهلال"], // الجولة الثالثة
-        ["النصر", "الاتحاد", "العمدة", "ريال مدريد"] // الجولة الرابعة
+        // الجولات الأربع حيث كل فريق يحصل على راحة في جولة واحدة
+        ["ريال مدريد", "الهلال", "النصر", "الاتحاد"],   // الجولة 1: العمدة في راحة
+        ["ريال مدريد", "الهلال", "النصر", "العمدة"],   // الجولة 2: الاتحاد في راحة
+        ["ريال مدريد", "الاتحاد", "النصر", "العمدة"],   // الجولة 3: الهلال في راحة
+        ["الهلال", "الاتحاد", "العمدة", "النصر"]        // الجولة 4: ريال مدريد في راحة
       ];
 
       // تنظيم المباريات في الجولات
@@ -96,12 +102,17 @@
         roundDiv.classList.add('round');
         roundDiv.innerHTML = `<h3>الجولة ${roundIndex + 1}</h3>`;
 
-        // خلق المباريات بين الفرق
+        // إضافة المباريات بين الفرق، مع مكان للفريق الذي في راحة
         for (let i = 0; i < matches.length; i += 2) {
           const matchElement = document.createElement('div');
-          matchElement.classList.add('match');
-          matchElement.textContent = `${matches[i]} × ${matches[i + 1]}`;
-          matchElement.style.animationDelay = `${i * 0.5}s`; // تأثير لكل مباراة
+          if (matches[i] === "راحت") {
+            matchElement.classList.add('rest');
+            matchElement.textContent = `${matches[i]} في راحة`;
+          } else {
+            matchElement.classList.add('match');
+            matchElement.textContent = `${matches[i]} × ${matches[i + 1]}`;
+          }
+          matchElement.style.animationDelay = `${i * 0.5}s`; // إضافة تأثيرات حركية لكل مباراة
           roundDiv.appendChild(matchElement);
         }
 
