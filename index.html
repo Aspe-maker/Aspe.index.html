@@ -45,8 +45,9 @@
     }
     p.match {
       opacity: 0;
-      transform: translateY(20px);
-      animation: fadeSlideIn 1s ease forwards;
+      transform: scale(0.8);
+      color: #ffcc00;
+      animation: zoomIn 1s ease forwards, colorChange 2s infinite alternate;
     }
     footer {
       margin-top: 50px;
@@ -57,15 +58,19 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
-    @keyframes fadeSlideIn {
+    @keyframes zoomIn {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: scale(0.8);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1);
       }
+    }
+    @keyframes colorChange {
+      from { color: #ffcc00; }
+      to { color: #ff5733; }
     }
   </style>
 </head>
@@ -80,24 +85,27 @@
     function draw() {
       const resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = ""; // مسح النتائج السابقة
+
+      // إنشاء قائمة المباريات دون تكرار
       const matches = [];
       for (let i = 0; i < teams.length; i++) {
         for (let j = i + 1; j < teams.length; j++) {
           matches.push(`${teams[i]} × ${teams[j]}`);
         }
       }
-      // خلط النتائج
+
+      // خلط قائمة المباريات
       matches.sort(() => Math.random() - 0.5);
 
-      // عرض النتائج واحدة تلو الأخرى
+      // عرض المباريات واحدة تلو الأخرى مع تأثير حماسي
       matches.forEach((match, index) => {
         setTimeout(() => {
           const matchElement = document.createElement('p');
           matchElement.textContent = match;
           matchElement.className = 'match';
-          matchElement.style.animationDelay = `${index * 2}s`; // تأخير لكل مباراة
+          matchElement.style.animationDelay = `${index * 2}s`; // تأثير لكل مباراة
           resultsDiv.appendChild(matchElement);
-        }, index * 2000); // تأخير 2 ثانية بين كل مباراة
+        }, index * 2000); // تأخير زمني بين المباريات
       });
     }
   </script>
