@@ -103,51 +103,41 @@
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
 
-    // توليد جدول الدوري مع راحة كل فريق وعدم تكرار الراحة
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = ""; // مسح الجدول السابق
 
-      // نقاط البداية
-      let points = {};
-      teams.forEach(team => {
-        points[team] = 1; // كل فريق يبدأ بـ 1 نقطة
-      });
+      const usedRestTeams = []; // تتبع الفرق التي أخذت راحة
+      const rounds = [];
 
-      // دالة لاختيار الفريق الذي في الراحة عشوائيًا
-      function getRandomRestTeam(remainingTeams) {
-        const randomIndex = Math.floor(Math.random() * remainingTeams.length);
-        return remainingTeams[randomIndex];
-      }
-
-      // ترتيب المباريات في الجولات
-      let rounds = [];
-
-      // نبدأ بإنشاء الجولات
       for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
         let remainingTeams = [...teams];
         let roundMatches = [];
-        let restTeam = getRandomRestTeam(remainingTeams);
 
-        // إزالة الفريق الذي في راحة من فرق الجولات
+        // اختيار فريق للراحة لم يأخذ الراحة من قبل
+        let restTeam = remainingTeams.find(team => !usedRestTeams.includes(team));
+        usedRestTeams.push(restTeam);
+
+        // إزالة فريق الراحة من قائمة الفرق
         remainingTeams = remainingTeams.filter(team => team !== restTeam);
 
-        // تقسيم الفرق المتبقية إلى مباريات
-        for (let i = 0; i < remainingTeams.length; i += 2) {
-          roundMatches.push([remainingTeams[i], remainingTeams[i + 1]]);
+        // تشكيل المباريات
+        while (remainingTeams.length >= 2) {
+          const team1 = remainingTeams.shift();
+          const team2 = remainingTeams.pop();
+          roundMatches.push([team1, team2]);
         }
 
-        // إضافة الجولة إلى الجولات مع الفريق الذي في راحة
+        // تخزين الجولة
         rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
       }
 
-      // إنشاء HTML للجولات
+      // عرض الجولات
       rounds.forEach(round => {
         const roundDiv = document.createElement('div');
         roundDiv.classList.add('round');
         roundDiv.innerHTML = `<h3>الجولة ${round.roundIndex}</h3>`;
 
-        // إضافة المباريات مع راحة الفريق
         round.matches.forEach(match => {
           const matchElement = document.createElement('div');
           matchElement.classList.add('match');
