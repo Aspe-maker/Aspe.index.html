@@ -94,7 +94,7 @@
       <li><strong>الفوز = 3 نقاط</strong></li>
       <li><strong>التعادل = نقطة واحدة</strong></li>
       <li><strong>الخسارة = 0 نقاط</strong></li>
-      <li>يتم إضافة <strong>نقطة واحدة</strong> بسبب العدد الغير زوجي للفرق.</li>
+      <li>يتم إضافة <strong>نقطة واحدة</strong> لكل فريق لتعويض الفرق عن العدد الغير زوجي للفرق.</li>
     </ul>
   </div>
 
@@ -103,39 +103,63 @@
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
 
-    // إنشاء الجدول الدوري مع راحة الفرق
+    // توليد جدول الدوري مع راحة كل فريق وعدم تكرار الراحة
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = ""; // مسح الجدول السابق
 
-      // ترتيب المباريات في الجولات مع راحة كل فريق
-      const rounds = [
-        ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"],   // الجولة 1: العمدة في راحة
-        ["ريال مدريد", "الهلال", "النصر", "العمدة", "الاتحاد"],   // الجولة 2: الاتحاد في راحة
-        ["ريال مدريد", "الهلال", "الاتحاد", "العمدة", "النصر"],   // الجولة 3: النصر في راحة
-        ["الهلال", "الاتحاد", "العمدة", "النصر", "ريال مدريد"],    // الجولة 4: ريال مدريد في راحة
-        ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"]    // الجولة 5: العمدة في راحة
-      ];
+      // نقاط البداية
+      let points = {};
+      teams.forEach(team => {
+        points[team] = 1; // كل فريق يبدأ بـ 1 نقطة
+      });
 
-      // تنظيم المباريات في الجولات
-      rounds.forEach((matches, roundIndex) => {
+      // دالة لاختيار الفريق الذي في الراحة عشوائيًا
+      function getRandomRestTeam(remainingTeams) {
+        const randomIndex = Math.floor(Math.random() * remainingTeams.length);
+        return remainingTeams[randomIndex];
+      }
+
+      // ترتيب المباريات في الجولات
+      let rounds = [];
+
+      // نبدأ بإنشاء الجولات
+      for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
+        let remainingTeams = [...teams];
+        let roundMatches = [];
+        let restTeam = getRandomRestTeam(remainingTeams);
+
+        // إزالة الفريق الذي في راحة من فرق الجولات
+        remainingTeams = remainingTeams.filter(team => team !== restTeam);
+
+        // تقسيم الفرق المتبقية إلى مباريات
+        for (let i = 0; i < remainingTeams.length; i += 2) {
+          roundMatches.push([remainingTeams[i], remainingTeams[i + 1]]);
+        }
+
+        // إضافة الجولة إلى الجولات مع الفريق الذي في راحة
+        rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
+      }
+
+      // إنشاء HTML للجولات
+      rounds.forEach(round => {
         const roundDiv = document.createElement('div');
         roundDiv.classList.add('round');
-        roundDiv.innerHTML = `<h3>الجولة ${roundIndex + 1}</h3>`;
+        roundDiv.innerHTML = `<h3>الجولة ${round.roundIndex}</h3>`;
 
-        // إضافة المباريات بين الفرق، مع مكان للفريق الذي في راحة
-        for (let i = 0; i < matches.length; i += 2) {
+        // إضافة المباريات مع راحة الفريق
+        round.matches.forEach(match => {
           const matchElement = document.createElement('div');
-          if (matches[i] === "راحت") {
-            matchElement.classList.add('rest');
-            matchElement.textContent = `${matches[i]} في راحة`;
-          } else {
-            matchElement.classList.add('match');
-            matchElement.textContent = `${matches[i]} × ${matches[i + 1]}`;
-          }
-          matchElement.style.animationDelay = `${i * 0.5}s`; // إضافة تأثيرات حركية لكل مباراة
+          matchElement.classList.add('match');
+          matchElement.textContent = `${match[0]} × ${match[1]}`;
           roundDiv.appendChild(matchElement);
-        }
+        });
+
+        // إضافة فريق الراحة
+        const restElement = document.createElement('div');
+        restElement.classList.add('rest');
+        restElement.textContent = `${round.rest} في راحة`;
+        roundDiv.appendChild(restElement);
 
         scheduleDiv.appendChild(roundDiv);
       });
