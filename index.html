@@ -111,24 +111,23 @@
       const rounds = [];
       const matchesSet = new Set();
 
-      // إنشاء 5 جولات
+      // 5 جولات مع تحديد المباريات في كل جولة
       for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
         let remainingTeams = [...teams];
         const roundMatches = [];
         const restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0]; // اختيار الفريق الذي سيأخذ راحة
 
-        // تأكد من أن كل جولة تحتوي على مباراتين فقط
+        // إضافة المباريات في الجولة الحالية
         while (remainingTeams.length >= 2) {
           const team1 = remainingTeams.shift();
           const team2 = remainingTeams.shift();
           const matchKey = `${team1} × ${team2}`;
 
-          // التحقق من عدم تكرار المباريات
+          // التأكد من عدم تكرار المباريات
           if (!matchesSet.has(matchKey) && !matchesSet.has(`${team2} × ${team1}`)) {
             roundMatches.push([team1, team2]);
             matchesSet.add(matchKey);
-            // تأكد أن الجولة تحتوي على مباراتين فقط
-            if (roundMatches.length === 2) break;
+            if (roundMatches.length === 2) break; // التأكد من أن الجولة تحتوي على مباراتين فقط
           }
         }
 
