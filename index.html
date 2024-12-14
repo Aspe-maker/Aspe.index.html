@@ -97,33 +97,36 @@
 <body>
   <h2>دوري ثانوية ابن شريم</h2>
   <h1>جدول المباريات</h1>
-  <p>يتم توزيع الفرق على جولات، حيث يلعب كل فريق مع الآخر مرة واحدة فقط. نظرًا لعدم كون عدد الفرق زوجيًا، سيتم منح كل فريق نقطة إضافية.</p>
+  <p>يتم توزيع الفرق على جولات، حيث يلعب كل فريق مع الآخر مرة واحدة فقط. نظرًا لعدم كون عدد الفرق زوجيًا، سيتم منح كل فريق نقطة إضافية في جولة واحدة.</p>
+  <p><strong>تبرير:</strong> بما أن عدد الفرق غير زوجي، فإن الفرق التي لا تجد خصمًا في جولة معينة ستأخذ استراحة. كل فريق سيحصل على راحة واحدة فقط خلال الدوري.</p>
   <button onclick="generateSchedule()">إنشاء الجدول</button>
   <div id="schedule"></div>
   <footer>&copy; 2024 عبدالله محمد</footer>
   
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
-
+    
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = "";
 
       const rounds = [];
       const matchesSet = new Set();
+      const restTeams = new Set();
 
       // إنشاء الجدول بناءً على عدد الفرق
       for (let roundIndex = 0; roundIndex < teams.length - 1; roundIndex++) {
         let remainingTeams = [...teams];
         const roundMatches = [];
         const restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0];
-
+        
+        // تأكد من أن كل جولة تحتوي على مباراتين فقط
         while (remainingTeams.length >= 2) {
           const team1 = remainingTeams.shift();
           const team2 = remainingTeams.shift();
           const matchKey = `${team1} × ${team2}`;
 
-          // التحقق من عدم تكرار المباريات
+          // التحقق من عدم تكرار المباريات وضمان إضافة مباراتين فقط
           if (!matchesSet.has(matchKey) && !matchesSet.has(`${team2} × ${team1}`)) {
             roundMatches.push([team1, team2]);
             matchesSet.add(matchKey);
@@ -131,6 +134,13 @@
         }
 
         rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
+        restTeams.add(restTeam); // إضافة الفريق في الاستراحة
+      }
+
+      // تأكد من أن كل فريق يحصل على راحة واحدة
+      if (restTeams.size !== teams.length) {
+        const restTeam = teams.find(team => !restTeams.has(team));
+        rounds[rounds.length - 1].rest = restTeam; // إذا لم يحصل الفريق على راحة، أضف له راحة
       }
 
       // عرض المباريات
