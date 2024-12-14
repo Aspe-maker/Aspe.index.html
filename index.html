@@ -85,7 +85,7 @@
   <button onclick="generateSchedule()">إنشاء الجدول</button>
   
   <div id="schedule"></div>
-  
+
   <div id="info">
     <p><strong>القوانين:</strong></p>
     <p>فوز = 3 نقاط</p>
@@ -99,16 +99,14 @@
 
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
-    const matchesSet = new Set(); // لتتبع المباريات التي تم لعبها بالفعل
-    const restTeams = new Set(); // لتتبع الفرق التي في راحة
 
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = ""; // مسح الجدول السابق
 
       const rounds = [];
+      const matchesSet = new Set(); // لتتبع المباريات التي تم لعبها بالفعل
 
-      // إنشاء الجولات
       for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
         let remainingTeams = [...teams];
         const roundMatches = [];
@@ -117,29 +115,25 @@
         // اختيار الفريق الذي في راحة (دون تكرار)
         do {
           restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0];
-        } while (restTeams.has(restTeam));
+        } while (remainingTeams.length % 2 !== 0);  // التأكد من وجود فرق كافية للمباريات
         
-        restTeams.add(restTeam); // إضافة الفريق إلى مجموعة الفرق في راحة
-
         // تشكيل المباريات مع التحقق من عدم التكرار
         while (remainingTeams.length >= 2) {
           const team1 = remainingTeams.shift();
           const team2 = remainingTeams.pop();
           const matchKey = `${team1} × ${team2}`;
 
-          // التحقق من أن المباراة لم تحدث سابقًا
+          // التحقق من أن المباراة لم تحدث مسبقًا
           if (!matchesSet.has(matchKey)) {
             roundMatches.push([team1, team2]);
             matchesSet.add(matchKey);
           }
         }
 
-        // التأكد من أن كل جولة تحتوي على مباراتين
+        // التأكد من أن الجولات تحتوي على مباراتين فقط
         if (roundMatches.length === 2) {
-          // تخزين الجولة فقط إذا كانت تحتوي على مباراتين
           rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
         } else {
-          // في حالة وجود مشكلة في عدد المباريات، يمكن إعادة المحاولة
           roundIndex--;
         }
       }
