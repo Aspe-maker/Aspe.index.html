@@ -137,12 +137,6 @@
         restTeams.add(restTeam); // إضافة الفريق الذي سيأخذ الاستراحة
       }
 
-      // تأكد من أن كل فريق يحصل على راحة واحدة فقط
-      if (restTeams.size !== teams.length) {
-        const restTeam = teams.find(team => !restTeams.has(team));
-        rounds[rounds.length - 1].rest = restTeam; // إذا لم يحصل الفريق على راحة، أضف له راحة
-      }
-
       // عرض المباريات
       rounds.forEach(round => {
         const roundDiv = document.createElement('div');
