@@ -103,7 +103,7 @@
 
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
-
+    
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = ""; // إعادة تعيين الجدول
@@ -116,7 +116,7 @@
       for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
         let remainingTeams = [...teams];
         const roundMatches = [];
-        const restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0];
+        const restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0]; // اختيار الفريق الذي سيأخذ راحة
 
         // تأكد من أن كل جولة تحتوي على مباراتين فقط
         while (remainingTeams.length >= 2) {
