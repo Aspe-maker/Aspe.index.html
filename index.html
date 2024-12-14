@@ -99,14 +99,14 @@
 
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
+    const matchesSet = new Set(); // لتتبع المباريات التي تم لعبها بالفعل
+    const restTeams = new Set(); // لتتبع الفرق التي في راحة
 
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = ""; // مسح الجدول السابق
 
       const rounds = [];
-      const matchesSet = new Set(); // لتتبع المباريات التي تم لعبها بالفعل
-      const restTeams = new Set(); // لتتبع الفرق التي في راحة
 
       // إنشاء الجولات
       for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
