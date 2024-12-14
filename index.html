@@ -110,7 +110,6 @@
 
       const rounds = [];
       const matchesSet = new Set();
-      const restTeams = new Set();
 
       // إنشاء 5 جولات
       for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
@@ -134,7 +133,6 @@
         }
 
         rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
-        restTeams.add(restTeam); // إضافة الفريق الذي سيأخذ الاستراحة
       }
 
       // عرض المباريات
