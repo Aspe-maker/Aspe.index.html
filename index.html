@@ -1,5 +1,6 @@
+```
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -50,8 +51,12 @@
       border-radius: 5px;
       animation: fadeIn 1s ease-out;
     }
-    .match:nth-child(odd) { background-color: #28a745; }
-    .match:nth-child(even) { background-color: #ffc300; }
+    .match:nth-child(odd) {
+      background-color: #28a745;
+    }
+    .match:nth-child(even) {
+      background-color: #ffc300;
+    }
     .rest {
       font-style: italic;
       background-color: #444;
@@ -66,8 +71,14 @@
       color: rgba(255, 255, 255, 0.7);
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
@@ -76,63 +87,57 @@
   <h1>جدول المباريات</h1>
   <button onclick="generateSchedule()">إنشاء الجدول</button>
   <div id="schedule"></div>
-
-  <footer>© 2024 عبدالله محمد</footer>
-
+  <footer>&copy; 2024 عبدالله محمد</footer>
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
-
+    
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
-      scheduleDiv.innerHTML = ""; // مسح الجدول السابق
-
-      const rounds = [];
-      const matchesSet = new Set(); // لتتبع المباريات التي تم لعبها بالفعل
-
-      for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
-        let remainingTeams = [...teams];
-        const roundMatches = [];
-        const restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0]; // فريق الراحة
-
-        // تشكيل المباريات مع التحقق من عدم التكرار
-        while (remainingTeams.length >= 2) {
-          const team1 = remainingTeams.shift();
-          const team2 = remainingTeams.pop();
-          const matchKey = `${team1} × ${team2}`;
-
-          // التحقق من أن المباراة لم تحدث سابقًا
-          if (!matchesSet.has(matchKey)) {
-            roundMatches.push([team1, team2]);
-            matchesSet.add(matchKey);
+      if (scheduleDiv) {
+        scheduleDiv.innerHTML = "";
+        const rounds = [];
+        const matchesSet = new Set();
+        
+        for (let roundIndex = 0; roundIndex < teams.length - 1; roundIndex++) {
+          let remainingTeams = [...teams];
+          const roundMatches = [];
+          const restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0];
+          
+          while (remainingTeams.length >= 2) {
+            const team1 = remainingTeams.shift();
+            const team2 = remainingTeams.pop();
+            const matchKey = `${team1} × ${team2}`;
+            
+            if (!matchesSet.has(matchKey)) {
+              roundMatches.push([team1, team2]);
+              matchesSet.add(matchKey);
+            }
           }
+          
+          rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
         }
-
-        // تخزين الجولة
-        rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
-      }
-
-      // عرض الجولات
-      rounds.forEach(round => {
-        const roundDiv = document.createElement('div');
-        roundDiv.classList.add('round');
-        roundDiv.innerHTML = `<h3>الجولة ${round.roundIndex}</h3>`;
-
-        round.matches.forEach(match => {
-          const matchElement = document.createElement('div');
-          matchElement.classList.add('match');
-          matchElement.textContent = `${match[0]} × ${match[1]}`;
-          roundDiv.appendChild(matchElement);
+        
+        rounds.forEach(round => {
+          const roundDiv = document.createElement('div');
+          roundDiv.classList.add('round');
+          roundDiv.innerHTML = `<h3>الجولة ${round.roundIndex}</h3>`;
+          
+          round.matches.forEach(match => {
+            const matchElement = document.createElement('div');
+            matchElement.classList.add('match');
+            matchElement.textContent = `${match[0]} × ${match[1]}`;
+            roundDiv.appendChild(matchElement);
+          });
+          
+          const restElement = document.createElement('div');
+          restElement.classList.add('rest');
+          restElement.textContent = `${round.rest} في راحة`;
+          roundDiv.appendChild(restElement);
+          scheduleDiv.appendChild(roundDiv);
         });
-
-        // إضافة فريق الراحة
-        const restElement = document.createElement('div');
-        restElement.classList.add('rest');
-        restElement.textContent = `${round.rest} في راحة`;
-        roundDiv.appendChild(restElement);
-
-        scheduleDiv.appendChild(roundDiv);
-      });
+      }
     }
   </script>
 </body>
 </html>
+```
