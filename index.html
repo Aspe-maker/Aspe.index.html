@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,6 +32,10 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
+      transition: transform 0.3s;
+    }
+    button:hover {
+      transform: scale(1.1);
     }
     .round {
       margin-top: 30px;
@@ -61,14 +65,6 @@
       font-size: 1rem;
       color: rgba(255, 255, 255, 0.7);
     }
-    #info {
-      margin-top: 20px;
-      font-size: 1rem;
-      color: #fff;
-    }
-    #info p {
-      margin: 5px 0;
-    }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -79,18 +75,8 @@
   <h2>دوري ثانوية ابن شريم</h2>
   <h1>جدول المباريات</h1>
   <button onclick="generateSchedule()">إنشاء الجدول</button>
-  
   <div id="schedule"></div>
 
-  <div id="info">
-    <p><strong>القوانين:</strong></p>
-    <p>فوز = 3 نقاط</p>
-    <p>تعادل = 1 نقطة</p>
-    <p></p>
-    <p><strong>نظام النقطة الإضافية:</strong></p>
-    <p>في حال كان عدد الفرق غير زوجي، سيحصل الفريق الذي في راحة على نقطة إضافية لتعويض التوازن بين الفرق.</p>
-  </div>
-  
   <footer>© 2024 عبدالله محمد</footer>
 
   <script>
@@ -106,32 +92,23 @@
       for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
         let remainingTeams = [...teams];
         const roundMatches = [];
-        let restTeam;
+        const restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0]; // فريق الراحة
 
-        // اختيار الفريق الذي في راحة (دون تكرار)
-        do {
-          restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0];
-        } while (remainingTeams.length % 2 !== 0);  // التأكد من وجود فرق كافية للمباريات
-        
         // تشكيل المباريات مع التحقق من عدم التكرار
         while (remainingTeams.length >= 2) {
           const team1 = remainingTeams.shift();
           const team2 = remainingTeams.pop();
           const matchKey = `${team1} × ${team2}`;
 
-          // التحقق من أن المباراة لم تحدث مسبقًا
+          // التحقق من أن المباراة لم تحدث سابقًا
           if (!matchesSet.has(matchKey)) {
             roundMatches.push([team1, team2]);
             matchesSet.add(matchKey);
           }
         }
 
-        // التأكد من أن الجولات تحتوي على مباراتين فقط
-        if (roundMatches.length === 2) {
-          rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
-        } else {
-          roundIndex--;
-        }
+        // تخزين الجولة
+        rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
       }
 
       // عرض الجولات
