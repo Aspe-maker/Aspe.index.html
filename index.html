@@ -100,24 +100,24 @@
   <button onclick="generateSchedule()">إنشاء الجدول</button>
   <div id="schedule"></div>
   <footer>&copy; 2024 عبدالله محمد</footer>
-  
+
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
-    
+
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
-      scheduleDiv.innerHTML = "";
+      scheduleDiv.innerHTML = ""; // إعادة تعيين الجدول
 
       const rounds = [];
       const matchesSet = new Set();
       const restTeams = new Set();
 
-      // إنشاء الجدول مع 5 جولات ثابتة
+      // إنشاء 5 جولات
       for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
         let remainingTeams = [...teams];
         const roundMatches = [];
         const restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0];
-        
+
         // تأكد من أن كل جولة تحتوي على مباراتين فقط
         while (remainingTeams.length >= 2) {
           const team1 = remainingTeams.shift();
@@ -132,10 +132,10 @@
         }
 
         rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
-        restTeams.add(restTeam); // إضافة الفريق في الاستراحة
+        restTeams.add(restTeam); // إضافة الفريق الذي سيأخذ الاستراحة
       }
 
-      // تأكد من أن كل فريق يحصل على راحة واحدة
+      // تأكد من أن كل فريق يحصل على راحة واحدة فقط
       if (restTeams.size !== teams.length) {
         const restTeam = teams.find(team => !restTeams.has(team));
         rounds[rounds.length - 1].rest = restTeam; // إذا لم يحصل الفريق على راحة، أضف له راحة
