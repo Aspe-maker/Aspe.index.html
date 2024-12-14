@@ -87,9 +87,12 @@
   <div id="schedule"></div>
   
   <div id="info">
-    <p><strong>الفوز = 3 نقاط</strong></p>
-    <p><strong>التعادل = 1 نقطة</strong></p>
-    <p><strong>نظام النقطة الإضافية:</strong> في حال كان عدد الفرق غير زوجي، سيحصل الفريق الذي في راحة على نقطة إضافية لتعويض التوازن بين الفرق، دون التأثير على المباريات الأخرى.</p>
+    <p><strong>القوانين:</strong></p>
+    <p>فوز = 3 نقاط</p>
+    <p>تعادل = 1 نقطة</p>
+    <p></p>
+    <p><strong>نظام النقطة الإضافية:</strong></p>
+    <p>في حال كان عدد الفرق غير زوجي، سيحصل الفريق الذي في راحة على نقطة إضافية لتعويض التوازن بين الفرق.</p>
   </div>
   
   <footer>© 2024 عبدالله محمد</footer>
@@ -103,12 +106,20 @@
 
       const rounds = [];
       const matchesSet = new Set(); // لتتبع المباريات التي تم لعبها بالفعل
+      const restTeams = new Set(); // لتتبع الفرق التي في راحة
 
       // إنشاء الجولات
       for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
         let remainingTeams = [...teams];
         const roundMatches = [];
-        const restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0]; // فريق الراحة
+        let restTeam;
+
+        // اختيار الفريق الذي في راحة (دون تكرار)
+        do {
+          restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0];
+        } while (restTeams.has(restTeam));
+        
+        restTeams.add(restTeam); // إضافة الفريق إلى مجموعة الفرق في راحة
 
         // تشكيل المباريات مع التحقق من عدم التكرار
         while (remainingTeams.length >= 2) {
