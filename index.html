@@ -1,5 +1,3 @@
-HTML
-
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -8,6 +6,92 @@ HTML
   <title>قرعة دوري ثانوية ابن شريم</title>
   <style>
     /* أنماط CSS */
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1, h2 {
+      margin-top: 20px;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      color: #ffcc00;
+    }
+
+    button {
+      background-color: #ffcc00;
+      color: #1e3c72;
+      font-size: 1.5rem;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+    }
+
+    .round {
+      margin-top: 30px;
+      font-size: 1.5rem;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .match {
+      font-size: 1.2rem;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .match:nth-child(odd) {
+      background-color: #28a745;
+    }
+
+    .match:nth-child(even) {
+      background-color: #ffc300;
+    }
+
+    .rest {
+      font-style: italic;
+      background-color: #444;
+      color: #bbb;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    footer {
+      margin-top: 50px;
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 <body>
@@ -17,138 +101,63 @@ HTML
   <button onclick="generateSchedule()">إنشاء الجدول</button>
   <div id="schedule"></div>
   <footer>&copy; 2024 عبدالله محمد</footer>
+  
   <script>
-    /* كود الجافا سكريبت */
+    const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
+
+    function generateSchedule() {
+      const scheduleDiv = document.getElementById('schedule');
+      scheduleDiv.innerHTML = "";
+
+      const rounds = [];
+      const matchesSet = new Set();
+
+      // إنشاء الجدول بناءً على عدد الفرق
+      for (let roundIndex = 0; roundIndex < teams.length - 1; roundIndex++) {
+        let remainingTeams = [...teams];
+        const roundMatches = [];
+        const restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0];
+
+        while (remainingTeams.length >= 2) {
+          const team1 = remainingTeams.shift();
+          const team2 = remainingTeams.shift();
+          const matchKey = `${team1} × ${team2}`;
+
+          // التحقق من عدم تكرار المباريات
+          if (!matchesSet.has(matchKey) && !matchesSet.has(`${team2} × ${team1}`)) {
+            roundMatches.push([team1, team2]);
+            matchesSet.add(matchKey);
+          }
+        }
+
+        rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
+      }
+
+      // عرض المباريات
+      rounds.forEach(round => {
+        const roundDiv = document.createElement('div');
+        roundDiv.classList.add('round');
+        roundDiv.innerHTML = `<h3>الجولة ${round.roundIndex}</h3>`;
+
+        // إضافة المباريات في الجولة
+        round.matches.forEach(match => {
+          const matchElement = document.createElement('div');
+          matchElement.classList.add('match');
+          matchElement.textContent = `${match[0]} × ${match[1]}`;
+          roundDiv.appendChild(matchElement);
+        });
+
+        // إضافة الفريق الذي في الاستراحة
+        if (round.rest) {
+          const restElement = document.createElement('div');
+          restElement.classList.add('rest');
+          restElement.textContent = `استراحة: ${round.rest}`;
+          roundDiv.appendChild(restElement);
+        }
+
+        scheduleDiv.appendChild(roundDiv);
+      });
+    }
   </script>
 </body>
 </html>
-
-CSS
-
-body {
-  font-family: 'Arial', sans-serif;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  color: white;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-}
-
-h1, h2 {
-  margin-top: 20px;
-  animation: fadeIn 2s ease-in-out;
-}
-
-h1 {
-  font-size: 2.5rem;
-}
-
-h2 {
-  font-size: 1.8rem;
-  color: #ffcc00;
-}
-
-button {
-  background-color: #ffcc00;
-  color: #1e3c72;
-  font-size: 1.5rem;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: transform 0.3s;
-}
-
-button:hover {
-  transform: scale(1.1);
-}
-
-.round {
-  margin-top: 30px;
-  font-size: 1.5rem;
-  color: #ffffff;
-  text-transform: uppercase;
-}
-
-.match {
-  font-size: 1.2rem;
-  margin: 10px 0;
-  padding: 10px;
-  border-radius: 5px;
-  animation: fadeIn 1s ease-out;
-}
-
-.match:nth-child(odd) {
-  background-color: #28a745;
-}
-
-.match:nth-child(even) {
-  background-color: #ffc300;
-}
-
-.rest {
-  font-style: italic;
-  background-color: #444;
-  color: #bbb;
-  margin: 10px 0;
-  padding: 10px;
-  border-radius: 5px;
-}
-
-footer {
-  margin-top: 50px;
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-الجافا سكريبت
-
-const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
-
-function generateSchedule() {
-  const scheduleDiv = document.getElementById('schedule');
-  scheduleDiv.innerHTML = "";
-
-  const rounds = [];
-  const matchesSet = new Set();
-
-  for (let roundIndex = 0; roundIndex < teams.length - 1; roundIndex++) {
-    let remainingTeams = [...teams];
-    const roundMatches = [];
-    const restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0];
-
-    while (remainingTeams.length >= 2) {
-      const team1 = remainingTeams.shift();
-      const team2 = remainingTeams.shift();
-      const matchKey = `${team1} × ${team2}`;
-
-      if (!matchesSet.has(matchKey) && !matchesSet.has(`${team2} × ${team1}`)) {
-        roundMatches.push([team1, team2]);
-        matchesSet.add(matchKey);
-        if (roundMatches.length === 2) break;
-      }
-    }
-
-    rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
-  }
-
-  rounds.forEach(round => {
-    const roundDiv = document.createElement('div');
-    roundDiv.classList.add('round');
-    roundDiv.innerHTML = `<h3>الجولة ${round.roundIndex}</h3>`;
-
-    round.matches.forEach(match => {
-      const matchElement = document.createElement('div');
-      matchElement.classList.add('match');
-      matchElement.textContent = `${
