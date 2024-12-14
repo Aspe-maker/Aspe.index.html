@@ -95,46 +95,51 @@
 
       const totalRounds = teams.length; // 5 جولات
       const playedMatches = new Set();
-      const restedTeams = new Set();
+      let restedTeams = new Set();
 
       for (let round = 1; round <= totalRounds; round++) {
         const roundDiv = document.createElement('div');
         roundDiv.classList.add('round');
         roundDiv.innerHTML = `<h3>الجولة ${round}</h3>`;
 
-        // اختيار فريق راحة
         let restTeam;
         do {
           restTeam = teams[Math.floor(Math.random() * teams.length)];
-        } while (restedTeams.has(restTeam)); // منع تكرار فريق الراحة
+        } while (restedTeams.has(restTeam)); // اختيار فريق لم يحصل على راحة سابقًا
         restedTeams.add(restTeam);
 
         const availableTeams = teams.filter(team => team !== restTeam);
         shuffleArray(availableTeams);
 
-        // تشكيل المباريات دون تكرار
+        let matches = [];
         for (let i = 0; i < availableTeams.length; i += 2) {
           const team1 = availableTeams[i];
           const team2 = availableTeams[i + 1];
           const matchKey = `${team1} × ${team2}`;
-
+          
           if (!playedMatches.has(matchKey) && !playedMatches.has(`${team2} × ${team1}`)) {
             playedMatches.add(matchKey);
-
-            const matchElement = document.createElement('div');
-            matchElement.classList.add('match');
-            matchElement.textContent = matchKey;
-            roundDiv.appendChild(matchElement);
+            matches.push(matchKey);
           }
         }
 
-        // عرض فريق الراحة
+        if (matches.length === 2) {
+          matches.forEach(match => {
+            const matchElement = document.createElement('div');
+            matchElement.classList.add('match');
+            matchElement.textContent = match;
+            roundDiv.appendChild(matchElement);
+          });
+        } else {
+          round--; // إعادة الجولة إذا لم تتوفر مباراتان
+          continue;
+        }
+
         const restElement = document.createElement('div');
         restElement.classList.add('rest');
         restElement.textContent = `${restTeam} في راحة`;
         roundDiv.appendChild(restElement);
 
-        // إضافة الجولة
         scheduleDiv.appendChild(roundDiv);
       }
     }
