@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -74,7 +74,7 @@
 <body>
   <h2>دوري ثانوية ابن شريم</h2>
   <h1>جدول المباريات</h1>
-  <button onclick="generateSchedule()">إنشاء الجدول</button>
+  <button onclick="generateSchedule()">إنشاء جدول جديد</button>
   <div id="schedule"></div>
 
   <footer>© 2024 عبدالله محمد</footer>
@@ -82,17 +82,19 @@
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
 
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = ""; // مسح الجدول السابق
 
-      const totalRounds = teams.length; // عدد الجولات
-      let remainingTeams = [...teams]; // نسخة من الفرق
-
-      // إنشاء مجموعة لتسجيل المباريات لمنع التكرار
+      const totalRounds = teams.length; // 5 جولات
       const playedMatches = new Set();
-
-      // إنشاء مصفوفة لتتبع الفرق المستريحة
       const restedTeams = new Set();
 
       for (let round = 1; round <= totalRounds; round++) {
@@ -100,41 +102,39 @@
         roundDiv.classList.add('round');
         roundDiv.innerHTML = `<h3>الجولة ${round}</h3>`;
 
-        // اختيار فريق الراحة
-        const restTeam = remainingTeams.find(team => !restedTeams.has(team));
+        // اختيار فريق راحة
+        let restTeam;
+        do {
+          restTeam = teams[Math.floor(Math.random() * teams.length)];
+        } while (restedTeams.has(restTeam)); // منع تكرار فريق الراحة
         restedTeams.add(restTeam);
 
-        // تشكيل المباريات
-        const roundMatches = [];
-        const availableTeams = remainingTeams.filter(team => team !== restTeam);
+        const availableTeams = teams.filter(team => team !== restTeam);
+        shuffleArray(availableTeams);
 
-        while (availableTeams.length >= 2) {
-          const team1 = availableTeams.shift();
-          const team2 = availableTeams.pop();
+        // تشكيل المباريات دون تكرار
+        for (let i = 0; i < availableTeams.length; i += 2) {
+          const team1 = availableTeams[i];
+          const team2 = availableTeams[i + 1];
           const matchKey = `${team1} × ${team2}`;
 
-          // التحقق من عدم تكرار المباراة
-          if (!playedMatches.has(matchKey)) {
-            roundMatches.push([team1, team2]);
+          if (!playedMatches.has(matchKey) && !playedMatches.has(`${team2} × ${team1}`)) {
             playedMatches.add(matchKey);
+
+            const matchElement = document.createElement('div');
+            matchElement.classList.add('match');
+            matchElement.textContent = matchKey;
+            roundDiv.appendChild(matchElement);
           }
         }
 
-        // عرض المباريات
-        roundMatches.forEach(match => {
-          const matchElement = document.createElement('div');
-          matchElement.classList.add('match');
-          matchElement.textContent = `${match[0]} × ${match[1]}`;
-          roundDiv.appendChild(matchElement);
-        });
-
-        // إضافة فريق الراحة
+        // عرض فريق الراحة
         const restElement = document.createElement('div');
         restElement.classList.add('rest');
         restElement.textContent = `${restTeam} في راحة`;
         roundDiv.appendChild(restElement);
 
-        // إضافة الجولة للصفحة
+        // إضافة الجولة
         scheduleDiv.appendChild(roundDiv);
       }
     }
