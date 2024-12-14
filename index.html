@@ -103,7 +103,7 @@
 
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
-
+    
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = ""; // إعادة تعيين الجدول
@@ -128,6 +128,8 @@
           if (!matchesSet.has(matchKey) && !matchesSet.has(`${team2} × ${team1}`)) {
             roundMatches.push([team1, team2]);
             matchesSet.add(matchKey);
+            // تأكد أن الجولة تحتوي على مباراتين فقط
+            if (roundMatches.length === 2) break;
           }
         }
 
