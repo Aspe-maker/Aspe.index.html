@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>قرعة دوري ثانوية ابن شريم</title>
   <style>
-    /* أنماط CSS */
     body {
       font-family: 'Arial', sans-serif;
       background: linear-gradient(135deg, #1e3c72, #2a5298);
@@ -97,8 +96,7 @@
 <body>
   <h2>دوري ثانوية ابن شريم</h2>
   <h1>جدول المباريات</h1>
-  <p>يتم توزيع الفرق على جولات، حيث يلعب كل فريق مع الآخر مرة واحدة فقط. نظرًا لعدم كون عدد الفرق زوجيًا، سيتم منح كل فريق نقطة إضافية في جولة واحدة.</p>
-  <p><strong>تبرير:</strong> بما أن عدد الفرق غير زوجي، فإن الفرق التي لا تجد خصمًا في جولة معينة ستأخذ استراحة. كل فريق سيحصل على راحة واحدة فقط خلال الدوري.</p>
+  <p>يتم توزيع الفرق على 5 جولات، حيث يلعب كل فريق مع الآخر مرة واحدة فقط. الفرق التي لا تجد خصمًا في جولة معينة ستأخذ استراحة.</p>
   <button onclick="generateSchedule()">إنشاء الجدول</button>
   <div id="schedule"></div>
   <footer>&copy; 2024 عبدالله محمد</footer>
@@ -114,8 +112,8 @@
       const matchesSet = new Set();
       const restTeams = new Set();
 
-      // إنشاء الجدول بناءً على عدد الفرق
-      for (let roundIndex = 0; roundIndex < teams.length - 1; roundIndex++) {
+      // إنشاء الجدول مع 5 جولات ثابتة
+      for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
         let remainingTeams = [...teams];
         const roundMatches = [];
         const restTeam = remainingTeams.splice(roundIndex % remainingTeams.length, 1)[0];
@@ -126,7 +124,7 @@
           const team2 = remainingTeams.shift();
           const matchKey = `${team1} × ${team2}`;
 
-          // التحقق من عدم تكرار المباريات وضمان إضافة مباراتين فقط
+          // التحقق من عدم تكرار المباريات
           if (!matchesSet.has(matchKey) && !matchesSet.has(`${team2} × ${team1}`)) {
             roundMatches.push([team1, team2]);
             matchesSet.add(matchKey);
