@@ -86,7 +86,7 @@
 </head>
 <body>
   <h2>دوري ثانوية ابن شريم</h2>
-  <h1>جدول المباريات</h1>
+  <h1>جدول الدوري</h1>
   <p>يتم توزيع المباريات على جولة واحدة، حيث يتواجه كل فريق مع كل الفرق الأخرى مرة واحدة فقط.</p>
   <button onclick="generateSchedule()">إنشاء الجدول</button>
   <div id="schedule"></div>
@@ -113,6 +113,11 @@
 
             // التأكد من عدم تكرار المباريات
             if (!matchesSet.has(matchKey)) {
+              // التأكد من أن الفريقين لا يلعبان في مباراتين متتاليتين
+              const lastMatch = matches[matches.length - 1];
+              if (lastMatch && (lastMatch.includes(shuffledTeams[i]) || lastMatch.includes(shuffledTeams[j]))) {
+                continue; // إذا كان أحد الفريقين قد لعب في المباراة الأخيرة، انتقل إلى المباراة التالية
+              }
               matches.push([shuffledTeams[i], shuffledTeams[j]]);
               matchesSet.add(matchKey);
               if (matches.length === 10) break;  // إذا وصلنا إلى 10 مباريات، نتوقف
@@ -126,7 +131,7 @@
       // عرض المباريات في الصفحة
       const roundDiv = document.createElement('div');
       roundDiv.classList.add('round');
-      roundDiv.innerHTML = `<h3>الجولة 1</h3>`;
+      roundDiv.innerHTML = `<h3>جدول الدوري</h3>`;
 
       matches.forEach(match => {
         const matchElement = document.createElement('div');
