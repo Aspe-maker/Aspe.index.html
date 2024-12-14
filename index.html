@@ -134,8 +134,14 @@
           }
         }
 
-        // تخزين الجولة
-        rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
+        // التأكد من أن كل جولة تحتوي على مباراتين
+        if (roundMatches.length === 2) {
+          // تخزين الجولة فقط إذا كانت تحتوي على مباراتين
+          rounds.push({ roundIndex: roundIndex + 1, matches: roundMatches, rest: restTeam });
+        } else {
+          // في حالة وجود مشكلة في عدد المباريات، يمكن إعادة المحاولة
+          roundIndex--;
+        }
       }
 
       // عرض الجولات
