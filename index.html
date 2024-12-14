@@ -84,53 +84,40 @@
   <button onclick="generateSchedule()">إنشاء الجدول</button>
   <div id="schedule"></div>
 
-  <!-- ملاحظات إضافية -->
-  <div class="notes">
-    <h3>ملاحظات:</h3>
-    <ul>
-      <li><strong>الفوز = 3 نقاط</strong></li>
-      <li><strong>التعادل = نقطة واحدة</strong></li>
-      <li><strong>الخسارة = 0 نقاط</strong></li>
-      <li>يتم إضافة <strong>نقطة واحدة</strong> لكل فريق لتعويض تأثير العدد الفردي للفرق.</li>
-    </ul>
-  </div>
-
   <footer>© 2024 عبدالله محمد</footer>
 
   <script>
     const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
 
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
     function generateSchedule() {
       const scheduleDiv = document.getElementById('schedule');
       scheduleDiv.innerHTML = ""; // مسح الجدول السابق
 
-      const usedRestTeams = []; // تتبع الفرق التي أخذت راحة
       const rounds = [];
+      const matchesSet = new Set(); // لتتبع المباريات التي تم لعبها بالفعل
+      const usedRestTeams = []; // لتتبع الفرق التي أخذت راحة
 
+      // توليد الجولات
       for (let roundIndex = 0; roundIndex < 5; roundIndex++) {
-        let remainingTeams = shuffle([...teams]); // عشوائية الفرق
-        let roundMatches = [];
+        let remainingTeams = [...teams]; // نسخة من الفرق الحالية
+        const roundMatches = [];
 
-        // اختيار فريق للراحة لم يأخذ الراحة من قبل
+        // اختيار فريق للراحة
         let restTeam = remainingTeams.find(team => !usedRestTeams.includes(team));
         usedRestTeams.push(restTeam);
+        remainingTeams = remainingTeams.filter(team => team !== restTeam); // إزالة فريق الراحة
 
-        // إزالة فريق الراحة من قائمة الفرق
-        remainingTeams = remainingTeams.filter(team => team !== restTeam);
-
-        // تشكيل المباريات
+        // تشكيل المباريات مع التحقق من عدم التكرار
         while (remainingTeams.length >= 2) {
           const team1 = remainingTeams.shift();
           const team2 = remainingTeams.pop();
-          roundMatches.push([team1, team2]);
+          const matchKey = `${team1} × ${team2}`;
+
+          // التحقق من أن المباراة لم تحدث سابقًا
+          if (!matchesSet.has(matchKey)) {
+            roundMatches.push([team1, team2]);
+            matchesSet.add(matchKey);
+          }
         }
 
         // تخزين الجولة
