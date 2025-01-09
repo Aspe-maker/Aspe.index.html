@@ -1,155 +1,70 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>قرعة دوري ثانوية ابن شريم</title>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: white;
-      text-align: center;
-      margin: 0;
-      padding: 0;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class MiniMinecraftMobile : MonoBehaviour
+{
+    public float speed = 5f; // سرعة تحرك اللاعب
+    public Camera playerCamera; // الكاميرا المرفقة باللاعب
+    public GameObject blockPrefab; // الكتلة التي سيتم وضعها
+    public Joystick joystick; // عصا التحكم الافتراضية
+    public Button destroyButton; // زر لتدمير الكتل
+    public Button placeButton; // زر لوضع الكتل
+    public Text inventoryText; // نص لعرض الجرد
+
+    private int inventoryCount = 0; // عدد الكتل في الجرد
+
+    void Start()
+    {
+        // إعداد الأزرار
+        destroyButton.onClick.AddListener(DestroyBlock);
+        placeButton.onClick.AddListener(PlaceBlock);
+        UpdateInventoryUI();
     }
 
-    h1, h2 {
-      margin-top: 20px;
-      animation: fadeIn 2s ease-in-out;
+    void Update()
+    {
+        MovePlayer(); // تحريك اللاعب
     }
 
-    h1 {
-      font-size: 2.5rem;
+    void MovePlayer()
+    {
+        float moveX = joystick.Horizontal * speed * Time.deltaTime;
+        float moveZ = joystick.Vertical * speed * Time.deltaTime;
+
+        transform.Translate(moveX, 0, moveZ);
     }
 
-    h2 {
-      font-size: 1.8rem;
-      color: #ffcc00;
-    }
-
-    button {
-      background-color: #ffcc00;
-      color: #1e3c72;
-      font-size: 1.5rem;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
-
-    button:hover {
-      transform: scale(1.1);
-    }
-
-    .round {
-      margin-top: 30px;
-      font-size: 1.5rem;
-      color: #ffffff;
-      text-transform: uppercase;
-    }
-
-    .match {
-      font-size: 1.2rem;
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 5px;
-      animation: fadeIn 1s ease-out;
-    }
-
-    .match:nth-child(odd) {
-      background-color: #28a745;
-    }
-
-    .match:nth-child(even) {
-      background-color: #ffc300;
-    }
-
-    footer {
-      margin-top: 50px;
-      font-size: 1rem;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-  </style>
-</head>
-<body>
-  <h2>دوري ثانوية ابن شريم</h2>
-  <h1>جدول الدوري</h1>
-  <p>يتم توزيع المباريات على جولة واحدة، حيث يتواجه كل فريق مع كل الفرق الأخرى مرة واحدة فقط.</p>
-  <button onclick="generateSchedule()">إنشاء الجدول</button>
-  <div id="schedule"></div>
-  <footer>&copy; 2024 عبدالله محمد</footer>
-
-  <script>
-    const teams = ["ريال مدريد", "الهلال", "النصر", "الاتحاد", "العمدة"];
-
-    function generateSchedule() {
-      const scheduleDiv = document.getElementById('schedule');
-      scheduleDiv.innerHTML = ""; // إعادة تعيين الجدول
-
-      const matches = [];
-      const matchesSet = new Set();
-
-      // نبدأ بتوليد المباريات عشوائيًا
-      while (matches.length < 10) {
-        const shuffledTeams = [...teams];  // نسخ الفرق
-        shuffleArray(shuffledTeams); // خلط الفرق عشوائيًا
-
-        for (let i = 0; i < shuffledTeams.length; i++) {
-          for (let j = i + 1; j < shuffledTeams.length; j++) {
-            const matchKey = `${shuffledTeams[i]} × ${shuffledTeams[j]}`;
-
-            // التأكد من عدم تكرار المباريات
-            if (!matchesSet.has(matchKey)) {
-              // التأكد من أن الفريقين لا يلعبان في مباراتين متتاليتين
-              const lastMatch = matches[matches.length - 1];
-              if (lastMatch && (lastMatch.includes(shuffledTeams[i]) || lastMatch.includes(shuffledTeams[j]))) {
-                continue; // إذا كان أحد الفريقين قد لعب في المباراة الأخيرة، انتقل إلى المباراة التالية
-              }
-              matches.push([shuffledTeams[i], shuffledTeams[j]]);
-              matchesSet.add(matchKey);
-              if (matches.length === 10) break;  // إذا وصلنا إلى 10 مباريات، نتوقف
+    void DestroyBlock()
+    {
+        Ray ray = playerCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            if (hit.collider.CompareTag("Block"))
+            {
+                Destroy(hit.collider.gameObject);
+                inventoryCount++; // زيادة عدد الكتل في الجرد
+                UpdateInventoryUI();
             }
-          }
-
-          if (matches.length === 10) break;  // إذا وصلنا إلى 10 مباريات، نتوقف
         }
-      }
-
-      // عرض المباريات في الصفحة
-      const roundDiv = document.createElement('div');
-      roundDiv.classList.add('round');
-      roundDiv.innerHTML = `<h3>جدول الدوري</h3>`;
-
-      matches.forEach(match => {
-        const matchElement = document.createElement('div');
-        matchElement.classList.add('match');
-        matchElement.textContent = `${match[0]} × ${match[1]}`;
-        roundDiv.appendChild(matchElement);
-      });
-
-      scheduleDiv.appendChild(roundDiv);
     }
 
-    // دالة لخلط ترتيب الفرق عشوائيًا
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
+    void PlaceBlock()
+    {
+        if (inventoryCount > 0) // التأكد من وجود كتل في الجرد
+        {
+            Ray ray = playerCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                Vector3 placePosition = hit.point + hit.normal * 0.5f; // وضع الكتلة بجانب الكتلة التي تم النقر عليها
+                Instantiate(blockPrefab, placePosition, Quaternion.identity);
+                inventoryCount--; // تقليل عدد الكتل في الجرد
+                UpdateInventoryUI();
+            }
+        }
     }
-  </script>
-</body>
-</html>
+
+    void UpdateInventoryUI()
+    {
+        inventoryText.text = "Blocks: " + inventoryCount; // تحديث نص الجرد
+    }
+}
