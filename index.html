@@ -237,6 +237,28 @@
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
         }
+
+        /* تصميم متجاوب */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .toggle-button {
+                width: 100px;
+                height: 50px;
+            }
+
+            .sun, .moon-button {
+                width: 25px;
+                height: 25px;
+            }
+
+            .cloud, .stars-button {
+                width: 30px;
+                height: 15px;
+            }
+        }
     </style>
 </head>
 <body class="day-mode">
@@ -255,53 +277,58 @@
     </div>
 
     <script>
-        let isNightMode = false;
+        // العناصر العامة
+        const body = document.body;
+        const heading = document.getElementById('mode-heading');
+        const stars = document.querySelector('.stars');
+        const moon = document.querySelector('.moon');
+        const clouds = document.querySelector('.clouds');
+        const ground = document.querySelector('.ground');
+        const toggleButton = document.querySelector('.toggle-button');
+
+        // تحميل الوضع من LocalStorage
+        let isNightMode = localStorage.getItem('nightMode') === 'true';
+
+        // تطبيق الوضع عند التحميل
+        function applyMode() {
+            body.classList.toggle('night-mode', isNightMode);
+            heading.textContent = isNightMode ? 'الوضع الحالي: ليلي 🌙' : 'الوضع الحالي: صباحي ☀️';
+            stars.style.display = isNightMode ? 'block' : 'none';
+            moon.style.display = isNightMode ? 'block' : 'none';
+            clouds.style.display = isNightMode ? 'none' : 'block';
+            ground.style.backgroundColor = isNightMode ? '#333' : '#4CAF50';
+            toggleButton.classList.toggle('night-mode', isNightMode);
+        }
 
         // تبديل الوضع
         function toggleMode() {
-            const body = document.body;
-            const heading = document.getElementById('mode-heading');
-            const stars = document.querySelector('.stars');
-            const moon = document.querySelector('.moon');
-            const clouds = document.querySelector('.clouds');
-            const ground = document.querySelector('.ground');
-            const toggleButton = document.querySelector('.toggle-button');
-
-            if (isNightMode) {
-                body.classList.remove('night-mode');
-                body.classList.add('day-mode');
-                heading.textContent = 'الوضع الحالي: صباحي ☀️';
-                stars.style.display = 'none';
-                moon.style.display = 'none';
-                clouds.style.display = 'block';
-                ground.style.backgroundColor = '#4CAF50';
-                toggleButton.classList.remove('night-mode');
-            } else {
-                body.classList.remove('day-mode');
-                body.classList.add('night-mode');
-                heading.textContent = 'الوضع الحالي: ليلي 🌙';
-                stars.style.display = 'block';
-                moon.style.display = 'block';
-                clouds.style.display = 'none';
-                ground.style.backgroundColor = '#333';
-                toggleButton.classList.add('night-mode');
-            }
-
             isNightMode = !isNightMode;
+            localStorage.setItem('nightMode', isNightMode);
+            applyMode();
+            playSound();
         }
 
-        // الوضع التلقائي بناءً على وقت اليوم
+        // تشغيل الصوت
+        function playSound() {
+            const sound = new Audio(isNightMode ? 'night-sound.mp3' : 'day-sound.mp3');
+            sound.play();
+        }
+
+        // تطبيق الوضع التلقائي بناءً على الوقت
         function autoToggleMode() {
             const now = new Date();
             const hour = now.getHours();
-
             if (hour >= 18 || hour < 6) {
-                toggleMode(); // تفعيل الوضع الليلي
+                isNightMode = true;
+                applyMode();
             }
         }
 
-        // تفعيل الوضع التلقائي عند تحميل الصفحة
-        window.onload = autoToggleMode;
+        // تحميل الوضع التلقائي عند بدء التشغيل
+        window.onload = () => {
+            autoToggleMode();
+            applyMode();
+        };
     </script>
 </body>
 </html>
