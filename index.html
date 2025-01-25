@@ -1,70 +1,77 @@
-using UnityEngine;
-using UnityEngine.UI;
-
-public class MiniMinecraftMobile : MonoBehaviour
-{
-    public float speed = 5f; // سرعة تحرك اللاعب
-    public Camera playerCamera; // الكاميرا المرفقة باللاعب
-    public GameObject blockPrefab; // الكتلة التي سيتم وضعها
-    public Joystick joystick; // عصا التحكم الافتراضية
-    public Button destroyButton; // زر لتدمير الكتل
-    public Button placeButton; // زر لوضع الكتل
-    public Text inventoryText; // نص لعرض الجرد
-
-    private int inventoryCount = 0; // عدد الكتل في الجرد
-
-    void Start()
-    {
-        // إعداد الأزرار
-        destroyButton.onClick.AddListener(DestroyBlock);
-        placeButton.onClick.AddListener(PlaceBlock);
-        UpdateInventoryUI();
-    }
-
-    void Update()
-    {
-        MovePlayer(); // تحريك اللاعب
-    }
-
-    void MovePlayer()
-    {
-        float moveX = joystick.Horizontal * speed * Time.deltaTime;
-        float moveZ = joystick.Vertical * speed * Time.deltaTime;
-
-        transform.Translate(moveX, 0, moveZ);
-    }
-
-    void DestroyBlock()
-    {
-        Ray ray = playerCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-        if (Physics.Raycast(ray, out RaycastHit hit))
-        {
-            if (hit.collider.CompareTag("Block"))
-            {
-                Destroy(hit.collider.gameObject);
-                inventoryCount++; // زيادة عدد الكتل في الجرد
-                UpdateInventoryUI();
-            }
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الوضع الليلي والصباحي</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            transition: background-color 0.5s, color 0.5s;
         }
-    }
 
-    void PlaceBlock()
-    {
-        if (inventoryCount > 0) // التأكد من وجود كتل في الجرد
-        {
-            Ray ray = playerCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-            if (Physics.Raycast(ray, out RaycastHit hit))
-            {
-                Vector3 placePosition = hit.point + hit.normal * 0.5f; // وضع الكتلة بجانب الكتلة التي تم النقر عليها
-                Instantiate(blockPrefab, placePosition, Quaternion.identity);
-                inventoryCount--; // تقليل عدد الكتل في الجرد
-                UpdateInventoryUI();
-            }
+        .day-mode {
+            background-color: #ffffff;
+            color: #000000;
         }
-    }
 
-    void UpdateInventoryUI()
-    {
-        inventoryText.text = "Blocks: " + inventoryCount; // تحديث نص الجرد
-    }
-}
+        .night-mode {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        img {
+            width: 200px;
+            height: 200px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body class="day-mode">
+    <h1>الوضع الحالي: صباحي ☀️</h1>
+    <button onclick="toggleMode()">تبديل الوضع</button>
+    <br>
+    <img id="mode-image" src="https://via.placeholder.com/200" alt="صورة الوضع">
+
+    <script>
+        let isNightMode = false;
+
+        function toggleMode() {
+            const body = document.body;
+            const image = document.getElementById('mode-image');
+            const heading = document.querySelector('h1');
+
+            if (isNightMode) {
+                body.classList.remove('night-mode');
+                body.classList.add('day-mode');
+                heading.textContent = 'الوضع الحالي: صباحي ☀️';
+                image.src = 'https://via.placeholder.com/200'; // صورة الصباح
+            } else {
+                body.classList.remove('day-mode');
+                body.classList.add('night-mode');
+                heading.textContent = 'الوضع الحالي: ليلي 🌙';
+                image.src = 'https://via.placeholder.com/200/000000/ffffff'; // صورة الليل
+            }
+
+            isNightMode = !isNightMode;
+        }
+    </script>
+</body>
+</html>
