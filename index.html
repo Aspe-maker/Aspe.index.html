@@ -3,49 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الوضع الليلي والصباحي</title>
+    <title>الوضع الليلي والصباحي - التطور الثوري</title>
     <style>
+        /* التصميم العام */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             text-align: center;
             padding: 50px;
+            margin: 0;
             transition: background-color 0.5s, color 0.5s;
         }
 
         .day-mode {
-            background-color: #ffffff;
-            color: #000000;
+            background-color: #f4f4f4;
+            color: #333;
         }
 
         .night-mode {
-            background-color: #000000;
-            color: #ffffff;
+            background-color: #1a1a1a;
+            color: #f4f4f4;
         }
 
+        /* العنوان */
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        /* الزر */
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
             cursor: pointer;
             border: none;
-            border-radius: 5px;
+            border-radius: 50px;
             background-color: #007bff;
             color: white;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.3s;
+            animation: bounce 2s infinite;
         }
 
         button:hover {
             background-color: #0056b3;
+            transform: scale(1.1);
         }
 
+        /* الصورة */
         img {
             width: 200px;
             height: 200px;
             margin-top: 20px;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.5s, box-shadow 0.5s;
+        }
+
+        img:hover {
+            transform: rotate(360deg);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* تأثيرات CSS */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
     </style>
 </head>
 <body class="day-mode">
-    <h1>الوضع الحالي: صباحي ☀️</h1>
+    <h1 id="mode-heading">الوضع الحالي: صباحي ☀️</h1>
     <button onclick="toggleMode()">تبديل الوضع</button>
     <br>
     <img id="mode-image" src="https://via.placeholder.com/200" alt="صورة الوضع">
@@ -53,10 +85,11 @@
     <script>
         let isNightMode = false;
 
+        // تبديل الوضع
         function toggleMode() {
             const body = document.body;
             const image = document.getElementById('mode-image');
-            const heading = document.querySelector('h1');
+            const heading = document.getElementById('mode-heading');
 
             if (isNightMode) {
                 body.classList.remove('night-mode');
@@ -72,6 +105,19 @@
 
             isNightMode = !isNightMode;
         }
+
+        // الوضع التلقائي بناءً على وقت اليوم
+        function autoToggleMode() {
+            const now = new Date();
+            const hour = now.getHours();
+
+            if (hour >= 18 || hour < 6) {
+                toggleMode(); // تفعيل الوضع الليلي
+            }
+        }
+
+        // تفعيل الوضع التلقائي عند تحميل الصفحة
+        window.onload = autoToggleMode;
     </script>
 </body>
 </html>
