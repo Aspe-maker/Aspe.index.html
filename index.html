@@ -3,190 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الوضع الليلي والصباحي - التطور الثوري</title>
+    <title>زر التبديل بين النهار والليل</title>
     <style>
-        /* التصميم العام */
-        body {
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
+        /* التصميم العام للزر */
+        .toggle-button {
+            width: 120px;
+            height: 60px;
+            border-radius: 30px;
+            border: 2px solid #ccc;
+            background-color: #87CEEB; /* لون النهار */
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.5s, border-color 0.5s;
             overflow: hidden;
-            transition: background-color 0.5s, color 0.5s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        /* الخلفية الصباحية */
-        .day-mode {
-            background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 100%);
-            color: #333;
-        }
-
-        /* الخلفية الليلية */
-        .night-mode {
-            background: linear-gradient(180deg, #000428 0%, #004e92 100%);
-            color: #f4f4f4;
-        }
-
-        /* النجوم في الوضع الليلي */
-        .stars {
+        /* إطار الزر */
+        .toggle-button::before {
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('https://www.transparenttextures.com/patterns/stardust.png');
-            animation: twinkle 3s infinite;
+            border-radius: 30px;
+            border: 2px solid #ccc;
+            box-sizing: border-box;
+            transition: border-color 0.5s;
         }
 
-        /* القمر في الوضع الليلي */
-        .moon {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 80px;
-            height: 80px;
-            background: #f4f4f4;
-            border-radius: 50%;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-        }
-
-        /* الغيوم في الوضع الصباحي */
-        .clouds {
-            position: absolute;
-            top: 20px;
-            width: 100%;
-            height: 100px;
-            background: url('https://www.transparenttextures.com/patterns/clouds.png');
-            animation: moveClouds 20s linear infinite;
-        }
-
-        /* الأرض في الوضع الصباحي */
-        .ground {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 150px;
-            background: #4CAF50;
-        }
-
-        /* العنوان */
-        h1 {
-            font-size: 2.5rem;
-            margin-top: 20px;
-            animation: fadeIn 1s ease-in-out;
-        }
-
-        /* الزر */
-        button {
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            border: none;
-            border-radius: 50px;
-            background: linear-gradient(45deg, #007bff, #00bfff);
-            color: white;
-            transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        button::before {
-            content: '';
+        /* الشمس في وضع النهار */
+        .sun {
             position: absolute;
             top: 50%;
-            left: 50%;
-            width: 300%;
-            height: 300%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 70%);
-            transform: translate(-50%, -50%) scale(0);
-            transition: transform 0.5s;
-            z-index: -1;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background-color: #FFD700;
+            border-radius: 50%;
+            transform: translateY(-50%);
+            transition: opacity 0.5s, transform 0.5s;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
         }
 
-        button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        /* السحابة في وضع النهار */
+        .cloud {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            width: 40px;
+            height: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            transform: translateY(-50%);
+            opacity: 0.8;
+            transition: opacity 0.5s, transform 0.5s;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
         }
 
-        button:hover::before {
-            transform: translate(-50%, -50%) scale(1);
+        /* القمر في وضع الليل */
+        .moon {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background-color: #f4f4f4;
+            border-radius: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+            box-shadow: 0 0 10px rgba(244, 244, 244, 0.8);
         }
 
-        /* تأثيرات CSS */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        /* تفاصيل سطح القمر */
+        .moon::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 10px;
+            height: 10px;
+            background-color: #ccc;
+            border-radius: 50%;
         }
 
-        @keyframes twinkle {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .moon::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 5px;
+            height: 5px;
+            background-color: #ccc;
+            border-radius: 50%;
         }
 
-        @keyframes moveClouds {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+        /* النجوم في وضع الليل */
+        .stars {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            width: 40px;
+            height: 20px;
+            background: radial-gradient(circle, #fff 10%, transparent 10%),
+                        radial-gradient(circle, #fff 10%, transparent 10%),
+                        radial-gradient(circle, #fff 10%, transparent 10%);
+            background-size: 5px 5px;
+            background-position: 0 0, 10px 10px, 20px 5px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        /* تأثيرات الزر في وضع الليل */
+        .night-mode .toggle-button {
+            background-color: #1a1a1a; /* لون الليل */
+            border-color: #444;
+        }
+
+        .night-mode .sun {
+            opacity: 0;
+            transform: translateY(-50%) translateX(100%);
+        }
+
+        .night-mode .cloud {
+            opacity: 0;
+            transform: translateY(-50%) translateX(-100%);
+        }
+
+        .night-mode .moon {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        .night-mode .stars {
+            opacity: 1;
+        }
+
+        /* تأثيرات التحويم (Hover) */
+        .toggle-button:hover {
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-button:hover::before {
+            border-color: #999;
         }
     </style>
 </head>
-<body class="day-mode">
-    <div id="background-effects">
-        <div class="stars"></div>
+<body>
+    <div class="toggle-button" onclick="toggleMode()">
+        <div class="sun"></div>
+        <div class="cloud"></div>
         <div class="moon"></div>
-        <div class="clouds"></div>
-        <div class="ground"></div>
+        <div class="stars"></div>
     </div>
-    <h1 id="mode-heading">الوضع الحالي: صباحي ☀️</h1>
-    <button onclick="toggleMode()">تبديل الوضع</button>
 
     <script>
         let isNightMode = false;
 
         // تبديل الوضع
         function toggleMode() {
-            const body = document.body;
-            const heading = document.getElementById('mode-heading');
-            const stars = document.querySelector('.stars');
-            const moon = document.querySelector('.moon');
-            const clouds = document.querySelector('.clouds');
-            const ground = document.querySelector('.ground');
+            const button = document.querySelector('.toggle-button');
+            isNightMode = !isNightMode;
 
             if (isNightMode) {
-                body.classList.remove('night-mode');
-                body.classList.add('day-mode');
-                heading.textContent = 'الوضع الحالي: صباحي ☀️';
-                stars.style.display = 'none';
-                moon.style.display = 'none';
-                clouds.style.display = 'block';
-                ground.style.backgroundColor = '#4CAF50';
+                button.classList.add('night-mode');
             } else {
-                body.classList.remove('day-mode');
-                body.classList.add('night-mode');
-                heading.textContent = 'الوضع الحالي: ليلي 🌙';
-                stars.style.display = 'block';
-                moon.style.display = 'block';
-                clouds.style.display = 'none';
-                ground.style.backgroundColor = '#333';
-            }
-
-            isNightMode = !isNightMode;
-        }
-
-        // الوضع التلقائي بناءً على وقت اليوم
-        function autoToggleMode() {
-            const now = new Date();
-            const hour = now.getHours();
-
-            if (hour >= 18 || hour < 6) {
-                toggleMode(); // تفعيل الوضع الليلي
+                button.classList.remove('night-mode');
             }
         }
-
-        // تفعيل الوضع التلقائي عند تحميل الصفحة
-        window.onload = autoToggleMode;
     </script>
 </body>
 </html>
