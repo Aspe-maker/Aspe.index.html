@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لعبة ثلاثية الأبعاد مستوحاة من ماين كرافت</title>
+  <title>Minecraft-Inspired 3D Game</title>
   <style>
     body, html {
       margin: 0;
@@ -14,7 +14,6 @@
       font-family: Arial, sans-serif;
       touch-action: none;
     }
-
     #game-container {
       width: 100%;
       height: 100%;
@@ -22,33 +21,6 @@
       top: 0;
       left: 0;
     }
-
-    #controls {
-      position: absolute;
-      bottom: 20px;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      padding: 0 20px;
-      box-sizing: border-box;
-    }
-
-    .control-button {
-      background-color: rgba(255, 255, 255, 0.7);
-      border: 2px solid #000;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      color: #000;
-      user-select: none;
-      cursor: pointer;
-      touch-action: none;
-    }
-
     #joystick {
       position: absolute;
       left: 20px;
@@ -59,10 +31,9 @@
       border-radius: 50%;
       touch-action: none;
     }
-
     #toolbar {
       position: absolute;
-      bottom: 100px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -71,7 +42,6 @@
       padding: 10px;
       border-radius: 10px;
     }
-
     .block-button {
       width: 50px;
       height: 50px;
@@ -87,7 +57,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
   <script>
-    // إعداد المشهد والكاميرا والمُحرّك
+    // Initialize scene, camera, and renderer
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -95,31 +65,18 @@
     renderer.shadowMap.enabled = true;
     document.getElementById('game-container').appendChild(renderer.domElement);
 
-    // إضاءة المشهد
+    // Lighting
     const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(10, 15, 10);
+    light.position.set(5, 10, 5).normalize();
     light.castShadow = true;
     scene.add(light);
 
-    // إضاءة محيطية
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-    scene.add(ambientLight);
-
-    // السماء (Skybox)
-    const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
-    const skyMaterial = new THREE.MeshBasicMaterial({
-      color: 0x87CEEB,
-      side: THREE.BackSide
-    });
-    const skybox = new THREE.Mesh(skyGeometry, skyMaterial);
-    scene.add(skybox);
-
-    // تضاريس الأرض باستخدام Simplex Noise
+    // Terrain generation using Perlin Noise
     const noise = new SimplexNoise();
     const chunkSize = 16;
     const world = {};
 
-    function generateTerrain(x, z) {
+    function generateChunk(x, z) {
       const chunk = [];
       for (let i = 0; i < chunkSize; i++) {
         for (let k = 0; k < chunkSize; k++) {
@@ -137,7 +94,7 @@
       chunk.forEach(block => {
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const material = new THREE.MeshStandardMaterial({
-          color: block.type === 'grass' ? 0x00ff00 : block.type === 'dirt' ? 0x8B4513 : 0x808080
+          color: block.type === 'grass' ? 0x00ff00 : block.type === 'dirt' ? 0x8B4513 : 0x808080,
         });
         const cube = new THREE.Mesh(geometry, material);
         cube.position.set(block.x, block.y, block.z);
@@ -147,44 +104,105 @@
       });
     }
 
-    // إنشاء الأشجار
-    function createTree(x, z) {
-      const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-      const leavesMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
-
-      const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2, 0.5), trunkMaterial);
-      trunk.position.set(x, 1, z);
-      trunk.castShadow = true;
-      scene.add(trunk);
-
-      const leaves = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), leavesMaterial);
-      leaves.position.set(x, 3, z);
-      leaves.castShadow = true;
-      scene.add(leaves);
-    }
-
-    // توليد العالم
+    // Load initial chunks
     for (let x = -chunkSize; x <= chunkSize; x += chunkSize) {
       for (let z = -chunkSize; z <= chunkSize; z += chunkSize) {
-        const chunk = generateTerrain(x, z);
+        const chunk = generateChunk(x, z);
         renderChunk(chunk);
-        createTree(x + 5, z + 5);
-        createTree(x - 5, z - 5);
       }
     }
 
-    // إعداد الكاميرا
-    camera.position.set(15, 15, 15);
+    // Skybox
+    const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
+    const skyMaterial = new THREE.MeshBasicMaterial({
+      color: 0x87CEEB,
+      side: THREE.BackSide,
+    });
+    const skybox = new THREE.Mesh(skyGeometry, skyMaterial);
+    scene.add(skybox);
+
+    // Camera setup
+    camera.position.set(10, 10, 10);
     camera.lookAt(0, 0, 0);
 
-    // دورة التصيير
+    // Virtual joystick for movement
+    const joystick = document.getElementById('joystick');
+    let isJoystickActive = false;
+    let joystickStartX = 0;
+    let joystickStartY = 0;
+
+    joystick.addEventListener('touchstart', (e) => {
+      isJoystickActive = true;
+      joystickStartX = e.touches[0].clientX;
+      joystickStartY = e.touches[0].clientY;
+    });
+
+    joystick.addEventListener('touchmove', (e) => {
+      if (isJoystickActive) {
+        const deltaX = e.touches[0].clientX - joystickStartX;
+        const deltaY = e.touches[0].clientY - joystickStartY;
+        camera.position.x -= deltaX * 0.01;
+        camera.position.z -= deltaY * 0.01;
+        joystickStartX = e.touches[0].clientX;
+        joystickStartY = e.touches[0].clientY;
+      }
+    });
+
+    joystick.addEventListener('touchend', () => {
+      isJoystickActive = false;
+    });
+
+    // Building mechanics
+    const blocks = [];
+    let selectedBlockType = 'grass';
+
+    document.querySelectorAll('.block-button').forEach(button => {
+      button.addEventListener('click', () => {
+        selectedBlockType = button.getAttribute('data-type');
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      const intersects = raycaster.intersectObjects(scene.children);
+      if (intersects.length > 0) {
+        const intersect = intersects[0];
+        const block = intersect.object;
+        const position = block.position.clone();
+        const normal = intersect.face.normal;
+
+        if (e.button === 0) { // Left click to place block
+          const newBlock = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new THREE.MeshStandardMaterial({ color: selectedBlockType === 'grass' ? 0x00ff00 : 0x8B4513 })
+          );
+          newBlock.position.set(
+            position.x + normal.x,
+            position.y + normal.y,
+            position.z + normal.z
+          );
+          scene.add(newBlock);
+          blocks.push(newBlock);
+        } else if (e.button === 2) { // Right click to remove block
+          scene.remove(block);
+          blocks.splice(blocks.indexOf(block), 1);
+        }
+      }
+    });
+
+    // Animation loop
     function animate() {
       requestAnimationFrame(animate);
       renderer.render(scene, camera);
     }
     animate();
 
-    // استجابة لتغيير حجم النافذة
+    // Resize handling
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -194,5 +212,11 @@
 </head>
 <body>
   <div id="game-container"></div>
+  <div id="joystick"></div>
+  <div id="toolbar">
+    <div class="block-button" data-type="grass">Grass</div>
+    <div class="block-button" data-type="dirt">Dirt</div>
+    <div class="block-button" data-type="stone">Stone</div>
+  </div>
 </body>
 </html>
