@@ -100,16 +100,43 @@
     light.castShadow = true;
     scene.add(light);
 
-    // أرضية (Voxel-based)
-    const groundSize = 20;
-    const groundGeometry = new THREE.BoxGeometry(1, 1, 1);
-    const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00, roughness: 0.8 });
-    for (let x = -groundSize; x <= groundSize; x++) {
-      for (let z = -groundSize; z <= groundSize; z++) {
-        const groundBlock = new THREE.Mesh(groundGeometry, groundMaterial);
-        groundBlock.position.set(x, -0.5, z);
-        groundBlock.receiveShadow = true;
-        scene.add(groundBlock);
+    // إنشاء عالم مفتوح باستخدام Chunk Loading
+    const chunkSize = 16;
+    const chunkHeight = 4;
+    const world = {};
+
+    function generateChunk(x, z) {
+      const chunk = [];
+      for (let i = 0; i < chunkSize; i++) {
+        for (let j = 0; j < chunkHeight; j++) {
+          for (let k = 0; k < chunkSize; k++) {
+            const blockType = j === 0 ? 'grass' : j === chunkHeight - 1 ? 'dirt' : 'stone';
+            chunk.push({ x: x + i, y: j, z: z + k, type: blockType });
+          }
+        }
+      }
+      return chunk;
+    }
+
+    function renderChunk(chunk) {
+      chunk.forEach(block => {
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshStandardMaterial({
+          color: block.type === 'grass' ? 0x00ff00 : block.type === 'dirt' ? 0x8B4513 : 0x808080,
+        });
+        const cube = new THREE.Mesh(geometry, material);
+        cube.position.set(block.x, block.y, block.z);
+        cube.castShadow = true;
+        cube.receiveShadow = true;
+        scene.add(cube);
+      });
+    }
+
+    // تحميل العالم الأولي
+    for (let x = -chunkSize; x <= chunkSize; x += chunkSize) {
+      for (let z = -chunkSize; z <= chunkSize; z += chunkSize) {
+        const chunk = generateChunk(x, z);
+        renderChunk(chunk);
       }
     }
 
