@@ -85,6 +85,7 @@
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
   <script>
     // تهيئة المشهد
     const scene = new THREE.Scene();
@@ -100,17 +101,18 @@
     light.castShadow = true;
     scene.add(light);
 
-    // إنشاء عالم مفتوح باستخدام Chunk Loading
+    // إنشاء عالم مفتوح باستخدام Perlin Noise
+    const noise = new SimplexNoise();
     const chunkSize = 16;
-    const chunkHeight = 4;
     const world = {};
 
     function generateChunk(x, z) {
       const chunk = [];
       for (let i = 0; i < chunkSize; i++) {
-        for (let j = 0; j < chunkHeight; j++) {
-          for (let k = 0; k < chunkSize; k++) {
-            const blockType = j === 0 ? 'grass' : j === chunkHeight - 1 ? 'dirt' : 'stone';
+        for (let k = 0; k < chunkSize; k++) {
+          const height = Math.floor(noise.noise2D((x + i) / 10, (z + k) / 10) * 5) + 5;
+          for (let j = 0; j < height; j++) {
+            const blockType = j === height - 1 ? 'grass' : j > height - 4 ? 'dirt' : 'stone';
             chunk.push({ x: x + i, y: j, z: z + k, type: blockType });
           }
         }
