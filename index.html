@@ -3,220 +3,170 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minecraft-Inspired 3D Game</title>
+  <title>Advanced Minecraft-Inspired Game</title>
   <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      width: 100%;
-      height: 100%;
-      font-family: Arial, sans-serif;
-      touch-action: none;
-    }
-    #game-container {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-    #joystick {
-      position: absolute;
-      left: 20px;
-      bottom: 20px;
-      width: 80px;
-      height: 80px;
-      background-color: rgba(0, 0, 0, 0.5);
-      border-radius: 50%;
-      touch-action: none;
-    }
-    #toolbar {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-      background-color: rgba(255, 255, 255, 0.7);
-      padding: 10px;
-      border-radius: 10px;
-    }
-    .block-button {
-      width: 50px;
-      height: 50px;
-      background-color: #ccc;
-      border: 2px solid #000;
-      border-radius: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+</head>
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.js"></script>
+
   <script>
-    // Initialize scene, camera, and renderer
+    // Setup the scene
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    document.getElementById('game-container').appendChild(renderer.domElement);
+    document.body.appendChild(renderer.domElement);
 
-    // Lighting
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 10, 5).normalize();
-    light.castShadow = true;
-    scene.add(light);
+    // Camera controls for user interaction
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.25;
+    controls.screenSpacePanning = false;
 
-    // Terrain generation using Perlin Noise
-    const noise = new SimplexNoise();
-    const chunkSize = 16;
-    const world = {};
+    // Ambient and directional lighting
+    const ambientLight = new THREE.AmbientLight(0x404040, 1);
+    scene.add(ambientLight);
 
-    function generateChunk(x, z) {
-      const chunk = [];
-      for (let i = 0; i < chunkSize; i++) {
-        for (let k = 0; k < chunkSize; k++) {
-          const height = Math.floor(noise.noise2D((x + i) / 10, (z + k) / 10) * 5) + 5;
-          for (let j = 0; j < height; j++) {
-            const blockType = j === height - 1 ? 'grass' : j > height - 4 ? 'dirt' : 'stone';
-            chunk.push({ x: x + i, y: j, z: z + k, type: blockType });
-          }
-        }
-      }
-      return chunk;
-    }
+    const sunlight = new THREE.DirectionalLight(0xFFFFFF, 1);
+    sunlight.position.set(10, 10, 10);
+    sunlight.castShadow = true;
+    scene.add(sunlight);
 
-    function renderChunk(chunk) {
-      chunk.forEach(block => {
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const material = new THREE.MeshStandardMaterial({
-          color: block.type === 'grass' ? 0x00ff00 : block.type === 'dirt' ? 0x8B4513 : 0x808080,
-        });
-        const cube = new THREE.Mesh(geometry, material);
-        cube.position.set(block.x, block.y, block.z);
-        cube.castShadow = true;
-        cube.receiveShadow = true;
-        scene.add(cube);
-      });
-    }
+    // Ground creation (grassland)
+    const groundGeometry = new THREE.PlaneGeometry(100, 100);
+    const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
 
-    // Load initial chunks
-    for (let x = -chunkSize; x <= chunkSize; x += chunkSize) {
-      for (let z = -chunkSize; z <= chunkSize; z += chunkSize) {
-        const chunk = generateChunk(x, z);
-        renderChunk(chunk);
+    // Skybox for realistic sky
+    const loader = new THREE.CubeTextureLoader();
+    loader.setPath('textures/skybox/');
+    const texture = loader.load([
+      'posx.jpg', 'negx.jpg', 'posy.jpg', 'negy.jpg', 'posz.jpg', 'negz.jpg'
+    ]);
+    scene.background = texture;
+
+    // Generate mountains and valleys
+    function generateMountains() {
+      for (let i = 0; i < 5; i++) {
+        const height = Math.random() * 15 + 5;
+        const width = Math.random() * 10 + 10;
+        const geometry = new THREE.CylinderGeometry(width, width, height);
+        const material = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+        const mountain = new THREE.Mesh(geometry, material);
+        mountain.position.set(Math.random() * 100 - 50, height / 2, Math.random() * 100 - 50);
+        mountain.castShadow = true;
+        scene.add(mountain);
       }
     }
 
-    // Skybox
-    const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
-    const skyMaterial = new THREE.MeshBasicMaterial({
-      color: 0x87CEEB,
-      side: THREE.BackSide,
-    });
-    const skybox = new THREE.Mesh(skyGeometry, skyMaterial);
-    scene.add(skybox);
+    // Water bodies: Lakes and rivers
+    function generateWaterBodies() {
+      const geometry = new THREE.PlaneGeometry(30, 30);
+      const material = new THREE.MeshStandardMaterial({ color: 0x1E90FF, opacity: 0.5, transparent: true });
+      const water = new THREE.Mesh(geometry, material);
+      water.rotation.x = -Math.PI / 2;
+      water.position.set(0, 0.1, 0);
+      scene.add(water);
+    }
 
-    // Camera setup
-    camera.position.set(10, 10, 10);
+    generateMountains();
+    generateWaterBodies();
+
+    // Tree creation with shadows
+    function createTree(x, y, z) {
+      const trunkGeometry = new THREE.CylinderGeometry(0.5, 0.5, 5);
+      const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+      const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+      trunk.position.set(x, 2.5, z);
+      trunk.castShadow = true;
+      scene.add(trunk);
+
+      const foliageGeometry = new THREE.SphereGeometry(3);
+      const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+      const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+      foliage.position.set(x, 6, z);
+      scene.add(foliage);
+    }
+
+    // Create trees in random positions
+    for (let i = 0; i < 20; i++) {
+      createTree(Math.random() * 100 - 50, 0, Math.random() * 100 - 50);
+    }
+
+    // Camera position
+    camera.position.set(0, 10, 50);
     camera.lookAt(0, 0, 0);
 
-    // Virtual joystick for movement
-    const joystick = document.getElementById('joystick');
-    let isJoystickActive = false;
-    let joystickStartX = 0;
-    let joystickStartY = 0;
-
-    joystick.addEventListener('touchstart', (e) => {
-      isJoystickActive = true;
-      joystickStartX = e.touches[0].clientX;
-      joystickStartY = e.touches[0].clientY;
-    });
-
-    joystick.addEventListener('touchmove', (e) => {
-      if (isJoystickActive) {
-        const deltaX = e.touches[0].clientX - joystickStartX;
-        const deltaY = e.touches[0].clientY - joystickStartY;
-        camera.position.x -= deltaX * 0.01;
-        camera.position.z -= deltaY * 0.01;
-        joystickStartX = e.touches[0].clientX;
-        joystickStartY = e.touches[0].clientY;
-      }
-    });
-
-    joystick.addEventListener('touchend', () => {
-      isJoystickActive = false;
-    });
-
-    // Building mechanics
-    const blocks = [];
-    let selectedBlockType = 'grass';
-
-    document.querySelectorAll('.block-button').forEach(button => {
-      button.addEventListener('click', () => {
-        selectedBlockType = button.getAttribute('data-type');
-      });
-    });
-
-    document.addEventListener('click', (e) => {
-      const raycaster = new THREE.Raycaster();
-      const mouse = new THREE.Vector2();
-      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-      raycaster.setFromCamera(mouse, camera);
-
-      const intersects = raycaster.intersectObjects(scene.children);
-      if (intersects.length > 0) {
-        const intersect = intersects[0];
-        const block = intersect.object;
-        const position = block.position.clone();
-        const normal = intersect.face.normal;
-
-        if (e.button === 0) { // Left click to place block
-          const newBlock = new THREE.Mesh(
-            new THREE.BoxGeometry(1, 1, 1),
-            new THREE.MeshStandardMaterial({ color: selectedBlockType === 'grass' ? 0x00ff00 : 0x8B4513 })
-          );
-          newBlock.position.set(
-            position.x + normal.x,
-            position.y + normal.y,
-            position.z + normal.z
-          );
-          scene.add(newBlock);
-          blocks.push(newBlock);
-        } else if (e.button === 2) { // Right click to remove block
-          scene.remove(block);
-          blocks.splice(blocks.indexOf(block), 1);
-        }
-      }
-    });
-
-    // Animation loop
-    function animate() {
-      requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    // Resize handling
+    // Handle window resizing
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    // Block preview for building
+    let blockPreview;
+    function showBlockPreview(x, y, z) {
+      if (blockPreview) scene.remove(blockPreview);
+      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const material = new THREE.MeshStandardMaterial({ color: 0x808080, opacity: 0.5, transparent: true });
+      blockPreview = new THREE.Mesh(geometry, material);
+      blockPreview.position.set(x, y, z);
+      scene.add(blockPreview);
+    }
+
+    // Handle touch events for mobile devices
+    let isTouching = false;
+    let startTouchPos = { x: 0, y: 0 };
+
+    document.addEventListener('touchstart', (event) => {
+      isTouching = true;
+      startTouchPos.x = event.touches[0].pageX;
+      startTouchPos.y = event.touches[0].pageY;
+    });
+
+    document.addEventListener('touchmove', (event) => {
+      if (isTouching) {
+        // For simplicity, update the preview block position
+        const x = (event.touches[0].pageX / window.innerWidth) * 20 - 10;
+        const z = (event.touches[0].pageY / window.innerHeight) * 20 - 10;
+        showBlockPreview(x, 1, z);
+      }
+    });
+
+    document.addEventListener('touchend', () => {
+      isTouching = false;
+    });
+
+    // Wind effect (moving trees or particles)
+    function applyWindEffect() {
+      // Simple simulation: move trees randomly
+      scene.children.forEach((child) => {
+        if (child instanceof THREE.Mesh && child !== ground) {
+          child.position.x += Math.random() * 0.05;
+          child.position.z += Math.random() * 0.05;
+        }
+      });
+    }
+
+    // Render loop with dynamic weather effects
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Apply wind effect
+      applyWindEffect();
+
+      controls.update(); // Update camera controls
+      renderer.render(scene, camera);
+    }
+    animate();
   </script>
-</head>
-<body>
-  <div id="game-container"></div>
-  <div id="joystick"></div>
-  <div id="toolbar">
-    <div class="block-button" data-type="grass">Grass</div>
-    <div class="block-button" data-type="dirt">Dirt</div>
-    <div class="block-button" data-type="stone">Stone</div>
-  </div>
 </body>
 </html>
