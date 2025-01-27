@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Advanced Minecraft-Inspired Game</title>
+  <title>Advanced Minecraft-inspired 3D Game</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
@@ -11,162 +11,159 @@
 </head>
 <body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.js"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
   <script>
-    // Setup the scene
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+    let scene, camera, renderer, controls;
+    let player, world, inventory, enemies;
+    let terrain, sky, clock, weatherEffect;
+    let chunks = [];
+    let isJumping = false;
+    let movementSpeed = 0.1;
+    let jumpSpeed = 0.2;
+    let weatherConditions = ['clear', 'rain', 'snow', 'storm'];
+    const worldSize = 500;
+    const chunkSize = 50;
+    const chunkLoadingDistance = 2;
+    const maxInventorySlots = 20;
+    inventory = new Array(maxInventorySlots).fill(null);
+    let selectedItem = 0;
+    let health = 100;
+    let experience = 0;
+    let tasks = [];
+    let weatherCycleTime = 0;
+    let playerStatus = 'normal';
+    let gameTime = 0;
+    let playerVelocity = new THREE.Vector3(0, 0, 0);
+    let isSwimming = false;
+    let flyingMode = false;
+    let groundMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    let chunkLoadDistance = 5;
 
-    // Camera controls for user interaction
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.25;
-    controls.screenSpacePanning = false;
+    // Set up scene
+    function setupScene() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 10, 10);
+      camera.lookAt(0, 5, 0);
 
-    // Ambient and directional lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 1);
-    scene.add(ambientLight);
-
-    const sunlight = new THREE.DirectionalLight(0xFFFFFF, 1);
-    sunlight.position.set(10, 10, 10);
-    sunlight.castShadow = true;
-    scene.add(sunlight);
-
-    // Ground creation (grassland)
-    const groundGeometry = new THREE.PlaneGeometry(100, 100);
-    const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    scene.add(ground);
-
-    // Skybox for realistic sky
-    const loader = new THREE.CubeTextureLoader();
-    loader.setPath('textures/skybox/');
-    const texture = loader.load([
-      'posx.jpg', 'negx.jpg', 'posy.jpg', 'negy.jpg', 'posz.jpg', 'negz.jpg'
-    ]);
-    scene.background = texture;
-
-    // Generate mountains and valleys
-    function generateMountains() {
-      for (let i = 0; i < 5; i++) {
-        const height = Math.random() * 15 + 5;
-        const width = Math.random() * 10 + 10;
-        const geometry = new THREE.CylinderGeometry(width, width, height);
-        const material = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-        const mountain = new THREE.Mesh(geometry, material);
-        mountain.position.set(Math.random() * 100 - 50, height / 2, Math.random() * 100 - 50);
-        mountain.castShadow = true;
-        scene.add(mountain);
-      }
-    }
-
-    // Water bodies: Lakes and rivers
-    function generateWaterBodies() {
-      const geometry = new THREE.PlaneGeometry(30, 30);
-      const material = new THREE.MeshStandardMaterial({ color: 0x1E90FF, opacity: 0.5, transparent: true });
-      const water = new THREE.Mesh(geometry, material);
-      water.rotation.x = -Math.PI / 2;
-      water.position.set(0, 0.1, 0);
-      scene.add(water);
-    }
-
-    generateMountains();
-    generateWaterBodies();
-
-    // Tree creation with shadows
-    function createTree(x, y, z) {
-      const trunkGeometry = new THREE.CylinderGeometry(0.5, 0.5, 5);
-      const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-      const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-      trunk.position.set(x, 2.5, z);
-      trunk.castShadow = true;
-      scene.add(trunk);
-
-      const foliageGeometry = new THREE.SphereGeometry(3);
-      const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
-      const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
-      foliage.position.set(x, 6, z);
-      scene.add(foliage);
-    }
-
-    // Create trees in random positions
-    for (let i = 0; i < 20; i++) {
-      createTree(Math.random() * 100 - 50, 0, Math.random() * 100 - 50);
-    }
-
-    // Camera position
-    camera.position.set(0, 10, 50);
-    camera.lookAt(0, 0, 0);
-
-    // Handle window resizing
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
+      renderer = new THREE.WebGLRenderer();
       renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+      document.body.appendChild(renderer.domElement);
 
-    // Block preview for building
-    let blockPreview;
-    function showBlockPreview(x, y, z) {
-      if (blockPreview) scene.remove(blockPreview);
-      const geometry = new THREE.BoxGeometry(1, 1, 1);
-      const material = new THREE.MeshStandardMaterial({ color: 0x808080, opacity: 0.5, transparent: true });
-      blockPreview = new THREE.Mesh(geometry, material);
-      blockPreview.position.set(x, y, z);
-      scene.add(blockPreview);
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.25;
+      controls.screenSpacePanning = false;
+      controls.maxPolarAngle = Math.PI / 2;
+
+      clock = new THREE.Clock();
     }
 
-    // Handle touch events for mobile devices
-    let isTouching = false;
-    let startTouchPos = { x: 0, y: 0 };
+    // Terrain Generation
+    function generateTerrain() {
+      const geometry = new THREE.PlaneGeometry(worldSize, worldSize, worldSize / chunkSize, worldSize / chunkSize);
+      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+      terrain = new THREE.Mesh(geometry, material);
+      scene.add(terrain);
+      terrain.rotation.x = -Math.PI / 2;
+    }
 
-    document.addEventListener('touchstart', (event) => {
-      isTouching = true;
-      startTouchPos.x = event.touches[0].pageX;
-      startTouchPos.y = event.touches[0].pageY;
-    });
+    function createChunk(x, z) {
+      const chunk = new THREE.Mesh(
+        new THREE.PlaneGeometry(chunkSize, chunkSize),
+        new THREE.MeshStandardMaterial({ color: 0x00ff00, flatShading: true })
+      );
+      chunk.position.set(x, 0, z);
+      chunk.rotation.x = -Math.PI / 2;
+      scene.add(chunk);
+      chunks.push(chunk);
+    }
 
-    document.addEventListener('touchmove', (event) => {
-      if (isTouching) {
-        // For simplicity, update the preview block position
-        const x = (event.touches[0].pageX / window.innerWidth) * 20 - 10;
-        const z = (event.touches[0].pageY / window.innerHeight) * 20 - 10;
-        showBlockPreview(x, 1, z);
+    // Weather Effects
+    function setupWeather() {
+      weatherEffect = new THREE.GlowEffect({ intensity: 0.5, color: new THREE.Color(0x87CEEB) });
+      scene.add(weatherEffect);
+    }
+
+    function changeWeather() {
+      weatherCycleTime += 0.1;
+      if (weatherCycleTime >= 100) {
+        weatherCycleTime = 0;
+        let newWeather = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
+        weatherEffect.setWeather(newWeather);
       }
-    });
-
-    document.addEventListener('touchend', () => {
-      isTouching = false;
-    });
-
-    // Wind effect (moving trees or particles)
-    function applyWindEffect() {
-      // Simple simulation: move trees randomly
-      scene.children.forEach((child) => {
-        if (child instanceof THREE.Mesh && child !== ground) {
-          child.position.x += Math.random() * 0.05;
-          child.position.z += Math.random() * 0.05;
-        }
-      });
     }
 
-    // Render loop with dynamic weather effects
+    // Player Movement and Controls
+    function updatePlayer() {
+      if (keyboard[87]) player.position.z -= movementSpeed;
+      if (keyboard[83]) player.position.z += movementSpeed;
+      if (keyboard[65]) player.position.x -= movementSpeed;
+      if (keyboard[68]) player.position.x += movementSpeed;
+      if (keyboard[32] && !isJumping) {
+        player.position.y += jumpSpeed;
+        isJumping = true;
+      }
+      if (player.position.y <= 1) {
+        isJumping = false;
+        player.position.y = 1;
+      }
+    }
+
+    // Inventory Management
+    function handleInventory() {
+      if (keyboard[49]) selectedItem = 0;
+      if (keyboard[50]) selectedItem = 1;
+    }
+
+    // Interaction System
+    function interactWithEnvironment() {
+      // Example: interaction with blocks and enemies
+      if (keyboard[69]) {
+        // E key for interacting
+        console.log('Interacting with the environment');
+      }
+    }
+
+    // Task System
+    function handleTasks() {
+      if (tasks.length > 0) {
+        tasks.forEach(task => {
+          // Logic for task completion
+          console.log('Task: ' + task.description);
+        });
+      }
+    }
+
+    // Game Time Management
+    function updateGameTime() {
+      gameTime += 1;
+      if (gameTime >= 24000) {
+        gameTime = 0; // Reset to 0 at the end of a full day cycle.
+      }
+    }
+
+    // Keyboard Input Handling
+    const keyboard = {};
+    window.addEventListener('keydown', (e) => { keyboard[e.keyCode] = true; });
+    window.addEventListener('keyup', (e) => { keyboard[e.keyCode] = false; });
+
+    // Start the Game
+    setupScene();
+    generateTerrain();
+    setupWeather();
+    animate();
+
     function animate() {
       requestAnimationFrame(animate);
-
-      // Apply wind effect
-      applyWindEffect();
-
-      controls.update(); // Update camera controls
+      controls.update();
+      updatePlayer();
+      handleInventory();
+      changeWeather();
+      updateGameTime();
+      handleTasks();
       renderer.render(scene, camera);
     }
-    animate();
   </script>
 </body>
 </html>
