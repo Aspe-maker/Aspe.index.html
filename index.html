@@ -87,7 +87,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
   <script>
-    // تهيئة المشهد
+    // إعداد المشهد والكاميرا والمُحرّك
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -95,18 +95,31 @@
     renderer.shadowMap.enabled = true;
     document.getElementById('game-container').appendChild(renderer.domElement);
 
-    // إضاءة PBR
+    // إضاءة المشهد
     const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 10, 5).normalize();
+    light.position.set(10, 15, 10);
     light.castShadow = true;
     scene.add(light);
 
-    // إنشاء عالم مفتوح باستخدام Perlin Noise
+    // إضاءة محيطية
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+    scene.add(ambientLight);
+
+    // السماء (Skybox)
+    const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
+    const skyMaterial = new THREE.MeshBasicMaterial({
+      color: 0x87CEEB,
+      side: THREE.BackSide
+    });
+    const skybox = new THREE.Mesh(skyGeometry, skyMaterial);
+    scene.add(skybox);
+
+    // تضاريس الأرض باستخدام Simplex Noise
     const noise = new SimplexNoise();
     const chunkSize = 16;
     const world = {};
 
-    function generateChunk(x, z) {
+    function generateTerrain(x, z) {
       const chunk = [];
       for (let i = 0; i < chunkSize; i++) {
         for (let k = 0; k < chunkSize; k++) {
@@ -124,7 +137,7 @@
       chunk.forEach(block => {
         const geometry = new THREE.BoxGeometry(1, 1, 1);
         const material = new THREE.MeshStandardMaterial({
-          color: block.type === 'grass' ? 0x00ff00 : block.type === 'dirt' ? 0x8B4513 : 0x808080,
+          color: block.type === 'grass' ? 0x00ff00 : block.type === 'dirt' ? 0x8B4513 : 0x808080
         });
         const cube = new THREE.Mesh(geometry, material);
         cube.position.set(block.x, block.y, block.z);
@@ -134,77 +147,35 @@
       });
     }
 
-    // تحميل العالم الأولي
-    for (let x = -chunkSize; x <= chunkSize; x += chunkSize) {
-      for (let z = -chunkSize; z <= chunkSize; z += chunkSize) {
-        const chunk = generateChunk(x, z);
-        renderChunk(chunk);
-      }
-    }
-
-    // أشجار
-    const treeTrunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-    const treeLeavesMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+    // إنشاء الأشجار
     function createTree(x, z) {
-      const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2, 0.5), treeTrunkMaterial);
+      const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+      const leavesMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+
+      const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2, 0.5), trunkMaterial);
       trunk.position.set(x, 1, z);
       trunk.castShadow = true;
       scene.add(trunk);
 
-      const leaves = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), treeLeavesMaterial);
+      const leaves = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), leavesMaterial);
       leaves.position.set(x, 3, z);
       leaves.castShadow = true;
       scene.add(leaves);
     }
-    createTree(5, 5);
-    createTree(-5, -5);
 
-    // سماء (Skybox)
-    const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
-    const skyMaterial = new THREE.MeshBasicMaterial({
-      color: 0x87CEEB,
-      side: THREE.BackSide,
-    });
-    const skybox = new THREE.Mesh(skyGeometry, skyMaterial);
-    scene.add(skybox);
-
-    // كاميرا
-    camera.position.set(10, 10, 10);
-    camera.lookAt(0, 0, 0);
-
-    // عصا تحكم افتراضية
-    const joystick = document.getElementById('joystick');
-    let isJoystickActive = false;
-    let joystickStartX = 0;
-    let joystickStartY = 0;
-
-    joystick.addEventListener('touchstart', (e) => {
-      isJoystickActive = true;
-      joystickStartX = e.touches[0].clientX;
-      joystickStartY = e.touches[0].clientY;
-    });
-
-    joystick.addEventListener('touchmove', (e) => {
-      if (isJoystickActive) {
-        const deltaX = e.touches[0].clientX - joystickStartX;
-        const deltaY = e.touches[0].clientY - joystickStartY;
-        camera.position.x -= deltaX * 0.01;
-        camera.position.z -= deltaY * 0.01;
-        joystickStartX = e.touches[0].clientX;
-        joystickStartY = e.touches[0].clientY;
+    // توليد العالم
+    for (let x = -chunkSize; x <= chunkSize; x += chunkSize) {
+      for (let z = -chunkSize; z <= chunkSize; z += chunkSize) {
+        const chunk = generateTerrain(x, z);
+        renderChunk(chunk);
+        createTree(x + 5, z + 5);
+        createTree(x - 5, z - 5);
       }
-    });
+    }
 
-    joystick.addEventListener('touchend', () => {
-      isJoystickActive = false;
-    });
-
-    // تكييف حجم العرض مع تغيير حجم النافذة
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    // إعداد الكاميرا
+    camera.position.set(15, 15, 15);
+    camera.lookAt(0, 0, 0);
 
     // دورة التصيير
     function animate() {
@@ -212,18 +183,16 @@
       renderer.render(scene, camera);
     }
     animate();
+
+    // استجابة لتغيير حجم النافذة
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   </script>
 </head>
 <body>
   <div id="game-container"></div>
-  <div id="controls">
-    <div id="joystick" class="control-button"></div>
-    <div id="action-button" class="control-button">بناء</div>
-  </div>
-  <div id="toolbar">
-    <div class="block-button" data-type="grass">عشب</div>
-    <div class="block-button" data-type="stone">حجر</div>
-    <div class="block-button" data-type="wood">خشب</div>
-  </div>
 </body>
 </html>
