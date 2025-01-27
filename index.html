@@ -1,158 +1,174 @@
-// بداية اللعبة وتحديد محرك العرض Three.js أو Babylon.js
-let engine = new BABYLON.Engine(canvas, true);
-let scene = new BABYLON.Scene(engine);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Inspired 3D Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // 1. Set up the scene and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-// إعداد الكاميرا، والتحكم في الحركة
-let camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 4, 10, BABYLON.Vector3.Zero(), scene);
-camera.attachControl(canvas, true);
+        // 2. Camera controls
+        let controls = new THREE.OrbitControls(camera, renderer.domElement);
+        camera.position.set(0, 10, 20);
+        controls.update();
 
-// إنشاء العالم المفتوح باستخدام "البحث التوليدي" - على سبيل المثال، التضاريس المتنوعة
-function createTerrain() {
-    let ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 100, height: 100, subdivisions: 4}, scene);
-    ground.material = new BABYLON.StandardMaterial("groundMat", scene);
-    ground.material.diffuseColor = new BABYLON.Color3(0.2, 0.7, 0.2); // العشب
-    // إضافة التضاريس المتنوعة
-    for (let i = 0; i < 50; i++) {
-        let x = Math.random() * 100 - 50;
-        let z = Math.random() * 100 - 50;
-        let tree = BABYLON.MeshBuilder.CreateCylinder("tree", {height: 10, diameter: 2}, scene);
-        tree.position = new BABYLON.Vector3(x, 5, z);
-        tree.material = new BABYLON.StandardMaterial("treeMat", scene);
-        tree.material.diffuseColor = new BABYLON.Color3(0.5, 0.3, 0.1); // جذع الشجرة
-    }
-}
+        // 3. Skybox and lighting
+        const skyboxGeometry = new THREE.BoxGeometry(500, 500, 500);
+        const skyboxMaterial = new THREE.MeshBasicMaterial({
+            color: 0x87ceeb, 
+            side: THREE.BackSide
+        });
+        const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+        scene.add(skybox);
 
-// نظام التخزين (Inventory System)
-let inventory = [];
-function createInventory() {
-    // إضافة 20 مكان في المخزون
-    for (let i = 0; i < 20; i++) {
-        inventory.push(null); // يمكن تخزين العناصر في هذه الأماكن
-    }
-    // زر لفتح المخزون
-    let inventoryButton = document.createElement('button');
-    inventoryButton.innerText = "فتح المخزون";
-    inventoryButton.onclick = function() {
-        showInventory();
-    };
-    document.body.appendChild(inventoryButton);
-}
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(0, 1, 0);
+        scene.add(light);
 
-// عرض المخزون عند الضغط على الزر
-function showInventory() {
-    let inventoryWindow = document.createElement('div');
-    inventoryWindow.style.position = 'absolute';
-    inventoryWindow.style.top = '50px';
-    inventoryWindow.style.left = '50px';
-    inventoryWindow.style.backgroundColor = '#fff';
-    inventoryWindow.style.padding = '10px';
-    inventoryWindow.style.border = '1px solid black';
-    
-    for (let i = 0; i < 20; i++) {
-        let itemSlot = document.createElement('div');
-        itemSlot.innerText = inventory[i] ? inventory[i].name : 'مربع فارغ';
-        inventoryWindow.appendChild(itemSlot);
-    }
-    
-    document.body.appendChild(inventoryWindow);
-}
+        // 4. Terrain generation
+        const terrain = new THREE.Group();
+        const terrainSize = 100; // The terrain grid size
+        const terrainHeight = 10; // Max height
 
-// إضافة الكتل القابلة للبناء والتكسير (Building and Mining System)
-function createBlock(x, y, z, material) {
-    let block = BABYLON.MeshBuilder.CreateBox("block", {size: 1}, scene);
-    block.position = new BABYLON.Vector3(x, y, z);
-    block.material = new BABYLON.StandardMaterial("blockMat", scene);
-    block.material.diffuseColor = material;
-    return block;
-}
+        function generateTerrain() {
+            for (let x = -terrainSize / 2; x < terrainSize / 2; x++) {
+                for (let z = -terrainSize / 2; z < terrainSize / 2; z++) {
+                    const y = Math.sin(x * 0.1) * Math.cos(z * 0.1) * terrainHeight;
+                    createBlock(x, y, z);
+                }
+            }
+        }
 
-// نظام الكاميرا (Camera System)
-function createCamera() {
-    let camera = new BABYLON.FreeCamera("Camera", new BABYLON.Vector3(0, 5, -10), scene);
-    camera.setTarget(BABYLON.Vector3.Zero());
-    camera.attachControl(canvas, true);
-    return camera;
-}
+        function createBlock(x, y, z) {
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const block = new THREE.Mesh(geometry, material);
+            block.position.set(x, y, z);
+            terrain.add(block);
+        }
 
-// إعداد حركة الشخصية (Movement System)
-function createMovement() {
-    let player = BABYLON.MeshBuilder.CreateSphere("player", {diameter: 1}, scene);
-    player.position = new BABYLON.Vector3(0, 1, 0);
+        generateTerrain();
+        scene.add(terrain);
 
-    // الحركة السلسة
-    scene.registerBeforeRender(function () {
-        if (camera.position.z < -10) camera.position.z = -10;
-        if (camera.position.x > 50) camera.position.x = 50;
-        // تحريك الكاميرا وفقاً لمفاتيح WASD
-        if (inputMap["w"]) camera.position.z -= 0.1;
-        if (inputMap["s"]) camera.position.z += 0.1;
-        if (inputMap["a"]) camera.position.x -= 0.1;
-        if (inputMap["d"]) camera.position.x += 0.1;
-    });
-}
+        // 5. Touch controls for mobile
+        let firstPerson = false;
 
-// إضافة حركة سلسة للكاميرا (سحب الكاميرا إلى الأمام والخلف، مع القفز)
-function enableSmoothControls() {
-    let speed = 0.2;
-    let jumpSpeed = 1;
-    let gravity = 0.05;
+        document.addEventListener("touchstart", (event) => {
+            const touch = event.touches[0];
+            const x = touch.clientX;
+            const y = touch.clientY;
 
-    let jumpButton = document.createElement('button');
-    jumpButton.innerText = "القفز";
-    jumpButton.onclick = function() {
-        camera.position.y += jumpSpeed;
-    };
-    document.body.appendChild(jumpButton);
-}
+            // Switch to first-person if tap on the bottom half of the screen
+            if (y > window.innerHeight / 2) {
+                firstPerson = true;
+                camera.position.set(0, 1, 0);
+            } else {
+                firstPerson = false;
+                camera.position.set(0, 10, 20);
+            }
+        });
 
-// نظام التكسير والبناء (Building and Mining)
-function mineBlock(x, y, z) {
-    let block = BABYLON.MeshBuilder.CreateBox("block", {size: 1}, scene);
-    block.position = new BABYLON.Vector3(x, y, z);
-    block.material = new BABYLON.StandardMaterial("blockMat", scene);
-    block.material.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2); // حجر
+        // 6. Movement system for mobile devices
+        let touchStart = { x: 0, y: 0 };
+        let touchEnd = { x: 0, y: 0 };
 
-    // كود لتكسير الكتل
-    block.actionManager = new BABYLON.ActionManager(scene);
-    block.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function(evt) {
-        block.dispose(); // تدمير الكتلة عند النقر عليها
-    }));
-}
+        document.addEventListener('touchstart', (event) => {
+            touchStart.x = event.touches[0].clientX;
+            touchStart.y = event.touches[0].clientY;
+        });
 
-// إنشاء ديناميكية تغيير الوقت (Day-Night Cycle)
-function dayNightCycle() {
-    let sun = new BABYLON.DirectionalLight("sun", new BABYLON.Vector3(0, -1, 0), scene);
-    sun.position = new BABYLON.Vector3(0, 100, 0);
-    
-    scene.registerBeforeRender(function () {
-        let time = Date.now() * 0.0001;
-        sun.setDirection(new BABYLON.Vector3(Math.cos(time), -1, Math.sin(time)));
-    });
-}
+        document.addEventListener('touchmove', (event) => {
+            touchEnd.x = event.touches[0].clientX;
+            touchEnd.y = event.touches[0].clientY;
 
-// تفعيل الطقس الديناميكي (Weather)
-function dynamicWeather() {
-    let rain = new BABYLON.WeatherSystem(scene);
-    rain.rainIntensity = 0.7; // تعيين شدة المطر
-}
+            const deltaX = touchEnd.x - touchStart.x;
+            const deltaY = touchEnd.y - touchStart.y;
 
-// تحميل البيئة بالتقنيات المتقدمة
-function loadEnvironment() {
-    createTerrain();
-    createInventory();
-    createCamera();
-    createMovement();
-    dayNightCycle();
-    dynamicWeather();
-}
+            // Adjust camera position based on touch movement
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Horizontal movement
+                camera.position.x += deltaX * 0.01;
+            } else {
+                // Vertical movement
+                camera.position.y += deltaY * 0.01;
+            }
+        });
 
-// بداية اللعبة
-loadEnvironment();
-engine.runRenderLoop(function () {
-    scene.render();
-});
+        // 7. Breaking blocks system
+        function breakBlock(position) {
+            const block = getBlockAtPosition(position);
+            if (block) {
+                const droppedItem = { name: "Stone", texture: "textures/stone.png" }; // Example item
+                dropItem(position, droppedItem);
+                scene.remove(block);
+            }
+        }
 
-// التعامل مع حجم الشاشة
-window.addEventListener("resize", function () {
-    engine.resize();
-});
+        function getBlockAtPosition(position) {
+            const blocks = scene.children.filter(child => child instanceof THREE.Mesh);
+            return blocks.find(block => {
+                const { x, y, z } = block.position;
+                return x === position.x && y === position.y && z === position.z;
+            });
+        }
+
+        function dropItem(position, item) {
+            const geometry = new THREE.SphereGeometry(0.1, 10, 10);
+            const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+            const sphere = new THREE.Mesh(geometry, material);
+            sphere.position.set(position.x, position.y + 1, position.z);
+            scene.add(sphere);
+            sphere.userData = { item };
+        }
+
+        // 8. Touch event for breaking blocks
+        document.addEventListener("touchstart", (event) => {
+            const touch = event.touches[0];
+            const x = touch.clientX;
+            const y = touch.clientY;
+
+            // Convert screen coordinates to world coordinates (Raycasting)
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            mouse.x = (x / window.innerWidth) * 2 - 1;
+            mouse.y = -(y / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(terrain);
+
+            if (intersects.length > 0) {
+                breakBlock(intersects[0].point); // Break the block at the touched point
+            }
+        });
+
+        // 9. Game loop for rendering
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update(); // Only required if controls.enableDamping = true, or if controls.auto-rotation
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Resize renderer on window size change
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    </script>
+</body>
+</html>
