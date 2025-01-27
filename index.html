@@ -1,215 +1,148 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الوضع الليلي والصباحي - التطور الثوري</title>
-    <style>
-        /* التصميم العام */
-        body {
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            overflow: hidden;
-            transition: background-color 0.5s, color 0.5s;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لعبة مصغرة مستوحاة من ماين كرافت</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      touch-action: none; /* تعطيل التمرير الافتراضي على الهواتف */
+    }
 
-        /* خلفيات ديناميكية بناءً على الوقت */
-        .day-mode {
-            background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 100%);
-            color: #333;
-        }
+    #game-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
 
-        .night-mode {
-            background: linear-gradient(180deg, #000428 0%, #004e92 100%);
-            color: #f4f4f4;
-        }
+    #controls {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
 
-        /* تأثيرات ثلاثية الأبعاد */
-        .toggle-button {
-            width: 120px;
-            height: 60px;
-            border-radius: 30px;
-            border: 2px solid #ccc;
-            background-color: #87CEEB;
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
+    .control-button {
+      background-color: rgba(255, 255, 255, 0.7);
+      border: 2px solid #000;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #000;
+      user-select: none;
+      cursor: pointer;
+      touch-action: none; /* تعطيل التمرير الافتراضي على الهواتف */
+    }
 
-        .toggle-button:hover {
-            transform: scale(1.1) rotateX(10deg) rotateY(10deg);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        }
+    #joystick {
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      width: 80px;
+      height: 80px;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      touch-action: none;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
+  <script>
+    // تهيئة المشهد
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true; // تفعيل الظلال
+    document.getElementById('game-container').appendChild(renderer.domElement);
 
-        /* تصميم Glassmorphism */
-        .glassmorphism {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+    // إضاءة PBR
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 10, 5).normalize();
+    light.castShadow = true; // تفعيل الظلال
+    scene.add(light);
 
-        /* النجوم في الوضع الليلي */
-        .stars {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('https://www.transparenttextures.com/patterns/stardust.png');
-            animation: twinkle 3s infinite;
-        }
+    // أرضية
+    const groundGeometry = new THREE.PlaneGeometry(20, 20);
+    const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00, roughness: 0.8 });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true; // تفعيل استقبال الظلال
+    scene.add(ground);
 
-        /* القمر في الوضع الليلي */
-        .moon {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 80px;
-            height: 80px;
-            background: #f4f4f4;
-            border-radius: 50%;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-            transition: transform 0.5s;
-        }
+    // مكعب (بلوك)
+    const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff, roughness: 0.5, metalness: 0.5 });
+    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    cube.castShadow = true; // تفعيل إلقاء الظلال
+    cube.position.set(0, 0.5, 0);
+    scene.add(cube);
 
-        .moon:hover {
-            transform: scale(1.1) rotate(15deg);
-        }
+    // ضبط الكاميرا
+    camera.position.set(5, 5, 5);
+    camera.lookAt(0, 0, 0);
 
-        /* الغيوم في الوضع الصباحي */
-        .clouds {
-            position: absolute;
-            top: 20px;
-            width: 100%;
-            height: 100px;
-            background: url('https://www.transparenttextures.com/patterns/clouds.png');
-            animation: moveClouds 20s linear infinite;
-        }
+    // عصا تحكم افتراضية
+    const joystick = document.getElementById('joystick');
+    let isJoystickActive = false;
+    let joystickStartX = 0;
+    let joystickStartY = 0;
 
-        /* الأرض في الوضع الصباحي */
-        .ground {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 150px;
-            background: #4CAF50;
-        }
+    joystick.addEventListener('touchstart', (e) => {
+      isJoystickActive = true;
+      joystickStartX = e.touches[0].clientX;
+      joystickStartY = e.touches[0].clientY;
+    });
 
-        /* العنوان */
-        h1 {
-            font-size: 2.5rem;
-            margin-top: 20px;
-            animation: fadeIn 1s ease-in-out;
-        }
+    joystick.addEventListener('touchmove', (e) => {
+      if (isJoystickActive) {
+        const deltaX = e.touches[0].clientX - joystickStartX;
+        const deltaY = e.touches[0].clientY - joystickStartY;
+        cube.position.x += deltaX * 0.01;
+        cube.position.z -= deltaY * 0.01;
+        joystickStartX = e.touches[0].clientX;
+        joystickStartY = e.touches[0].clientY;
+      }
+    });
 
-        /* تأثيرات CSS */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+    joystick.addEventListener('touchend', () => {
+      isJoystickActive = false;
+    });
 
-        @keyframes twinkle {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
+    // تكييف حجم العرض مع تغيير حجم النافذة
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
 
-        @keyframes moveClouds {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        /* تصميم متجاوب */
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 2rem;
-            }
-
-            .toggle-button {
-                width: 100px;
-                height: 50px;
-            }
-
-            .moon {
-                width: 60px;
-                height: 60px;
-            }
-        }
-    </style>
+    // دورة التصيير
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
 </head>
-<body class="day-mode">
-    <div id="background-effects">
-        <div class="stars"></div>
-        <div class="moon"></div>
-        <div class="clouds"></div>
-        <div class="ground"></div>
-    </div>
-    <h1 id="mode-heading">الوضع الحالي: صباحي ☀️</h1>
-    <div class="toggle-button glassmorphism" onclick="toggleMode()">
-        <div class="sun"></div>
-        <div class="cloud"></div>
-        <div class="moon-button"></div>
-        <div class="stars-button"></div>
-    </div>
-
-    <script>
-        // العناصر العامة
-        const body = document.body;
-        const heading = document.getElementById('mode-heading');
-        const stars = document.querySelector('.stars');
-        const moon = document.querySelector('.moon');
-        const clouds = document.querySelector('.clouds');
-        const ground = document.querySelector('.ground');
-        const toggleButton = document.querySelector('.toggle-button');
-
-        // تحميل الوضع من LocalStorage
-        let isNightMode = localStorage.getItem('nightMode') === 'true';
-
-        // تطبيق الوضع عند التحميل
-        function applyMode() {
-            body.classList.toggle('night-mode', isNightMode);
-            heading.textContent = isNightMode ? 'الوضع الحالي: ليلي 🌙' : 'الوضع الحالي: صباحي ☀️';
-            stars.style.display = isNightMode ? 'block' : 'none';
-            moon.style.display = isNightMode ? 'block' : 'none';
-            clouds.style.display = isNightMode ? 'none' : 'block';
-            ground.style.backgroundColor = isNightMode ? '#333' : '#4CAF50';
-            toggleButton.classList.toggle('night-mode', isNightMode);
-        }
-
-        // تبديل الوضع
-        function toggleMode() {
-            isNightMode = !isNightMode;
-            localStorage.setItem('nightMode', isNightMode);
-            applyMode();
-            playSound();
-        }
-
-        // تشغيل الصوت
-        function playSound() {
-            const sound = new Audio(isNightMode ? 'night-sound.mp3' : 'day-sound.mp3');
-            sound.play();
-        }
-
-        // تطبيق الوضع التلقائي بناءً على الوقت
-        function autoToggleMode() {
-            const now = new Date();
-            const hour = now.getHours();
-            if (hour >= 18 || hour < 6) {
-                isNightMode = true;
-                applyMode();
-            }
-        }
-
-        // تحميل الوضع التلقائي عند بدء التشغيل
-        window.onload = () => {
-            autoToggleMode();
-            applyMode();
-        };
-    </script>
+<body>
+  <div id="game-container"></div>
+  <div id="controls">
+    <div id="joystick" class="control-button"></div>
+    <div id="action-button" class="control-button">بناء</div>
+  </div>
 </body>
 </html>
