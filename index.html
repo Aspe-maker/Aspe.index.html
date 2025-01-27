@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لعبة مصغرة مستوحاة من ماين كرافت</title>
+  <title>لعبة ثلاثية الأبعاد مستوحاة من ماين كرافت</title>
   <style>
     body, html {
       margin: 0;
@@ -12,7 +12,7 @@
       width: 100%;
       height: 100%;
       font-family: Arial, sans-serif;
-      touch-action: none; /* تعطيل التمرير الافتراضي على الهواتف */
+      touch-action: none;
     }
 
     #game-container {
@@ -46,7 +46,7 @@
       color: #000;
       user-select: none;
       cursor: pointer;
-      touch-action: none; /* تعطيل التمرير الافتراضي على الهواتف */
+      touch-action: none;
     }
 
     #joystick {
@@ -59,6 +59,30 @@
       border-radius: 50%;
       touch-action: none;
     }
+
+    #toolbar {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .block-button {
+      width: 50px;
+      height: 50px;
+      background-color: #ccc;
+      border: 2px solid #000;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
   <script>
@@ -67,33 +91,56 @@
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true; // تفعيل الظلال
+    renderer.shadowMap.enabled = true;
     document.getElementById('game-container').appendChild(renderer.domElement);
 
     // إضاءة PBR
     const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(5, 10, 5).normalize();
-    light.castShadow = true; // تفعيل الظلال
+    light.castShadow = true;
     scene.add(light);
 
-    // أرضية
-    const groundGeometry = new THREE.PlaneGeometry(20, 20);
+    // أرضية (Voxel-based)
+    const groundSize = 20;
+    const groundGeometry = new THREE.BoxGeometry(1, 1, 1);
     const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00, roughness: 0.8 });
-    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true; // تفعيل استقبال الظلال
-    scene.add(ground);
+    for (let x = -groundSize; x <= groundSize; x++) {
+      for (let z = -groundSize; z <= groundSize; z++) {
+        const groundBlock = new THREE.Mesh(groundGeometry, groundMaterial);
+        groundBlock.position.set(x, -0.5, z);
+        groundBlock.receiveShadow = true;
+        scene.add(groundBlock);
+      }
+    }
 
-    // مكعب (بلوك)
-    const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-    const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff, roughness: 0.5, metalness: 0.5 });
-    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    cube.castShadow = true; // تفعيل إلقاء الظلال
-    cube.position.set(0, 0.5, 0);
-    scene.add(cube);
+    // أشجار
+    const treeTrunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+    const treeLeavesMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+    function createTree(x, z) {
+      const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2, 0.5), treeTrunkMaterial);
+      trunk.position.set(x, 1, z);
+      trunk.castShadow = true;
+      scene.add(trunk);
 
-    // ضبط الكاميرا
-    camera.position.set(5, 5, 5);
+      const leaves = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), treeLeavesMaterial);
+      leaves.position.set(x, 3, z);
+      leaves.castShadow = true;
+      scene.add(leaves);
+    }
+    createTree(5, 5);
+    createTree(-5, -5);
+
+    // سماء (Skybox)
+    const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
+    const skyMaterial = new THREE.MeshBasicMaterial({
+      color: 0x87CEEB,
+      side: THREE.BackSide,
+    });
+    const skybox = new THREE.Mesh(skyGeometry, skyMaterial);
+    scene.add(skybox);
+
+    // كاميرا
+    camera.position.set(10, 10, 10);
     camera.lookAt(0, 0, 0);
 
     // عصا تحكم افتراضية
@@ -112,8 +159,8 @@
       if (isJoystickActive) {
         const deltaX = e.touches[0].clientX - joystickStartX;
         const deltaY = e.touches[0].clientY - joystickStartY;
-        cube.position.x += deltaX * 0.01;
-        cube.position.z -= deltaY * 0.01;
+        camera.position.x -= deltaX * 0.01;
+        camera.position.z -= deltaY * 0.01;
         joystickStartX = e.touches[0].clientX;
         joystickStartY = e.touches[0].clientY;
       }
@@ -143,6 +190,11 @@
   <div id="controls">
     <div id="joystick" class="control-button"></div>
     <div id="action-button" class="control-button">بناء</div>
+  </div>
+  <div id="toolbar">
+    <div class="block-button" data-type="grass">عشب</div>
+    <div class="block-button" data-type="stone">حجر</div>
+    <div class="block-button" data-type="wood">خشب</div>
   </div>
 </body>
 </html>
