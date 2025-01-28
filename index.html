@@ -59,6 +59,9 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
+        // السماء الزرقاء
+        scene.background = new THREE.Color(0x87CEEB);
+
         // الأرضية
         const groundGeometry = new THREE.PlaneGeometry(200, 200);
         const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -93,14 +96,12 @@
         function createPlane() {
             const planeGroup = new THREE.Group();
 
-            // 1. الجسم الرئيسي
             const bodyGeometry = new THREE.CylinderGeometry(0.5, 0.5, 3, 16);
             const bodyMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
             body.rotation.z = Math.PI / 2;
             planeGroup.add(body);
 
-            // 2. الأجنحة
             const wingGeometry = new THREE.BoxGeometry(2, 0.1, 0.5);
             const wingMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
             const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
@@ -110,14 +111,12 @@
             planeGroup.add(leftWing);
             planeGroup.add(rightWing);
 
-            // 3. الذيل
             const tailGeometry = new THREE.BoxGeometry(0.5, 0.1, 0.5);
             const tailMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
             const tail = new THREE.Mesh(tailGeometry, tailMaterial);
             tail.position.set(-1.5, 0.5, 0);
             planeGroup.add(tail);
 
-            // 4. المروحة
             const propellerGeometry = new THREE.BoxGeometry(0.1, 0.1, 1);
             const propellerMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 });
             const propeller = new THREE.Mesh(propellerGeometry, propellerMaterial);
@@ -127,28 +126,46 @@
             return planeGroup;
         }
 
-        // إضافة الطائرة إلى المشهد
+        // إضافة الطائرة
         const plane = createPlane();
-        plane.position.y = 2; // اجعل الطائرة تطير فوق الأرض
+        plane.position.y = 2;
         scene.add(plane);
 
-        // التحكم
-        let speed = 0.1;
-        let turbo = 1;
+        // التحكم والديناميكية
+        let velocity = { x: 0, z: 0 };
+        let acceleration = 0.005;
+        let maxSpeed = 0.2;
+        let turboActive = false;
 
-        document.getElementById("up").addEventListener("touchstart", () => plane.position.z -= speed * turbo);
-        document.getElementById("down").addEventListener("touchstart", () => plane.position.z += speed * turbo);
-        document.getElementById("left").addEventListener("touchstart", () => plane.position.x -= speed * turbo);
-        document.getElementById("right").addEventListener("touchstart", () => plane.position.x += speed * turbo);
-        document.getElementById("turbo").addEventListener("touchstart", () => turbo = 2);
-        document.getElementById("turbo").addEventListener("touchend", () => turbo = 1);
+        // التحكم عبر الهاتف
+        document.getElementById("up").addEventListener("touchstart", () => velocity.z = -maxSpeed);
+        document.getElementById("down").addEventListener("touchstart", () => velocity.z = maxSpeed);
+        document.getElementById("left").addEventListener("touchstart", () => velocity.x = -maxSpeed);
+        document.getElementById("right").addEventListener("touchstart", () => velocity.x = maxSpeed);
+        document.getElementById("up").addEventListener("touchend", () => velocity.z = 0);
+        document.getElementById("down").addEventListener("touchend", () => velocity.z = 0);
+        document.getElementById("left").addEventListener("touchend", () => velocity.x = 0);
+        document.getElementById("right").addEventListener("touchend", () => velocity.x = 0);
 
-        // تحديث المشهد
+        document.getElementById("turbo").addEventListener("touchstart", () => {
+            turboActive = true;
+            maxSpeed = 0.4;
+            setTimeout(() => {
+                turboActive = false;
+                maxSpeed = 0.2;
+            }, 3000);
+        });
+
         function animate() {
             requestAnimationFrame(animate);
 
-            // تدوير المروحة
-            plane.children[4].rotation.x += 0.2;
+            // تطبيق السرعة التدريجية
+            plane.position.x += velocity.x;
+            plane.position.z += velocity.z;
+
+            // حركة خفيفة عند التوقف
+            if (velocity.x === 0) velocity.x *= 0.98;
+            if (velocity.z === 0) velocity.z *= 0.98;
 
             renderer.render(scene, camera);
         }
