@@ -68,7 +68,65 @@
         ground.rotation.x = -Math.PI / 2;
         scene.add(ground);
 
-        // تصميم الطبق الطائر
+        // إنشاء الأشجار
+        function createTree(x, z) {
+            const trunk = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.5, 0.5, 2, 16),
+                new THREE.MeshBasicMaterial({ color: 0x8B4513 })
+            );
+            trunk.position.set(x, 1, z);
+            scene.add(trunk);
+
+            const leaves = new THREE.Mesh(
+                new THREE.SphereGeometry(2, 16, 16),
+                new THREE.MeshBasicMaterial({ color: 0x228B22 })
+            );
+            leaves.position.set(x, 3, z);
+            scene.add(leaves);
+        }
+
+        // إضافة الأشجار بشكل عشوائي
+        for (let i = 0; i < 50; i++) {
+            const x = Math.random() * 100 - 50;
+            const z = Math.random() * 100 - 50;
+            createTree(x, z);
+        }
+
+        // إنشاء البحيرات
+        function createLake(x, z) {
+            const lake = new THREE.Mesh(
+                new THREE.BoxGeometry(10, 0.1, 10),
+                new THREE.MeshBasicMaterial({ color: 0x1E90FF })
+            );
+            lake.position.set(x, 0, z);
+            scene.add(lake);
+        }
+
+        // إضافة بعض البحيرات
+        for (let i = 0; i < 5; i++) {
+            const x = Math.random() * 100 - 50;
+            const z = Math.random() * 100 - 50;
+            createLake(x, z);
+        }
+
+        // إنشاء التلال
+        function createHill(x, z) {
+            const hill = new THREE.Mesh(
+                new THREE.BoxGeometry(10, 3, 10),
+                new THREE.MeshBasicMaterial({ color: 0xA0522D })
+            );
+            hill.position.set(x, 1.5, z);
+            scene.add(hill);
+        }
+
+        // إضافة بعض التلال
+        for (let i = 0; i < 5; i++) {
+            const x = Math.random() * 100 - 50;
+            const z = Math.random() * 100 - 50;
+            createHill(x, z);
+        }
+
+        // تصميم طبق طائر (🛸)
         function createUFO() {
             const ufoGroup = new THREE.Group();
 
@@ -142,7 +200,7 @@
             ufo.position.y += velocity.y;
             ufo.position.z += velocity.z;
 
-            // تقليل السرعة تدريجيًا إذا لم يتم الضغط على أزرار
+            // تقليل السرعة تدريجياً إذا لم يتم الضغط على أزرار
             velocity.x *= 0.98;
             velocity.y *= 0.98;
             velocity.z *= 0.98;
