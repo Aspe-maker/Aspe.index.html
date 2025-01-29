@@ -36,6 +36,18 @@
             background-color: red;
             color: white;
         }
+        #fire {
+            position: fixed;
+            bottom: 160px;
+            right: 10px;
+            width: 80px;
+            height: 80px;
+            font-size: 18px;
+            border: none;
+            border-radius: 50%;
+            background-color: orange;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -47,8 +59,10 @@
             <button id="right">→</button>
         </div>
         <button id="fly">⤴️</button>
+        <button id="descend">↓ نزول</button>
     </div>
     <button id="turbo">Turbo</button>
+    <button id="fire">💥</button>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js"></script>
     <script>
         // إعداد المشهد والكاميرا
@@ -68,7 +82,7 @@
         ground.rotation.x = -Math.PI / 2;
         scene.add(ground);
 
-        // إنشاء الأشجار
+        // إضافة الأشجار
         function createTree(x, z) {
             const trunk = new THREE.Mesh(
                 new THREE.CylinderGeometry(0.5, 0.5, 2, 16),
@@ -109,21 +123,20 @@
             createLake(x, z);
         }
 
-        // إنشاء التلال
-        function createHill(x, z) {
-            const hill = new THREE.Mesh(
-                new THREE.BoxGeometry(10, 3, 10),
-                new THREE.MeshBasicMaterial({ color: 0xA0522D })
-            );
-            hill.position.set(x, 1.5, z);
-            scene.add(hill);
+        // إضافة الجبال المثلثة
+        function createMountain(x, z) {
+            const mountainGeometry = new THREE.ConeGeometry(5, 10, 4);
+            const mountainMaterial = new THREE.MeshBasicMaterial({ color: 0xA0522D });
+            const mountain = new THREE.Mesh(mountainGeometry, mountainMaterial);
+            mountain.position.set(x, 5, z);
+            scene.add(mountain);
         }
 
-        // إضافة بعض التلال
+        // إضافة بعض الجبال المثلثة
         for (let i = 0; i < 5; i++) {
             const x = Math.random() * 100 - 50;
             const z = Math.random() * 100 - 50;
-            createHill(x, z);
+            createMountain(x, z);
         }
 
         // تصميم طبق طائر (🛸)
@@ -160,6 +173,18 @@
         let acceleration = 0.01;
         let maxSpeed = 0.2;
         let turboActive = false;
+        let isDescending = false;
+        let fireCooldown = false;
+
+        // تأثيرات التيربو
+        function activateTurbo() {
+            turboActive = true;
+            maxSpeed = 0.5;
+            setTimeout(() => {
+                turboActive = false;
+                maxSpeed = 0.2;
+            }, 3000);
+        }
 
         // التحكم بالأزرار
         document.getElementById("up").addEventListener("touchstart", () => velocity.z = -maxSpeed);
@@ -167,46 +192,44 @@
         document.getElementById("left").addEventListener("touchstart", () => velocity.x = -maxSpeed);
         document.getElementById("right").addEventListener("touchstart", () => velocity.x = maxSpeed);
         document.getElementById("fly").addEventListener("touchstart", () => velocity.y = maxSpeed);
+        document.getElementById("descend").addEventListener("touchstart", () => velocity.y = -maxSpeed);
 
         document.getElementById("up").addEventListener("touchend", () => velocity.z = 0);
         document.getElementById("down").addEventListener("touchend", () => velocity.z = 0);
         document.getElementById("left").addEventListener("touchend", () => velocity.x = 0);
         document.getElementById("right").addEventListener("touchend", () => velocity.x = 0);
         document.getElementById("fly").addEventListener("touchend", () => velocity.y = 0);
+        document.getElementById("descend").addEventListener("touchend", () => velocity.y = 0);
 
-        document.getElementById("turbo").addEventListener("touchstart", () => {
-            turboActive = true;
-            maxSpeed = 0.5;
-            setTimeout(() => {
-                turboActive = false;
-                maxSpeed = 0.2;
-            }, 3000);
+        // تفعيل التيربو
+        document.getElementById("turbo").addEventListener("click", activateTurbo);
+
+        // زر إطلاق النار
+        document.getElementById("fire").addEventListener("click", () => {
+            if (!fireCooldown) {
+                fireCooldown = true;
+                console.log("تم إطلاق النار!");
+                setTimeout(() => fireCooldown = false, 500);
+            }
         });
 
-        // تحديث الكاميرا
-        function updateCamera() {
-            camera.position.x = ufo.position.x;
-            camera.position.y = ufo.position.y + 5;
-            camera.position.z = ufo.position.z + 10;
-            camera.lookAt(ufo.position);
-        }
-
-        // الحركة
+        // تحديث الحركة
         function animate() {
             requestAnimationFrame(animate);
 
-            // تحديث الموقع بناءً على السرعة
+            // تحديث مواقع الكائنات
             ufo.position.x += velocity.x;
             ufo.position.y += velocity.y;
             ufo.position.z += velocity.z;
 
-            // تقليل السرعة تدريجياً إذا لم يتم الضغط على أزرار
-            velocity.x *= 0.98;
-            velocity.y *= 0.98;
-            velocity.z *= 0.98;
+            // تطبيق الجاذبية
+            if (ufo.position.y > 5 && !isDescending) ufo.position.y -= 0.05;
 
-            // تحديث الكاميرا
-            updateCamera();
+            // إعادة تحريك الكاميرا خلف الطائرة
+            camera.position.x = ufo.position.x + 10;
+            camera.position.y = ufo.position.y + 10;
+            camera.position.z = ufo.position.z + 20;
+            camera.lookAt(ufo.position);
 
             renderer.render(scene, camera);
         }
