@@ -15,7 +15,7 @@
             flex-direction: column;
             gap: 10px;
         }
-        #controls button {
+        #controls button, #turbo, #fire {
             width: 60px;
             height: 60px;
             font-size: 20px;
@@ -30,11 +30,7 @@
             right: 10px;
             width: 80px;
             height: 80px;
-            font-size: 18px;
-            border: none;
-            border-radius: 50%;
             background-color: red;
-            color: white;
         }
         #fire {
             position: fixed;
@@ -42,11 +38,20 @@
             right: 10px;
             width: 80px;
             height: 80px;
-            font-size: 18px;
-            border: none;
-            border-radius: 50%;
             background-color: orange;
+        }
+        #restart {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            font-size: 24px;
+            background-color: red;
             color: white;
+            border: none;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -63,178 +68,112 @@
     </div>
     <button id="turbo">Turbo</button>
     <button id="fire">💥</button>
+    <button id="restart">إعادة المحاولة</button>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js"></script>
     <script>
-        // إعداد المشهد والكاميرا
+        // إعداد المشهد
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // السماء الزرقاء
         scene.background = new THREE.Color(0x87CEEB);
 
         // الأرضية
-        const groundGeometry = new THREE.PlaneGeometry(200, 200, 32, 32);
+        const groundGeometry = new THREE.PlaneGeometry(500, 500, 32, 32);
         const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = -Math.PI / 2;
         scene.add(ground);
 
-        // إضافة الأشجار
-        function createTree(x, z) {
-            const trunk = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.5, 0.5, 2, 16),
-                new THREE.MeshBasicMaterial({ color: 0x8B4513 })
-            );
-            trunk.position.set(x, 1, z);
-            scene.add(trunk);
-
-            const leaves = new THREE.Mesh(
-                new THREE.SphereGeometry(2, 16, 16),
-                new THREE.MeshBasicMaterial({ color: 0x228B22 })
-            );
-            leaves.position.set(x, 3, z);
-            scene.add(leaves);
-        }
-
-        // إضافة الأشجار بشكل عشوائي
-        for (let i = 0; i < 50; i++) {
-            const x = Math.random() * 100 - 50;
-            const z = Math.random() * 100 - 50;
-            createTree(x, z);
-        }
-
-        // إنشاء البحيرات
-        function createLake(x, z) {
-            const lake = new THREE.Mesh(
-                new THREE.BoxGeometry(10, 0.1, 10),
-                new THREE.MeshBasicMaterial({ color: 0x1E90FF })
-            );
-            lake.position.set(x, 0, z);
-            scene.add(lake);
-        }
-
-        // إضافة بعض البحيرات
-        for (let i = 0; i < 5; i++) {
-            const x = Math.random() * 100 - 50;
-            const z = Math.random() * 100 - 50;
-            createLake(x, z);
-        }
-
-        // إضافة الجبال المثلثة
-        function createMountain(x, z) {
-            const mountainGeometry = new THREE.ConeGeometry(5, 10, 4);
-            const mountainMaterial = new THREE.MeshBasicMaterial({ color: 0xA0522D });
-            const mountain = new THREE.Mesh(mountainGeometry, mountainMaterial);
-            mountain.position.set(x, 5, z);
-            scene.add(mountain);
-        }
-
-        // إضافة بعض الجبال المثلثة
-        for (let i = 0; i < 5; i++) {
-            const x = Math.random() * 100 - 50;
-            const z = Math.random() * 100 - 50;
-            createMountain(x, z);
-        }
-
-        // تصميم طبق طائر (🛸)
+        // طائرتك (🛸)
         function createUFO() {
-            const ufoGroup = new THREE.Group();
-
-            // الجسم الرئيسي
-            const bodyGeometry = new THREE.CylinderGeometry(2, 4, 1, 32);
-            const bodyMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
-            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-            body.position.y = 0.5;
-            ufoGroup.add(body);
-
-            // القبة العلوية
-            const domeGeometry = new THREE.SphereGeometry(1.5, 32, 32, 0, Math.PI);
-            const domeMaterial = new THREE.MeshBasicMaterial({ color: 0x87CEEB, transparent: true, opacity: 0.7 });
-            const dome = new THREE.Mesh(domeGeometry, domeMaterial);
-            dome.position.y = 1;
-            ufoGroup.add(dome);
-
-            return ufoGroup;
+            const ufo = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.CylinderGeometry(1, 2, 0.5, 32), new THREE.MeshBasicMaterial({ color: 0x808080 }));
+            const dome = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshBasicMaterial({ color: 0x87CEEB, transparent: true, opacity: 0.7 }));
+            dome.position.y = 0.5;
+            ufo.add(body, dome);
+            return ufo;
         }
+        const player = createUFO();
+        player.position.y = 5;
+        scene.add(player);
 
-        const ufo = createUFO();
-        ufo.position.y = 5; // اجعل الطائرة تطير فوق الأرض
-        scene.add(ufo);
+        // الأعداء
+        function createEnemy(x, z) {
+            const enemy = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 2), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+            enemy.position.set(x, 5, z);
+            scene.add(enemy);
+            return enemy;
+        }
+        const enemies = [createEnemy(10, -20), createEnemy(-15, -30)];
 
-        // جعل الكاميرا خلف الطائرة
-        camera.position.set(0, 10, 20);
-        camera.lookAt(ufo.position);
+        // الكاميرا خلف اللاعب
+        camera.position.set(0, 5, 10);
+        camera.lookAt(player.position);
 
-        // ديناميكية الحركة
         let velocity = { x: 0, y: 0, z: 0 };
-        let acceleration = 0.01;
-        let maxSpeed = 0.2;
         let turboActive = false;
-        let isDescending = false;
-        let fireCooldown = false;
+        let isDead = false;
 
-        // تأثيرات التيربو
+        function animate() {
+            if (!isDead) {
+                requestAnimationFrame(animate);
+                player.position.x += velocity.x;
+                player.position.y += velocity.y;
+                player.position.z += velocity.z;
+                camera.position.set(player.position.x, player.position.y + 5, player.position.z + 10);
+                camera.lookAt(player.position);
+                renderer.render(scene, camera);
+            }
+        }
+        animate();
+
         function activateTurbo() {
             turboActive = true;
-            maxSpeed = 0.5;
-            setTimeout(() => {
-                turboActive = false;
-                maxSpeed = 0.2;
-            }, 3000);
+            velocity.z *= 2;
+            setTimeout(() => turboActive = false, 3000);
         }
 
-        // التحكم بالأزرار
-        document.getElementById("up").addEventListener("touchstart", () => velocity.z = -maxSpeed);
-        document.getElementById("down").addEventListener("touchstart", () => velocity.z = maxSpeed);
-        document.getElementById("left").addEventListener("touchstart", () => velocity.x = -maxSpeed);
-        document.getElementById("right").addEventListener("touchstart", () => velocity.x = maxSpeed);
-        document.getElementById("fly").addEventListener("touchstart", () => velocity.y = maxSpeed);
-        document.getElementById("descend").addEventListener("touchstart", () => velocity.y = -maxSpeed);
-
-        document.getElementById("up").addEventListener("touchend", () => velocity.z = 0);
-        document.getElementById("down").addEventListener("touchend", () => velocity.z = 0);
-        document.getElementById("left").addEventListener("touchend", () => velocity.x = 0);
-        document.getElementById("right").addEventListener("touchend", () => velocity.x = 0);
-        document.getElementById("fly").addEventListener("touchend", () => velocity.y = 0);
-        document.getElementById("descend").addEventListener("touchend", () => velocity.y = 0);
-
-        // تفعيل التيربو
+        document.getElementById("up").addEventListener("touchstart", () => velocity.z = -0.2);
+        document.getElementById("down").addEventListener("touchstart", () => velocity.z = 0.2);
+        document.getElementById("left").addEventListener("touchstart", () => velocity.x = -0.2);
+        document.getElementById("right").addEventListener("touchstart", () => velocity.x = 0.2);
+        document.getElementById("fly").addEventListener("touchstart", () => velocity.y = 0.2);
+        document.getElementById("descend").addEventListener("touchstart", () => velocity.y = -0.2);
         document.getElementById("turbo").addEventListener("click", activateTurbo);
 
-        // زر إطلاق النار
         document.getElementById("fire").addEventListener("click", () => {
-            if (!fireCooldown) {
-                fireCooldown = true;
-                console.log("تم إطلاق النار!");
-                setTimeout(() => fireCooldown = false, 500);
+            const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
+            bullet.position.set(player.position.x, player.position.y, player.position.z);
+            scene.add(bullet);
+
+            function moveBullet() {
+                bullet.position.z -= 0.5;
+                enemies.forEach(enemy => {
+                    if (bullet.position.distanceTo(enemy.position) < 1) {
+                        scene.remove(enemy);
+                        scene.remove(bullet);
+                    }
+                });
+                if (bullet.position.z < -50) scene.remove(bullet);
+                else requestAnimationFrame(moveBullet);
             }
+            moveBullet();
         });
 
-        // تحديث الحركة
-        function animate() {
-            requestAnimationFrame(animate);
-
-            // تحديث مواقع الكائنات
-            ufo.position.x += velocity.x;
-            ufo.position.y += velocity.y;
-            ufo.position.z += velocity.z;
-
-            // تطبيق الجاذبية
-            if (ufo.position.y > 5 && !isDescending) ufo.position.y -= 0.05;
-
-            // إعادة تحريك الكاميرا خلف الطائرة
-            camera.position.x = ufo.position.x + 10;
-            camera.position.y = ufo.position.y + 10;
-            camera.position.z = ufo.position.z + 20;
-            camera.lookAt(ufo.position);
-
-            renderer.render(scene, camera);
+        function checkCollision() {
+            if (player.position.y < 0.5) {
+                isDead = true;
+                document.getElementById("restart").style.display = "block";
+            }
         }
 
-        animate();
+        document.getElementById("restart").addEventListener("click", () => location.reload());
+
+        setInterval(checkCollision, 100);
     </script>
 </body>
 </html>
