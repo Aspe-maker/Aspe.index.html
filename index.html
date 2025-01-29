@@ -53,6 +53,16 @@
             border: none;
             border-radius: 10px;
         }
+        #score {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -69,6 +79,7 @@
     <button id="turbo">Turbo</button>
     <button id="fire">💥</button>
     <button id="restart">إعادة المحاولة</button>
+    <div id="score">العدو المتبقي: 0</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js"></script>
     <script>
@@ -101,14 +112,28 @@
         player.position.y = 5;
         scene.add(player);
 
+        // شكل طائرة هليكوبتر (🚁)
+        function createHelicopter() {
+            const helicopter = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 3), new THREE.MeshBasicMaterial({ color: 0x555555 }));
+            const rotor = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 4, 32), new THREE.MeshBasicMaterial({ color: 0x888888 }));
+            rotor.rotation.x = Math.PI / 2;
+            rotor.position.y = 1.5;
+            helicopter.add(body, rotor);
+            return helicopter;
+        }
+
         // الأعداء
-        function createEnemy(x, z) {
-            const enemy = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 2), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+        const enemies = [];
+        function spawnEnemy() {
+            const x = (Math.random() - 0.5) * 100;
+            const z = (Math.random() - 0.5) * 100 - 50;
+            const enemy = createHelicopter();
             enemy.position.set(x, 5, z);
             scene.add(enemy);
-            return enemy;
+            enemies.push(enemy);
         }
-        const enemies = [createEnemy(10, -20), createEnemy(-15, -30)];
+        for (let i = 0; i < 5; i++) spawnEnemy();
 
         // الكاميرا خلف اللاعب
         camera.position.set(0, 5, 10);
@@ -117,6 +142,13 @@
         let velocity = { x: 0, y: 0, z: 0 };
         let turboActive = false;
         let isDead = false;
+        let score = 0;
+
+        // تحديث العداد
+        function updateScore() {
+            document.getElementById("score").innerText = `العدو المتبقي: ${enemies.length}`;
+        }
+        updateScore();
 
         function animate() {
             if (!isDead) {
@@ -131,31 +163,51 @@
         }
         animate();
 
+        // الجاذبية
+        const gravity = 0.01;
+        function applyGravity() {
+            if (player.position.y > 0.5) {
+                velocity.y -= gravity;
+            } else {
+                velocity.y = 0;
+                player.position.y = 0.5;
+            }
+        }
+
+        // تحسين التحكم
+        const moveStep = 0.5;
+        document.getElementById("up").addEventListener("click", () => velocity.z = -moveStep);
+        document.getElementById("down").addEventListener("click", () => velocity.z = moveStep);
+        document.getElementById("left").addEventListener("click", () => velocity.x = -moveStep);
+        document.getElementById("right").addEventListener("click", () => velocity.x = moveStep);
+        document.getElementById("fly").addEventListener("click", () => velocity.y = moveStep);
+        document.getElementById("descend").addEventListener("click", () => velocity.y = -moveStep);
+
+        // Turbo
         function activateTurbo() {
             turboActive = true;
             velocity.z *= 2;
             setTimeout(() => turboActive = false, 3000);
         }
-
-        document.getElementById("up").addEventListener("touchstart", () => velocity.z = -0.2);
-        document.getElementById("down").addEventListener("touchstart", () => velocity.z = 0.2);
-        document.getElementById("left").addEventListener("touchstart", () => velocity.x = -0.2);
-        document.getElementById("right").addEventListener("touchstart", () => velocity.x = 0.2);
-        document.getElementById("fly").addEventListener("touchstart", () => velocity.y = 0.2);
-        document.getElementById("descend").addEventListener("touchstart", () => velocity.y = -0.2);
         document.getElementById("turbo").addEventListener("click", activateTurbo);
 
+        // إطلاق النار (🚀)
         document.getElementById("fire").addEventListener("click", () => {
-            const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
+            const bullet = new THREE.Mesh(new THREE.ConeGeometry(0.2, 1, 16), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
             bullet.position.set(player.position.x, player.position.y, player.position.z);
+            bullet.rotation.x = Math.PI / 2;
             scene.add(bullet);
 
             function moveBullet() {
                 bullet.position.z -= 0.5;
-                enemies.forEach(enemy => {
-                    if (bullet.position.distanceTo(enemy.position) < 1) {
+                enemies.forEach((enemy, index) => {
+                    if (bullet.position.distanceTo(enemy.position) < 2) {
                         scene.remove(enemy);
                         scene.remove(bullet);
+                        enemies.splice(index, 1);
+                        score++;
+                        updateScore();
+                        spawnEnemy(); // إعادة ظهور العدو
                     }
                 });
                 if (bullet.position.z < -50) scene.remove(bullet);
@@ -164,6 +216,7 @@
             moveBullet();
         });
 
+        // التحقق من الاصطدام
         function checkCollision() {
             if (player.position.y < 0.5) {
                 isDead = true;
@@ -171,9 +224,14 @@
             }
         }
 
+        // إعادة المحاولة
         document.getElementById("restart").addEventListener("click", () => location.reload());
 
-        setInterval(checkCollision, 100);
+        // التحديث المستمر
+        setInterval(() => {
+            applyGravity();
+            checkCollision();
+        }, 100);
     </script>
 </body>
 </html>
