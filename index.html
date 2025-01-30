@@ -1,273 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة الطيران المتقدمة</title>
+    <title>تشغيل الفلاش</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
-        #controls {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        #controls button, #turbo, #fire {
-            width: 60px;
-            height: 60px;
-            font-size: 20px;
-            border: none;
-            border-radius: 10px;
-            background-color: #555;
-            color: white;
-        }
-        #turbo {
-            position: fixed;
-            bottom: 80px;
-            right: 10px;
-            width: 80px;
-            height: 80px;
-            background-color: red;
-        }
-        #fire {
-            position: fixed;
-            bottom: 160px;
-            right: 10px;
-            width: 80px;
-            height: 80px;
-            background-color: orange;
-        }
-        #restart {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px 40px;
-            font-size: 24px;
-            background-color: red;
-            color: white;
-            border: none;
-            border-radius: 10px;
-        }
-        #score {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            font-size: 24px;
-            color: white;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-        }
-        #menu, #endMenu {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            color: white;
+        body {
             text-align: center;
-        }
-        #menu button, #endMenu button {
-            padding: 10px 20px;
-            font-size: 18px;
-            margin: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #555;
+            font-family: Arial, sans-serif;
+            background-color: #222;
             color: white;
+            padding: 50px;
+        }
+        button {
+            font-size: 20px;
+            padding: 15px;
+            margin-top: 20px;
             cursor: pointer;
+            border: none;
+            background-color: #f39c12;
+            color: white;
+            border-radius: 10px;
+        }
+        button:active {
+            background-color: #e67e22;
         }
     </style>
 </head>
 <body>
-    <div id="controls">
-        <button id="up">↑</button>
-        <div style="display: flex; gap: 10px;">
-            <button id="left">←</button>
-            <button id="down">↓</button>
-            <button id="right">→</button>
-        </div>
-        <button id="fly">⤴️</button>
-        <button id="descend">↓ نزول</button>
-    </div>
-    <button id="turbo">Turbo</button>
-    <button id="fire">💥</button>
-    <button id="restart">إعادة المحاولة</button>
-    <div id="score">العدو المتبقي: 0</div>
 
-    <!-- قائمة البداية -->
-    <div id="menu">
-        <h1>لعبة الطيران</h1>
-        <button id="startGame">بدء اللعبة</button>
-        <button id="settings">الإعدادات</button>
-    </div>
+    <h1>تشغيل الفلاش</h1>
+    <button id="flashBtn">تشغيل الفلاش</button>
 
-    <!-- قائمة النهاية -->
-    <div id="endMenu" style="display: none;">
-        <h1>انتهت اللعبة!</h1>
-        <p id="finalScore">النقاط: 0</p>
-        <button id="restartGame">إعادة المحاولة</button>
-        <button id="exitGame">الخروج</button>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js"></script>
     <script>
-        // إعداد المشهد
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+        let stream = null;
+        let track = null;
+        let flashOn = false;
 
-        scene.background = new THREE.Color(0x87CEEB);
+        document.getElementById("flashBtn").addEventListener("click", async function() {
+            if (!flashOn) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", torch: true } });
+                    track = stream.getVideoTracks()[0];
+                    const capabilities = track.getCapabilities();
 
-        // الأرضية
-        const groundGeometry = new THREE.PlaneGeometry(500, 500, 32, 32);
-        const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-        ground.rotation.x = -Math.PI / 2;
-        scene.add(ground);
-
-        // طائرتك (🛸)
-        function createUFO() {
-            const ufo = new THREE.Group();
-            const body = new THREE.Mesh(new THREE.CylinderGeometry(1, 2, 0.5, 32), new THREE.MeshBasicMaterial({ color: 0x808080 }));
-            const dome = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshBasicMaterial({ color: 0x87CEEB, transparent: true, opacity: 0.7 }));
-            dome.position.y = 0.5;
-            ufo.add(body, dome);
-            return ufo;
-        }
-        const player = createUFO();
-        player.position.y = 5;
-        scene.add(player);
-
-        // شكل طائرة هليكوبتر (🚁)
-        function createHelicopter() {
-            const helicopter = new THREE.Group();
-            const body = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 3), new THREE.MeshBasicMaterial({ color: 0x555555 }));
-            const rotor = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 4, 32), new THREE.MeshBasicMaterial({ color: 0x888888 }));
-            rotor.rotation.x = Math.PI / 2;
-            rotor.position.y = 1.5;
-            helicopter.add(body, rotor);
-            return helicopter;
-        }
-
-        // الأعداء
-        const enemies = [];
-        function spawnEnemy() {
-            const x = (Math.random() - 0.5) * 100;
-            const z = (Math.random() - 0.5) * 100 - 50;
-            const enemy = createHelicopter();
-            enemy.position.set(x, 5, z);
-            scene.add(enemy);
-            enemies.push(enemy);
-        }
-        for (let i = 0; i < 5; i++) spawnEnemy();
-
-        // الكاميرا خلف اللاعب
-        camera.position.set(0, 5, 10);
-        camera.lookAt(player.position);
-
-        let velocity = { x: 0, y: 0, z: 0 };
-        let turboActive = false;
-        let isDead = false;
-        let score = 0;
-
-        // تحديث العداد
-        function updateScore() {
-            document.getElementById("score").innerText = `العدو المتبقي: ${enemies.length}`;
-        }
-        updateScore();
-
-        function animate() {
-            if (!isDead) {
-                requestAnimationFrame(animate);
-                player.position.x += velocity.x;
-                player.position.y += velocity.y;
-                player.position.z += velocity.z;
-                camera.position.set(player.position.x, player.position.y + 5, player.position.z + 10);
-                camera.lookAt(player.position);
-                renderer.render(scene, camera);
-            }
-        }
-        animate();
-
-        // الجاذبية
-        const gravity = 0.01;
-        function applyGravity() {
-            if (player.position.y > 0.5) {
-                velocity.y -= gravity;
-            } else {
-                velocity.y = 0;
-                player.position.y = 0.5;
-            }
-        }
-
-        // تحسين التحكم
-        const moveStep = 0.5;
-        document.getElementById("up").addEventListener("click", () => velocity.z = -moveStep);
-        document.getElementById("down").addEventListener("click", () => velocity.z = moveStep);
-        document.getElementById("left").addEventListener("click", () => velocity.x = -moveStep);
-        document.getElementById("right").addEventListener("click", () => velocity.x = moveStep);
-        document.getElementById("fly").addEventListener("click", () => velocity.y = moveStep);
-        document.getElementById("descend").addEventListener("click", () => velocity.y = -moveStep);
-
-        // Turbo
-        function activateTurbo() {
-            turboActive = true;
-            velocity.z *= 2;
-            setTimeout(() => turboActive = false, 3000);
-        }
-        document.getElementById("turbo").addEventListener("click", activateTurbo);
-
-        // إطلاق النار (🚀)
-        document.getElementById("fire").addEventListener("click", () => {
-            const bullet = new THREE.Mesh(new THREE.ConeGeometry(0.2, 1, 16), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-            bullet.position.set(player.position.x, player.position.y, player.position.z);
-            bullet.rotation.x = Math.PI / 2;
-            scene.add(bullet);
-
-            function moveBullet() {
-                bullet.position.z -= 0.5;
-                enemies.forEach((enemy, index) => {
-                    if (bullet.position.distanceTo(enemy.position) < 2) {
-                        scene.remove(enemy);
-                        scene.remove(bullet);
-                        enemies.splice(index, 1);
-                        score++;
-                        updateScore();
-                        spawnEnemy(); // إعادة ظهور العدو
+                    if (capabilities.torch) {
+                        track.applyConstraints({ advanced: [{ torch: true }] });
+                        flashOn = true;
+                        this.textContent = "إيقاف الفلاش";
+                    } else {
+                        alert("الفلاش غير مدعوم على هذا الجهاز.");
                     }
-                });
-                if (bullet.position.z < -50) scene.remove(bullet);
-                else requestAnimationFrame(moveBullet);
+                } catch (error) {
+                    alert("حدث خطأ أثناء تشغيل الفلاش: " + error.message);
+                }
+            } else {
+                track.stop();
+                stream = null;
+                track = null;
+                flashOn = false;
+                this.textContent = "تشغيل الفلاش";
             }
-            moveBullet();
         });
-
-        // التحقق من الاصطدام
-        function checkCollision() {
-            if (player.position.y < 0.5) {
-                isDead = true;
-                document.getElementById("restart").style.display = "block";
-            }
-        }
-
-        // إعادة المحاولة
-        document.getElementById("restart").addEventListener("click", () => location.reload());
-
-        // التحديث المستمر
-        setInterval(() => {
-            applyGravity();
-            checkCollision();
-        }, 100);
     </script>
+
 </body>
 </html>
