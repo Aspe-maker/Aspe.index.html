@@ -40,10 +40,16 @@
             font-weight: bold;
             color: #333;
         }
+        .image-frame {
+            display: inline-block;
+            border: 2px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
         img {
             max-width: 350px;
             max-height: 350px;
-            margin-top: 30px;
             border-radius: 8px;
         }
         #loading {
@@ -62,7 +68,9 @@
 
     <h3 id="translation"></h3>
     <p id="exampleSentence"></p>
-    <img id="image" src="" alt="">
+    <div class="image-frame">
+        <img id="image" src="" alt="">
+    </div>
 
     <script>
         async function translateWord() {
@@ -105,9 +113,18 @@
 
         // دالة لإنشاء جملة مفيدة مرتبطة بالكلمة
         function generateSentence(word, translation) {
-            let enSentence = `I just saw a ${word}.`;
-            let arSentence = `لقد رأيت للتو ${translation}.`;
-            return { en: enSentence, ar: arSentence };
+            let enSentences = [
+                `I just saw a ${word}.`,
+                `The ${word} is very interesting.`,
+                `Can you see the ${word}?`
+            ];
+            let arSentences = [
+                `لقد رأيت للتو ${translation}.`,
+                `إن ${translation} مثير جدًا للاهتمام.`,
+                `هل يمكنك رؤية ${translation}؟`
+            ];
+            let index = Math.floor(Math.random() * enSentences.length);
+            return { en: enSentences[index], ar: arSentences[index] };
         }
 
         // دالة لجلب صورة من Unsplash API
