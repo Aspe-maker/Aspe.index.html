@@ -85,8 +85,17 @@
             }
 
             try {
-                // 1. الترجمة باستخدام Google Translate API
-                let translation = await fetchGoogleTranslation(word);
+                // 1. الترجمة باستخدام خادم Python
+                let response = await fetch('http://localhost:5000/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ word: word })
+                });
+                let data = await response.json();
+                let translation = data.translation;
+
                 document.getElementById("translation").innerText = "الترجمة: " + translation;
 
                 // 2. إنشاء جمل مفيدة متنوعة مرتبطة بالكلمة
@@ -103,15 +112,6 @@
                 alert("حدث خطأ أثناء جلب البيانات!");
                 document.getElementById("loading").style.display = 'none';
             }
-        }
-
-        // دالة الترجمة باستخدام Google Translate API
-        async function fetchGoogleTranslation(word) {
-            let apiKey = 'YOUR_GOOGLE_API_KEY';  // استبدل بمفتاح API الخاص بك
-            let url = `https://translation.googleapis.com/language/translate/v2?q=${word}&target=ar&key=${apiKey}`;
-            let response = await fetch(url);
-            let data = await response.json();
-            return data.data.translations[0].translatedText;
         }
 
         // دالة لإنشاء جمل مفيدة متنوعة مرتبطة بالكلمة
