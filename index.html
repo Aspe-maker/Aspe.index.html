@@ -100,7 +100,7 @@
             }
 
             try {
-                // 1. الترجمة باستخدام Google Translate API
+                // 1. الترجمة باستخدام LibreTranslate API
                 let translation = await fetchTranslation(word);
                 document.getElementById("translation").innerText = "الترجمة: " + translation;
 
@@ -120,11 +120,9 @@
             }
         }
 
-        // دالة الترجمة باستخدام Google Translate API
+        // دالة الترجمة باستخدام LibreTranslate API
         async function fetchTranslation(word) {
-            const apiKey = 'YOUR_GOOGLE_API_KEY';  // ضع هنا مفتاح Google API الخاص بك
-            const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
-            
+            const url = `https://libretranslate.de/translate`;
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -135,24 +133,23 @@
                 })
             });
             const data = await response.json();
-            return data.data.translations[0].translatedText;
+            return data.translatedText;
         }
 
         // دالة لإنشاء جملة مفيدة مرتبطة بالكلمة
         function generateSentence(word) {
-            // إذا كانت الكلمة موجودة في المخزون
             if (exampleSentences[word]) {
                 const sentences = exampleSentences[word];
                 const sentence = sentences[Math.floor(Math.random() * sentences.length)];
                 return sentence;
             } else {
-                return { en: `I have a ${word}.`, ar: `لدي ${word}.` };  // جملة افتراضية إذا لم توجد الكلمة في المخزون
+                return { en: `I have a ${word}.`, ar: `لدي ${word}.` };  // جملة افتراضية
             }
         }
 
         // دالة لجلب صورة من Unsplash API
         async function fetchImage(word) {
-            const apiKey = 'htRWY_xPpkYMocmgrvjjUHqAp1Oe71oXnaaLTuUyDKU';  // استخدم Access Key الخاص بك
+            const apiKey = 'htRWY_xPpkYMocmgrvjjUHqAp1Oe71oXnaaLTuUyDKU';
             const url = `https://api.unsplash.com/search/photos?query=${word}&client_id=${apiKey}`;
             const response = await fetch(url);
             const data = await response.json();
@@ -160,7 +157,7 @@
             if (data.results.length > 0) {
                 return data.results[0].urls.small;
             } else {
-                return "https://via.placeholder.com/350?text=No+Image"; // صورة افتراضية إذا لم توجد صورة للكلمة
+                return "https://via.placeholder.com/350?text=No+Image";  // صورة افتراضية
             }
         }
     </script>
