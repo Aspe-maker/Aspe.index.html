@@ -131,7 +131,7 @@
 
         // دالة لجلب صورة من Unsplash API
         async function fetchImage(word) {
-            let apiKey = "YOUR_UNSPLASH_API_KEY";  // استخدم مفتاح API الخاص بك
+            let apiKey = "htRWY_xPpkYMocmgrvjjUHqAp1Oe71oXnaaLTuUyDKU";  // استخدم Access Key الخاص بك
             let url = `https://api.unsplash.com/search/photos?query=${word}&client_id=${apiKey}`;
             let response = await fetch(url);
             let data = await response.json();
