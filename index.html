@@ -1,68 +1,80 @@
 <!DOCTYPE html>
 <html lang="ar">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تشغيل الفلاش</title>
-    <style>
-        body {
-            text-align: center;
-            font-family: Arial, sans-serif;
-            background-color: #222;
-            color: white;
-            padding: 50px;
-        }
-        button {
-            font-size: 20px;
-            padding: 15px;
-            margin-top: 20px;
-            cursor: pointer;
-            border: none;
-            background-color: #f39c12;
-            color: white;
-            border-radius: 10px;
-        }
-        button:active {
-            background-color: #e67e22;
-        }
-    </style>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>مترجم الذكاء الصناعي</title>
+        <style>
+            body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+            input, button { padding: 10px; margin: 10px; font-size: 18px; }
+            #translation, #sentence { margin-top: 20px; font-size: 20px; font-weight: bold; }
+            img { max-width: 300px; margin-top: 20px; }
+        </style>
+    </head>
+    <body>
+        <h1>مترجم الذكاء الصناعي</h1>
+        
+        <input type="text" id="wordInput" placeholder="اكتب كلمة بالإنجليزية">
+        <button onclick="translateWord()">ترجمة</button>
 
-    <h1>تشغيل الفلاش</h1>
-    <button id="flashBtn">تشغيل الفلاش</button>
+        <h3 id="translation"></h3>
+        <p id="sentence"></p>
+        <img id="image" src="" alt="">
 
-    <script>
-        let stream = null;
-        let track = null;
-        let flashOn = false;
-
-        document.getElementById("flashBtn").addEventListener("click", async function() {
-            if (!flashOn) {
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", torch: true } });
-                    track = stream.getVideoTracks()[0];
-                    const capabilities = track.getCapabilities();
-
-                    if (capabilities.torch) {
-                        track.applyConstraints({ advanced: [{ torch: true }] });
-                        flashOn = true;
-                        this.textContent = "إيقاف الفلاش";
-                    } else {
-                        alert("الفلاش غير مدعوم على هذا الجهاز.");
-                    }
-                } catch (error) {
-                    alert("حدث خطأ أثناء تشغيل الفلاش: " + error.message);
+        <script>
+            async function translateWord() {
+                let word = document.getElementById("wordInput").value.trim();
+                
+                if (!word) {
+                    alert("رجاءً أدخل كلمة!");
+                    return;
                 }
-            } else {
-                track.stop();
-                stream = null;
-                track = null;
-                flashOn = false;
-                this.textContent = "تشغيل الفلاش";
-            }
-        });
-    </script>
 
-</body>
+                try {
+                    // 1. الترجمة باستخدام Google Translate API
+                    let translation = await fetchTranslation(word);
+                    document.getElementById("translation").innerText = "الترجمة: " + translation;
+
+                    // 2. إنشاء جملة مفيدة
+                    let sentence = generateSentence(translation);
+                    document.getElementById("sentence").innerText = "مثال: " + sentence;
+
+                    // 3. جلب صورة
+                    let imageUrl = await fetchImage(word);
+                    document.getElementById("image").src = imageUrl;
+
+                } catch (error) {
+                    console.error("حدث خطأ:", error);
+                    alert("حدث خطأ أثناء جلب البيانات!");
+                }
+            }
+
+            // دالة الترجمة باستخدام Google Translate API
+            async function fetchTranslation(word) {
+                let url = `https://api.mymemory.translated.net/get?q=${word}&langpair=en|ar`;  
+                let response = await fetch(url);
+                let data = await response.json();
+                return data.responseData.translatedText;
+            }
+
+            // دالة لإنشاء جملة مفيدة
+            function generateSentence(translation) {
+                return `أنا أحب ${translation} كثيرًا!`;
+            }
+
+            // دالة لجلب صورة من Unsplash API
+            async function fetchImage(word) {
+                let apiKey = "YOUR_UNSPLASH_API_KEY";  // استخدم مفتاح API الخاص بك
+                let url = `https://api.unsplash.com/search/photos?query=${word}&client_id=${apiKey}`;
+                let response = await fetch(url);
+                let data = await response.json();
+                
+                if (data.results.length > 0) {
+                    return data.results[0].urls.small;
+                } else {
+                    return "https://via.placeholder.com/300?text=No+Image"; // صورة افتراضية
+                }
+            }
+        </script>
+    </body>
 </html>
