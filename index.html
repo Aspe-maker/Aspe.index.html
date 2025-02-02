@@ -25,6 +25,7 @@
             border-radius: 8px;
             border: 2px solid #ddd;
             box-sizing: border-box;
+            transition: all 0.3s ease;
         }
         button {
             background-color: #4CAF50;
@@ -33,6 +34,7 @@
         }
         button:hover {
             background-color: #45a049;
+            transform: scale(1.05);
         }
         #translation, #sentence, #exampleSentence {
             margin-top: 20px;
@@ -83,7 +85,7 @@
             }
 
             try {
-                // 1. الترجمة باستخدام Google Translate API
+                // 1. الترجمة باستخدام MyMemory Translation API
                 let translation = await fetchTranslation(word);
                 document.getElementById("translation").innerText = "الترجمة: " + translation;
 
@@ -103,7 +105,7 @@
             }
         }
 
-        // دالة الترجمة باستخدام Google Translate API
+        // دالة الترجمة باستخدام MyMemory Translation API
         async function fetchTranslation(word) {
             let url = `https://api.mymemory.translated.net/get?q=${word}&langpair=en|ar`;  
             let response = await fetch(url);
