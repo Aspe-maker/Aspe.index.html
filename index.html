@@ -75,21 +75,6 @@
     </div>
 
     <script>
-        // مخزون من الأمثلة المتنوعة
-        const exampleSentences = {
-            "apple": [
-                { en: "I just ate an apple.", ar: "لقد أكلت للتو تفاحة." },
-                { en: "The apple fell from the tree.", ar: "سقطت التفاحة من الشجرة." },
-                { en: "She handed me a red apple.", ar: "أعطتني تفاحة حمراء." }
-            ],
-            "banana": [
-                { en: "I like to eat a banana every morning.", ar: "أحب أن أتناول موزة كل صباح." },
-                { en: "Bananas are rich in potassium.", ar: "الموز غني بالبوتاسيوم." },
-                { en: "He gave me a ripe banana.", ar: "أعطاني موزة ناضجة." }
-            ],
-            // إضافة المزيد من الأمثلة هنا
-        };
-
         async function translateWord() {
             let word = document.getElementById("wordInput").value.trim();
             document.getElementById("loading").style.display = 'block';  // عرض رسالة التحميل
@@ -100,15 +85,15 @@
             }
 
             try {
-                // 1. الترجمة باستخدام LibreTranslate API
-                let translation = await fetchTranslation(word);
+                // 1. الترجمة باستخدام Google Translate API
+                let translation = await fetchGoogleTranslation(word);
                 document.getElementById("translation").innerText = "الترجمة: " + translation;
 
-                // 2. إنشاء جملة مفيدة مرتبطة بالكلمة
-                let sentence = generateSentence(word);
+                // 2. إنشاء جمل مفيدة متنوعة مرتبطة بالكلمة
+                let sentence = generateSentence(word, translation);
                 document.getElementById("exampleSentence").innerHTML = `Example: <strong>${sentence.en}</strong><br>الترجمة: <strong>${sentence.ar}</strong>`;
 
-                // 3. جلب صورة
+                // 3. جلب صورة دقيقة من Unsplash API
                 let imageUrl = await fetchImage(word);
                 document.getElementById("image").src = imageUrl;
 
@@ -120,44 +105,98 @@
             }
         }
 
-        // دالة الترجمة باستخدام LibreTranslate API
-        async function fetchTranslation(word) {
-            const url = `https://libretranslate.de/translate`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    q: word,
-                    source: 'en',
-                    target: 'ar'
-                })
-            });
-            const data = await response.json();
-            return data.translatedText;
+        // دالة الترجمة باستخدام Google Translate API
+        async function fetchGoogleTranslation(word) {
+            let apiKey = 'YOUR_GOOGLE_API_KEY';  // استبدل بمفتاح API الخاص بك
+            let url = `https://translation.googleapis.com/language/translate/v2?q=${word}&target=ar&key=${apiKey}`;
+            let response = await fetch(url);
+            let data = await response.json();
+            return data.data.translations[0].translatedText;
         }
 
-        // دالة لإنشاء جملة مفيدة مرتبطة بالكلمة
-        function generateSentence(word) {
-            if (exampleSentences[word]) {
-                const sentences = exampleSentences[word];
-                const sentence = sentences[Math.floor(Math.random() * sentences.length)];
-                return sentence;
-            } else {
-                return { en: `I have a ${word}.`, ar: `لدي ${word}.` };  // جملة افتراضية
-            }
+        // دالة لإنشاء جمل مفيدة متنوعة مرتبطة بالكلمة
+        function generateSentence(word, translation) {
+            let enSentences = {
+                apple: [
+                    `I just saw an apple on the table.`,
+                    `This apple tastes so sweet.`,
+                    `An apple a day keeps the doctor away.`,
+                    `I ate a delicious apple this morning.`,
+                    `She handed me a shiny red apple.`
+                ],
+                car: [
+                    `I just bought a new car.`,
+                    `My car broke down yesterday.`,
+                    `Cars are getting more eco-friendly.`,
+                    `She drives a fast sports car.`,
+                    `My car is parked outside the house.`
+                ],
+                book: [
+                    `I love reading books.`,
+                    `This book is very interesting.`,
+                    `I bought a new book yesterday.`,
+                    `The book I'm reading is quite gripping.`,
+                    `She borrowed my favorite book last week.`
+                ],
+                dog: [
+                    `My dog loves to play outside.`,
+                    `The dog barked loudly at the stranger.`,
+                    `She adopted a cute little dog.`,
+                    `Dogs are known for being loyal pets.`,
+                    `I take my dog to the park every evening.`
+                ]
+            };
+
+            let arSentences = {
+                apple: [
+                    `لقد رأيت تفاحة على الطاولة.`,
+                    `هذه التفاحة طعمها حلو جدًا.`,
+                    `تفاحة في اليوم تبعد الطبيب.`,
+                    `أكلت تفاحة لذيذة هذا الصباح.`,
+                    `أعطتني تفاحة حمراء لامعة.`
+                ],
+                car: [
+                    `لقد اشتريت سيارة جديدة.`,
+                    `تعطلت سيارتي البارحة.`,
+                    `السيارات أصبحت أكثر صداقة للبيئة.`,
+                    `هي تقود سيارة رياضية سريعة.`,
+                    `سيارتي مركونة أمام المنزل.`
+                ],
+                book: [
+                    `أنا أحب قراءة الكتب.`,
+                    `هذا الكتاب مثير جدًا.`,
+                    `اشتريت كتابًا جديدًا البارحة.`,
+                    `الكتاب الذي أقرأه مثير للغاية.`,
+                    `استعارت كتابي المفضل الأسبوع الماضي.`
+                ],
+                dog: [
+                    `كلبي يحب اللعب في الخارج.`,
+                    `الكلب نبح بصوت عالٍ على الغريب.`,
+                    `تبنت كلبًا صغيرًا لطيفًا.`,
+                    `الكلاب معروفة بأنها حيوانات وفية.`,
+                    `أخذت كلبي إلى الحديقة كل مساء.`
+                ]
+            };
+
+            // اختيار جملة عشوائية من الجمل المتاحة
+            let sentences = enSentences[word.toLowerCase()] || enSentences["apple"];
+            let arSentencesForWord = arSentences[word.toLowerCase()] || arSentences["apple"];
+
+            let index = Math.floor(Math.random() * sentences.length);
+            return { en: sentences[index], ar: arSentencesForWord[index] };
         }
 
-        // دالة لجلب صورة من Unsplash API
+        // دالة لجلب صورة دقيقة من Unsplash API
         async function fetchImage(word) {
-            const apiKey = 'htRWY_xPpkYMocmgrvjjUHqAp1Oe71oXnaaLTuUyDKU';
-            const url = `https://api.unsplash.com/search/photos?query=${word}&client_id=${apiKey}`;
-            const response = await fetch(url);
-            const data = await response.json();
+            let apiKey = "htRWY_xPpkYMocmgrvjjUHqAp1Oe71oXnaaLTuUyDKU";  // استخدم Access Key الخاص بك
+            let url = `https://api.unsplash.com/search/photos?query=${word}&client_id=${apiKey}&per_page=1`;
+            let response = await fetch(url);
+            let data = await response.json();
             
             if (data.results.length > 0) {
                 return data.results[0].urls.small;
             } else {
-                return "https://via.placeholder.com/350?text=No+Image";  // صورة افتراضية
+                return "https://via.placeholder.com/350?text=No+Image"; // صورة افتراضية إذا لم توجد صورة للكلمة
             }
         }
     </script>
