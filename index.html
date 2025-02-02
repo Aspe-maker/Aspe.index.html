@@ -7,7 +7,7 @@
         <style>
             body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
             input, button { padding: 10px; margin: 10px; font-size: 18px; }
-            #translation, #sentence { margin-top: 20px; font-size: 20px; font-weight: bold; }
+            #translation, #sentence, #exampleSentence { margin-top: 20px; font-size: 20px; font-weight: bold; }
             img { max-width: 300px; margin-top: 20px; }
         </style>
     </head>
@@ -18,7 +18,7 @@
         <button onclick="translateWord()">ترجمة</button>
 
         <h3 id="translation"></h3>
-        <p id="sentence"></p>
+        <p id="exampleSentence"></p>
         <img id="image" src="" alt="">
 
         <script>
@@ -35,9 +35,9 @@
                     let translation = await fetchTranslation(word);
                     document.getElementById("translation").innerText = "الترجمة: " + translation;
 
-                    // 2. إنشاء جملة مفيدة
-                    let sentence = generateSentence(translation);
-                    document.getElementById("sentence").innerText = "مثال: " + sentence;
+                    // 2. إنشاء جملة مفيدة مرتبطة بالكلمة
+                    let sentence = generateSentence(word, translation);
+                    document.getElementById("exampleSentence").innerHTML = `Example: <strong>${sentence.en}</strong><br>الترجمة: <strong>${sentence.ar}</strong>`;
 
                     // 3. جلب صورة
                     let imageUrl = await fetchImage(word);
@@ -57,9 +57,11 @@
                 return data.responseData.translatedText;
             }
 
-            // دالة لإنشاء جملة مفيدة
-            function generateSentence(translation) {
-                return `أنا أحب ${translation} كثيرًا!`;
+            // دالة لإنشاء جملة مفيدة مرتبطة بالكلمة
+            function generateSentence(word, translation) {
+                let enSentence = `I just saw a ${word}.`;
+                let arSentence = `لقد رأيت للتو ${translation}.`;
+                return { en: enSentence, ar: arSentence };
             }
 
             // دالة لجلب صورة من Unsplash API
