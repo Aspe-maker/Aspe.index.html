@@ -119,17 +119,86 @@
     </div>
 
     <script>
-        let dictionary = {};
-
-        // تحميل القاموس من ملف JSON (يجب أن يكون مرفوعًا على الخادم)
-        async function loadDictionary() {
-            try {
-                let response = await fetch("large_dictionary.json"); // استبدل بالرابط الصحيح إذا كنت ترفعه على الإنترنت
-                dictionary = await response.json();
-            } catch (error) {
-                console.error("حدث خطأ أثناء تحميل القاموس:", error);
+        // تعريف القاموس مباشرة في الكود
+        const dictionary = {
+            "hello": {
+                "ar": "مرحبًا",
+                "examples": [
+                    "Hello, how are you?",
+                    "مرحبًا، كيف حالك؟"
+                ]
+            },
+            "book": {
+                "ar": "كتاب",
+                "examples": [
+                    "I am reading a book.",
+                    "أنا أقرأ كتابًا."
+                ]
+            },
+            "computer": {
+                "ar": "حاسوب",
+                "examples": [
+                    "She uses the computer for work.",
+                    "هي تستخدم الحاسوب للعمل."
+                ]
+            },
+            "water": {
+                "ar": "ماء",
+                "examples": [
+                    "Can I have a glass of water?",
+                    "هل يمكنني الحصول على كوب من الماء؟"
+                ]
+            },
+            "friend": {
+                "ar": "صديق",
+                "examples": [
+                    "He is my best friend.",
+                    "هو صديقي المفضل."
+                ]
+            },
+            "school": {
+                "ar": "مدرسة",
+                "examples": [
+                    "The children go to school every day.",
+                    "يذهب الأطفال إلى المدرسة كل يوم."
+                ]
+            },
+            "car": {
+                "ar": "سيارة",
+                "examples": [
+                    "I have a red car.",
+                    "لدي سيارة حمراء."
+                ]
+            },
+            "house": {
+                "ar": "منزل",
+                "examples": [
+                    "We live in a big house.",
+                    "نعيش في منزل كبير."
+                ]
+            },
+            "food": {
+                "ar": "طعام",
+                "examples": [
+                    "I love eating healthy food.",
+                    "أحب تناول الطعام الصحي."
+                ]
+            },
+            "cat": {
+                "ar": "قطة",
+                "examples": [
+                    "The cat is sleeping on the sofa.",
+                    "القطة نائمة على الأريكة."
+                ]
+            },
+            "dog": {
+                "ar": "كلب",
+                "examples": [
+                    "My dog loves to play outside.",
+                    "كلبي يحب اللعب في الخارج."
+                ]
             }
-        }
+        };
 
         // تنفيذ الترجمة
         async function translateWord() {
@@ -176,9 +245,6 @@
                 document.getElementById("imageGallery").innerHTML = '<p>لا يمكن تحميل الصور حالياً</p>';
             }
         }
-
-        // استدعاء تحميل القاموس عند فتح الموقع
-        loadDictionary();
 
         // استدعاء الترجمة عند إدخال كلمة
         document.getElementById("wordInput").addEventListener("input", translateWord);
