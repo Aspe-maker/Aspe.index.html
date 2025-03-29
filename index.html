@@ -2,173 +2,501 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تحدي الـ30 يوم</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f3f3f3;
-            padding: 20px;
+        :root {
+            --primary-color: #4a6fa5;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --future-color: #e9ecef;
+            --past-color: rgba(233, 236, 239, 0.5);
+            --text-color: #333;
+            --light-text: #6c757d;
         }
+        
+        body {
+            font-family: 'Tajawal', 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+            color: var(--text-color);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
         h1, h2 {
             text-align: center;
+            color: var(--primary-color);
         }
+        
+        .month-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .month-header h2 {
+            margin: 0;
+            font-size: 28px;
+        }
+        
         .stats {
             display: flex;
             justify-content: center;
             gap: 30px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             font-size: 18px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        
+        .stat-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stat-box.correct i {
+            color: var(--success-color);
+        }
+        
+        .stat-box.incorrect i {
+            color: var(--danger-color);
+        }
+        
         .calendar {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
         }
+        
         .day {
             background-color: #fff;
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 15px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
+        
+        .day:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
         .day.correct {
-            border: 2px solid #28a745;
+            border-right: 5px solid var(--success-color);
         }
+        
         .day.incorrect {
-            border: 2px solid #dc3545;
+            border-right: 5px solid var(--danger-color);
         }
+        
+        .day.future {
+            background-color: var(--future-color);
+            color: var(--light-text);
+        }
+        
+        .day.past {
+            background-color: var(--past-color);
+            pointer-events: none;
+        }
+        
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .day-title {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .day-points {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
         .task {
+            display: flex;
+            align-items: center;
             margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 5px;
         }
+        
+        .task:hover {
+            background-color: #f8f9fa;
+        }
+        
         .task.done {
-            text-decoration: line-through;
-            color: gray;
+            color: var(--light-text);
         }
+        
+        .task-name {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        
+        .task-points {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .task.done .task-name {
+            text-decoration: line-through;
+        }
+        
+        .task.done .task-points {
+            color: var(--light-text);
+        }
+        
+        .add-task-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        input[type="text"], input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            flex-grow: 1;
+        }
+        
         input[type="number"] {
-            width: 50px;
+            width: 60px;
             text-align: center;
         }
-        .add-task {
-            margin-top: 10px;
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
-        .task input[type="checkbox"] {
-            margin-left: 5px;
+        
+        button:hover {
+            background-color: #3a5a8c;
+        }
+        
+        .day-detail {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            background-color: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .day-detail.active {
+            transform: translateX(0);
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--light-text);
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            cursor: pointer;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--success-color);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .calendar {
+                grid-template-columns: 1fr;
+            }
+            
+            .day-detail {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h1><i class="fas fa-calendar-alt"></i> تحدي الـ30 يوم</h1>
+        
+        <div class="month-header">
+            <i class="fas fa-chevron-right"></i>
+            <h2 id="current-month">شهر محرم</h2>
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box correct">
+                <i class="fas fa-check-circle"></i>
+                <span>الأيام الصحيحة: <span id="correctCount">0</span></span>
+            </div>
+            <div class="stat-box incorrect">
+                <i class="fas fa-times-circle"></i>
+                <span>الأيام الخاطئة: <span id="incorrectCount">0</span></span>
+            </div>
+        </div>
+        
+        <div class="calendar" id="calendar"></div>
+    </div>
+    
+    <div class="day-detail" id="dayDetail">
+        <button class="close-btn" id="closeDetail">&times;</button>
+        <div class="day-header">
+            <h3 id="detailDayTitle">اليوم 1</h3>
+            <div class="day-points"><span id="detailPoints">0</span>/10</div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+        </div>
+        
+        <div id="detailTasks"></div>
+        
+        <div class="add-task-form">
+            <input type="text" id="newTaskName" placeholder="اسم المهمة">
+            <input type="number" id="newTaskPoints" min="1" placeholder="نقاط" value="1">
+            <button id="addTaskBtn"><i class="fas fa-plus"></i> إضافة</button>
+        </div>
+    </div>
 
-<h1>تحدي الـ30 يوم</h1>
+    <script>
+        const targetPoints = 10;
+        const totalDays = 30;
+        let days = [];
+        let currentMonth = new Date().getMonth();
+        const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", 
+                           "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+        const hijriMonthNames = ["محرم", "صفر", "ربيع الأول", "ربيع الثاني", 
+                                "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", 
+                                "رمضان", "شوال", "ذو القعدة", "ذو الحجة"];
+        let currentDayIndex = new Date().getDate() - 1;
+        let selectedDayIndex = -1;
 
-<div class="stats">
-    <div>الأيام الصحيحة: <span id="correctCount">0</span></div>
-    <div>الأيام الخاطئة: <span id="incorrectCount">0</span></div>
-</div>
-
-<div class="calendar" id="calendar"></div>
-
-<script>
-    const targetPoints = 20;
-    const totalDays = 30;
-    let days = [];
-
-    function loadFromStorage() {
-        const data = localStorage.getItem("daysData");
-        if (data) {
-            days = JSON.parse(data);
-        } else {
-            days = Array.from({ length: totalDays }, () => ({
-                tasks: [],
-                total: 0
-            }));
-        }
-    }
-
-    function saveToStorage() {
-        localStorage.setItem("daysData", JSON.stringify(days));
-    }
-
-    function updateStats() {
-        let correct = 0;
-        days.forEach(day => {
-            if (day.total >= targetPoints) correct++;
-        });
-        document.getElementById("correctCount").textContent = correct;
-        document.getElementById("incorrectCount").textContent = totalDays - correct;
-    }
-
-    function addTask(dayIndex, name, points) {
-        if (!name || points <= 0) return;
-        days[dayIndex].tasks.push({ name, points, done: false });
-        saveToStorage();
-        render();
-    }
-
-    function toggleTask(dayIndex, taskIndex) {
-        const task = days[dayIndex].tasks[taskIndex];
-        task.done = !task.done;
-        days[dayIndex].total += task.done ? task.points : -task.points;
-        saveToStorage();
-        render();
-    }
-
-    function render() {
-        const calendar = document.getElementById("calendar");
-        calendar.innerHTML = "";
-        days.forEach((day, dayIndex) => {
-            const dayDiv = document.createElement("div");
-            dayDiv.className = "day";
-            if (day.total >= targetPoints) {
-                dayDiv.classList.add("correct");
+        function loadFromStorage() {
+            const data = localStorage.getItem("daysData");
+            if (data) {
+                days = JSON.parse(data);
             } else {
-                dayDiv.classList.add("incorrect");
+                days = Array.from({ length: totalDays }, () => ({
+                    tasks: [],
+                    total: 0,
+                    completed: false
+                }));
             }
+        }
 
-            const header = document.createElement("h3");
-            header.textContent = `اليوم ${dayIndex + 1}`;
-            dayDiv.appendChild(header);
+        function saveToStorage() {
+            localStorage.setItem("daysData", JSON.stringify(days));
+        }
 
+        function updateStats() {
+            let correct = 0;
+            let incorrect = 0;
+            
+            days.forEach((day, index) => {
+                if (index > currentDayIndex) return;
+                
+                if (day.total >= targetPoints) {
+                    correct++;
+                } else if (day.completed || index < currentDayIndex) {
+                    incorrect++;
+                }
+            });
+            
+            document.getElementById("correctCount").textContent = correct;
+            document.getElementById("incorrectCount").textContent = incorrect;
+        }
+
+        function addTask(dayIndex, name, points) {
+            if (!name || points <= 0) return;
+            days[dayIndex].tasks.push({ name, points, done: false });
+            days[dayIndex].completed = true;
+            saveToStorage();
+            render();
+            
+            if (dayIndex === selectedDayIndex) {
+                renderDayDetail(dayIndex);
+            }
+        }
+
+        function toggleTask(dayIndex, taskIndex) {
+            const task = days[dayIndex].tasks[taskIndex];
+            task.done = !task.done;
+            days[dayIndex].total += task.done ? task.points : -task.points;
+            days[dayIndex].completed = true;
+            saveToStorage();
+            render();
+            
+            if (dayIndex === selectedDayIndex) {
+                renderDayDetail(dayIndex);
+            }
+        }
+
+        function renderDayDetail(dayIndex) {
+            selectedDayIndex = dayIndex;
+            const day = days[dayIndex];
+            const detail = document.getElementById("dayDetail");
+            
+            document.getElementById("detailDayTitle").textContent = `اليوم ${dayIndex + 1}`;
+            document.getElementById("detailPoints").textContent = day.total;
+            
+            const progressPercent = Math.min((day.total / targetPoints) * 100, 100);
+            document.getElementById("progressBar").style.width = `${progressPercent}%`;
+            
+            const tasksContainer = document.getElementById("detailTasks");
+            tasksContainer.innerHTML = "";
+            
             day.tasks.forEach((task, taskIndex) => {
                 const taskDiv = document.createElement("div");
                 taskDiv.className = "task" + (task.done ? " done" : "");
                 taskDiv.innerHTML = `
-                    <input type="checkbox" ${task.done ? "checked" : ""} onclick="toggleTask(${dayIndex}, ${taskIndex})">
-                    ${task.name} (+${task.points})
+                    <input type="checkbox" ${task.done ? "checked" : ""} 
+                           onclick="toggleTask(${dayIndex}, ${taskIndex})">
+                    <span class="task-name">${task.name}</span>
+                    <span class="task-points">+${task.points}</span>
                 `;
-                dayDiv.appendChild(taskDiv);
+                tasksContainer.appendChild(taskDiv);
             });
+            
+            document.getElementById("newTaskName").value = "";
+            document.getElementById("newTaskPoints").value = "1";
+            
+            detail.classList.add("active");
+        }
 
-            const taskNameInput = document.createElement("input");
-            taskNameInput.placeholder = "اسم المهمة";
+        function render() {
+            const calendar = document.getElementById("calendar");
+            calendar.innerHTML = "";
+            
+            document.getElementById("current-month").textContent = hijriMonthNames[currentMonth % 12];
+            
+            days.forEach((day, dayIndex) => {
+                const dayDiv = document.createElement("div");
+                dayDiv.className = "day";
+                
+                if (dayIndex < currentDayIndex) {
+                    dayDiv.classList.add("past");
+                    if (day.total >= targetPoints) {
+                        dayDiv.classList.add("correct");
+                    } else {
+                        dayDiv.classList.add("incorrect");
+                    }
+                } else if (dayIndex === currentDayIndex) {
+                    if (day.total >= targetPoints) {
+                        dayDiv.classList.add("correct");
+                    } else {
+                        dayDiv.classList.add("incorrect");
+                    }
+                } else {
+                    dayDiv.classList.add("future");
+                }
+                
+                dayDiv.onclick = () => {
+                    if (dayIndex <= currentDayIndex) {
+                        renderDayDetail(dayIndex);
+                    }
+                };
+                
+                const dayHeader = document.createElement("div");
+                dayHeader.className = "day-header";
+                dayHeader.innerHTML = `
+                    <div class="day-title">اليوم ${dayIndex + 1}</div>
+                    <div class="day-points">${day.total}/${targetPoints}</div>
+                `;
+                dayDiv.appendChild(dayHeader);
+                
+                const tasksList = document.createElement("div");
+                day.tasks.slice(0, 3).forEach(task => {
+                    const taskDiv = document.createElement("div");
+                    taskDiv.className = "task" + (task.done ? " done" : "");
+                    taskDiv.innerHTML = `
+                        <i class="fas ${task.done ? "fa-check-square" : "fa-square"}"></i>
+                        <span>${task.name} (+${task.points})</span>
+                    `;
+                    tasksList.appendChild(taskDiv);
+                });
+                
+                if (day.tasks.length > 3) {
+                    const moreTasks = document.createElement("div");
+                    moreTasks.textContent = `و ${day.tasks.length - 3} مهام أخرى...`;
+                    moreTasks.style.color = "var(--light-text)";
+                    moreTasks.style.fontSize = "14px";
+                    tasksList.appendChild(moreTasks);
+                }
+                
+                dayDiv.appendChild(tasksList);
+                calendar.appendChild(dayDiv);
+            });
+            
+            updateStats();
+        }
 
-            const taskPointsInput = document.createElement("input");
-            taskPointsInput.type = "number";
-            taskPointsInput.min = "1";
-            taskPointsInput.placeholder = "نقاط";
-
-            const addButton = document.createElement("button");
-            addButton.textContent = "إضافة مهمة";
-            addButton.className = "add-task";
-            addButton.onclick = () => {
-                const name = taskNameInput.value;
-                const points = parseInt(taskPointsInput.value);
-                addTask(dayIndex, name, points);
+        window.onload = function () {
+            loadFromStorage();
+            render();
+            
+            document.getElementById("closeDetail").onclick = () => {
+                document.getElementById("dayDetail").classList.remove("active");
             };
-
-            dayDiv.appendChild(taskNameInput);
-            dayDiv.appendChild(taskPointsInput);
-            dayDiv.appendChild(addButton);
-
-            calendar.appendChild(dayDiv);
-        });
-
-        updateStats();
-    }
-
-    window.onload = function () {
-        loadFromStorage();
-        render();
-    };
-</script>
-
+            
+            document.getElementById("addTaskBtn").onclick = () => {
+                if (selectedDayIndex === -1) return;
+                const name = document.getElementById("newTaskName").value;
+                const points = parseInt(document.getElementById("newTaskPoints").value);
+                addTask(selectedDayIndex, name, points);
+            };
+            
+            // Simulate Hijri month navigation
+            document.querySelector(".month-header .fa-chevron-right").onclick = () => {
+                currentMonth = (currentMonth - 1 + 12) % 12;
+                render();
+            };
+            
+            document.querySelector(".month-header .fa-chevron-left").onclick = () => {
+                currentMonth = (currentMonth + 1) % 12;
+                render();
+            };
+        };
+    </script>
 </body>
 </html>
