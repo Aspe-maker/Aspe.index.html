@@ -16,52 +16,76 @@
             --light-text: #6c757d;
         }
         
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
             font-family: 'Tajawal', 'Arial', sans-serif;
             background-color: #f8f9fa;
-            padding: 20px;
+            padding: 15px;
             color: var(--text-color);
+            min-height: 100vh;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
+            padding: 10px;
         }
         
-        h1, h2 {
+        h1 {
             text-align: center;
             color: var(--primary-color);
+            margin: 15px 0;
+            font-size: 1.5rem;
         }
         
         .month-header {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 15px;
         }
         
         .month-header h2 {
             margin: 0;
-            font-size: 28px;
+            font-size: 1.3rem;
+        }
+        
+        .month-nav {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 5px;
         }
         
         .stats {
             display: flex;
             justify-content: center;
-            gap: 30px;
-            margin-bottom: 30px;
-            font-size: 18px;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 1rem;
             background-color: white;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 12px;
+            border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
         }
         
         .stat-box {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+        }
+        
+        .stat-box i {
+            font-size: 1.2rem;
         }
         
         .stat-box.correct i {
@@ -74,30 +98,33 @@
         
         .calendar {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
         }
         
         .day {
             background-color: #fff;
-            border-radius: 10px;
-            padding: 15px;
+            border-radius: 8px;
+            padding: 12px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             cursor: pointer;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
         }
         
         .day:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
         .day.correct {
-            border-right: 5px solid var(--success-color);
+            border-right: 4px solid var(--success-color);
         }
         
         .day.incorrect {
-            border-right: 5px solid var(--danger-color);
+            border-right: 4px solid var(--danger-color);
         }
         
         .day.future {
@@ -114,34 +141,38 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
             border-bottom: 1px solid #eee;
         }
         
         .day-title {
             font-weight: bold;
-            font-size: 18px;
+            font-size: 0.9rem;
         }
         
         .day-points {
             background-color: var(--primary-color);
             color: white;
-            padding: 3px 8px;
-            border-radius: 20px;
-            font-size: 14px;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            min-width: 40px;
+            text-align: center;
         }
         
         .task {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            padding: 8px;
-            border-radius: 5px;
+            margin-bottom: 6px;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 0.8rem;
         }
         
-        .task:hover {
-            background-color: #f8f9fa;
+        .task i {
+            margin-left: 5px;
+            font-size: 0.9rem;
         }
         
         .task.done {
@@ -150,12 +181,16 @@
         
         .task-name {
             flex-grow: 1;
-            margin-right: 10px;
+            margin-right: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .task-points {
             color: var(--primary-color);
             font-weight: bold;
+            font-size: 0.7rem;
         }
         
         .task.done .task-name {
@@ -166,17 +201,114 @@
             color: var(--light-text);
         }
         
+        .more-tasks {
+            color: var(--light-text);
+            font-size: 0.7rem;
+            margin-top: auto;
+            text-align: center;
+            padding-top: 5px;
+        }
+        
+        /* Day Detail Styles */
+        .day-detail {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            background-color: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .day-detail.active {
+            transform: translateX(0);
+        }
+        
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--light-text);
+            position: absolute;
+            right: 0;
+            top: 0;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .detail-title {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            margin-right: 30px;
+        }
+        
+        .progress-container {
+            margin: 15px 0;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--success-color);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .tasks-list {
+            margin-bottom: 20px;
+        }
+        
         .add-task-form {
             display: flex;
             gap: 10px;
-            margin-top: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .add-task-form input {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .add-task-form button {
+            flex: 1;
+            min-width: 100px;
         }
         
         input[type="text"], input[type="number"] {
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            flex-grow: 1;
+            font-family: inherit;
         }
         
         input[type="number"] {
@@ -192,65 +324,59 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            font-family: inherit;
         }
         
         button:hover {
             background-color: #3a5a8c;
         }
         
-        .day-detail {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 100%;
-            max-width: 400px;
-            height: 100%;
-            background-color: white;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-            padding: 20px;
-            overflow-y: auto;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-        
-        .day-detail.active {
-            transform: translateX(0);
-        }
-        
-        .close-btn {
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 15px;
             background: none;
-            border: none;
-            font-size: 24px;
-            color: var(--light-text);
-            position: absolute;
-            left: 15px;
-            top: 15px;
-            cursor: pointer;
+            color: var(--primary-color);
+            padding: 5px;
         }
         
-        .progress-bar {
-            height: 10px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            margin: 15px 0;
-            overflow: hidden;
+        .back-button i {
+            font-size: 1rem;
         }
         
-        .progress {
-            height: 100%;
-            background-color: var(--success-color);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-        
-        @media (max-width: 768px) {
+        @media (min-width: 768px) {
+            .container {
+                max-width: 750px;
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+                margin: 20px 0;
+            }
+            
+            .month-header h2 {
+                font-size: 1.5rem;
+            }
+            
             .calendar {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
             }
             
             .day-detail {
-                max-width: 100%;
+                max-width: 450px;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .container {
+                max-width: 970px;
+            }
+            
+            .calendar {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             }
         }
     </style>
@@ -260,9 +386,9 @@
         <h1><i class="fas fa-calendar-alt"></i> تحدي الـ30 يوم</h1>
         
         <div class="month-header">
-            <i class="fas fa-chevron-right"></i>
+            <button class="month-nav" id="prevMonth"><i class="fas fa-chevron-right"></i></button>
             <h2 id="current-month">شهر محرم</h2>
-            <i class="fas fa-chevron-left"></i>
+            <button class="month-nav" id="nextMonth"><i class="fas fa-chevron-left"></i></button>
         </div>
         
         <div class="stats">
@@ -280,17 +406,25 @@
     </div>
     
     <div class="day-detail" id="dayDetail">
-        <button class="close-btn" id="closeDetail">&times;</button>
-        <div class="day-header">
-            <h3 id="detailDayTitle">اليوم 1</h3>
+        <div class="detail-header">
+            <button class="back-button" id="closeDetail">
+                <i class="fas fa-arrow-right"></i> رجوع
+            </button>
+            <h3 class="detail-title" id="detailDayTitle">اليوم 1</h3>
             <div class="day-points"><span id="detailPoints">0</span>/10</div>
         </div>
         
-        <div class="progress-bar">
-            <div class="progress" id="progressBar"></div>
+        <div class="progress-container">
+            <div class="progress-text">
+                <span>تقدمك اليوم</span>
+                <span><span id="progressPercent">0</span>%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
         </div>
         
-        <div id="detailTasks"></div>
+        <div class="tasks-list" id="detailTasks"></div>
         
         <div class="add-task-form">
             <input type="text" id="newTaskName" placeholder="اسم المهمة">
@@ -304,24 +438,26 @@
         const totalDays = 30;
         let days = [];
         let currentMonth = new Date().getMonth();
-        const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", 
-                           "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
         const hijriMonthNames = ["محرم", "صفر", "ربيع الأول", "ربيع الثاني", 
                                 "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", 
                                 "رمضان", "شوال", "ذو القعدة", "ذو الحجة"];
-        let currentDayIndex = new Date().getDate() - 1;
+        let currentDate = new Date();
+        let currentDayIndex = currentDate.getDate() - 1;
         let selectedDayIndex = -1;
+        let isNewUser = true;
 
         function loadFromStorage() {
             const data = localStorage.getItem("daysData");
             if (data) {
                 days = JSON.parse(data);
+                isNewUser = false;
             } else {
                 days = Array.from({ length: totalDays }, () => ({
                     tasks: [],
                     total: 0,
                     completed: false
                 }));
+                isNewUser = true;
             }
         }
 
@@ -338,7 +474,7 @@
                 
                 if (day.total >= targetPoints) {
                     correct++;
-                } else if (day.completed || index < currentDayIndex) {
+                } else if (day.completed || (!isNewUser && index < currentDayIndex)) {
                     incorrect++;
                 }
             });
@@ -382,21 +518,26 @@
             
             const progressPercent = Math.min((day.total / targetPoints) * 100, 100);
             document.getElementById("progressBar").style.width = `${progressPercent}%`;
+            document.getElementById("progressPercent").textContent = Math.round(progressPercent);
             
             const tasksContainer = document.getElementById("detailTasks");
             tasksContainer.innerHTML = "";
             
-            day.tasks.forEach((task, taskIndex) => {
-                const taskDiv = document.createElement("div");
-                taskDiv.className = "task" + (task.done ? " done" : "");
-                taskDiv.innerHTML = `
-                    <input type="checkbox" ${task.done ? "checked" : ""} 
-                           onclick="toggleTask(${dayIndex}, ${taskIndex})">
-                    <span class="task-name">${task.name}</span>
-                    <span class="task-points">+${task.points}</span>
-                `;
-                tasksContainer.appendChild(taskDiv);
-            });
+            if (day.tasks.length === 0) {
+                tasksContainer.innerHTML = '<p style="text-align: center; color: var(--light-text);">لا توجد مهام حتى الآن</p>';
+            } else {
+                day.tasks.forEach((task, taskIndex) => {
+                    const taskDiv = document.createElement("div");
+                    taskDiv.className = "task" + (task.done ? " done" : "");
+                    taskDiv.innerHTML = `
+                        <input type="checkbox" ${task.done ? "checked" : ""} 
+                               onclick="toggleTask(${dayIndex}, ${taskIndex})">
+                        <span class="task-name">${task.name}</span>
+                        <span class="task-points">+${task.points}</span>
+                    `;
+                    tasksContainer.appendChild(taskDiv);
+                });
+            }
             
             document.getElementById("newTaskName").value = "";
             document.getElementById("newTaskPoints").value = "1";
@@ -418,7 +559,7 @@
                     dayDiv.classList.add("past");
                     if (day.total >= targetPoints) {
                         dayDiv.classList.add("correct");
-                    } else {
+                    } else if (day.completed || !isNewUser) {
                         dayDiv.classList.add("incorrect");
                     }
                 } else if (dayIndex === currentDayIndex) {
@@ -431,11 +572,9 @@
                     dayDiv.classList.add("future");
                 }
                 
-                dayDiv.onclick = () => {
-                    if (dayIndex <= currentDayIndex) {
-                        renderDayDetail(dayIndex);
-                    }
-                };
+                if (dayIndex <= currentDayIndex) {
+                    dayDiv.onclick = () => renderDayDetail(dayIndex);
+                }
                 
                 const dayHeader = document.createElement("div");
                 dayHeader.className = "day-header";
@@ -450,17 +589,17 @@
                     const taskDiv = document.createElement("div");
                     taskDiv.className = "task" + (task.done ? " done" : "");
                     taskDiv.innerHTML = `
-                        <i class="fas ${task.done ? "fa-check-square" : "fa-square"}"></i>
-                        <span>${task.name} (+${task.points})</span>
+                        <i class="far ${task.done ? "fa-check-square" : "fa-square"}"></i>
+                        <span class="task-name">${task.name}</span>
+                        <span class="task-points">+${task.points}</span>
                     `;
                     tasksList.appendChild(taskDiv);
                 });
                 
                 if (day.tasks.length > 3) {
                     const moreTasks = document.createElement("div");
+                    moreTasks.className = "more-tasks";
                     moreTasks.textContent = `و ${day.tasks.length - 3} مهام أخرى...`;
-                    moreTasks.style.color = "var(--light-text)";
-                    moreTasks.style.fontSize = "14px";
                     tasksList.appendChild(moreTasks);
                 }
                 
@@ -481,18 +620,31 @@
             
             document.getElementById("addTaskBtn").onclick = () => {
                 if (selectedDayIndex === -1) return;
-                const name = document.getElementById("newTaskName").value;
+                const name = document.getElementById("newTaskName").value.trim();
                 const points = parseInt(document.getElementById("newTaskPoints").value);
                 addTask(selectedDayIndex, name, points);
             };
             
-            // Simulate Hijri month navigation
-            document.querySelector(".month-header .fa-chevron-right").onclick = () => {
+            // Handle Enter key in input fields
+            document.getElementById("newTaskName").addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    document.getElementById("addTaskBtn").click();
+                }
+            });
+            
+            document.getElementById("newTaskPoints").addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    document.getElementById("addTaskBtn").click();
+                }
+            });
+            
+            // Month navigation
+            document.getElementById("prevMonth").onclick = () => {
                 currentMonth = (currentMonth - 1 + 12) % 12;
                 render();
             };
             
-            document.querySelector(".month-header .fa-chevron-left").onclick = () => {
+            document.getElementById("nextMonth").onclick = () => {
                 currentMonth = (currentMonth + 1) % 12;
                 render();
             };
