@@ -1,123 +1,299 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>طريق الـ95+</title>
+  <title>طريق الـ95+ إلى القمة</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+    
     body {
       margin: 0;
-      font-family: 'Arial', sans-serif;
-      background: linear-gradient(to top, #a8e6cf, #dcedc1);
-      background-image: url('https://i.imgur.com/b0hYQ6Y.jpg'); /* خلفية طبيعية */
-      background-size: cover;
-      background-attachment: fixed;
+      font-family: 'Tajawal', sans-serif;
+      background: linear-gradient(to bottom, #87CEEB, #E0F7FA);
       color: #333;
       text-align: center;
+      overflow-x: hidden;
+      perspective: 1000px;
+    }
+
+    #mountain-path {
+      position: relative;
+      width: 100%;
+      height: 2000px;
+      background: url('https://i.imgur.com/J5ZQZQy.jpg') no-repeat center center;
+      background-size: cover;
+      margin-top: 50px;
     }
 
     h1 {
-      font-size: 2.8em;
-      color: #2d572c;
-      margin: 30px 0;
-      text-shadow: 1px 1px 4px white;
+      font-size: 3em;
+      color: #fff;
+      text-shadow: 2px 2px 8px #000;
+      margin: 20px 0;
+      position: relative;
+      z-index: 2;
+      background: rgba(0,100,0,0.6);
+      padding: 15px;
+      border-radius: 50px;
+      display: inline-block;
     }
 
-    #game-board {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 30px;
-      padding: 20px;
+    .path-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .path {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 2000px;
+      background: url('https://i.imgur.com/8QZQZQy.png') repeat-y center center;
+      background-size: contain;
+      z-index: 1;
     }
 
     .day {
-      position: relative;
-      background: rgba(255, 255, 255, 0.9);
-      border: 3px solid #7fb77e;
-      width: 200px;
-      border-radius: 15px;
-      padding: 10px;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 100px;
+      background: url('https://i.imgur.com/9QZQZQy.png') no-repeat center center;
+      background-size: contain;
       cursor: pointer;
-      transition: transform 0.3s;
+      transition: all 0.3s ease;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 1px 1px 3px #000;
+      animation: float 3s ease-in-out infinite;
     }
 
     .day:hover {
-      transform: scale(1.05);
+      transform: translateX(-50%) scale(1.1);
+      filter: drop-shadow(0 0 10px gold);
     }
 
     .day.completed {
-      background: #b0f2b6;
-      border-color: #28a745;
+      background-image: url('https://i.imgur.com/7QZQZQy.png');
+      color: gold;
     }
 
-    .day h3 {
-      margin: 10px 0;
-      font-size: 1.3em;
-      color: #2f5233;
+    .day.locked {
+      filter: grayscale(80%);
+      opacity: 0.7;
+      cursor: not-allowed;
     }
 
+    .day:nth-child(odd) {
+      margin-left: 150px;
+    }
+    .day:nth-child(even) {
+      margin-left: -150px;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-10px); }
+    }
+
+    /* النافذة السينمائية */
     .modal {
       display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(6px);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 100;
       justify-content: center;
       align-items: center;
-      z-index: 10;
+      animation: fadeIn 0.8s ease-out;
+      backdrop-filter: blur(10px);
     }
 
     .modal-content {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 20px;
       width: 90%;
-      max-width: 500px;
-      text-align: right;
-      animation: fadeIn 0.6s ease-in-out;
+      max-width: 600px;
+      padding: 30px;
+      box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+      transform-style: preserve-3d;
+      animation: modalEntry 1s ease-out;
+      border: 5px solid #4a7c59;
+      position: relative;
+      overflow: hidden;
     }
 
-    .hour {
-      background: #eee;
-      margin: 8px 0;
-      padding: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      border: 1px solid #aaa;
+    .modal-content::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      background: linear-gradient(45deg, #4a7c59, #a8e6cf, #dcedc1, #a8e6cf);
+      z-index: -1;
+      filter: blur(20px);
+      opacity: 0.7;
     }
 
-    .hour.done {
-      background: #28a745;
-      color: white;
-      text-decoration: line-through;
-      font-weight: bold;
+    @keyframes modalEntry {
+      0% { transform: translateY(100px) rotateX(30deg); opacity: 0; }
+      100% { transform: translateY(0) rotateX(0); opacity: 1; }
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .close-btn {
-      background: crimson;
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: #ff6b6b;
       color: white;
       border: none;
-      padding: 6px 12px;
-      border-radius: 8px;
-      float: left;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 20px;
       cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .close-btn:hover {
+      transform: rotate(90deg);
+      background: #ff4757;
+    }
+
+    #modal-title {
+      color: #2d572c;
+      font-size: 2em;
+      margin-bottom: 20px;
+      text-align: center;
+      border-bottom: 2px solid #4a7c59;
+      padding-bottom: 10px;
+    }
+
+    #modal-hours {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .hour {
+      background: rgba(255,255,255,0.8);
+      padding: 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid #7fb77e;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hour::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+      transform: translateX(-100%);
+    }
+
+    .hour:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      background: rgba(255,255,255,0.95);
+    }
+
+    .hour:hover::before {
+      animation: shine 1.5s;
+    }
+
+    .hour.done {
+      background: linear-gradient(135deg, #7fb77e, #4a7c59);
+      color: white;
+      border-color: #2d572c;
+    }
+
+    @keyframes shine {
+      100% { transform: translateX(100%); }
+    }
+
+    /* خلفية الطبيعة */
+    .nature-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.8;
+    }
+
+    /* تأثيرات الطبيعة */
+    .bird {
+      position: absolute;
+      width: 50px;
+      height: 30px;
+      background: url('https://i.imgur.com/bird.png') no-repeat;
+      background-size: contain;
+      z-index: 3;
+      animation: fly 15s linear infinite;
+    }
+
+    @keyframes fly {
+      0% { transform: translateX(-100px) translateY(100px); }
+      100% { transform: translateX(calc(100vw + 100px)) translateY(-100px); }
+    }
+
+    .cloud {
+      position: absolute;
+      background: url('https://i.imgur.com/cloud.png') no-repeat;
+      background-size: contain;
+      opacity: 0.8;
+      z-index: 0;
+      animation: drift 60s linear infinite;
+    }
+
+    @keyframes drift {
+      0% { transform: translateX(-200px); }
+      100% { transform: translateX(calc(100vw + 200px)); }
     }
   </style>
 </head>
 <body>
-  <h1>طريق الـ95+</h1>
-  <div id="game-board"></div>
+  <div class="nature-bg"></div>
+  
+  <h1>رحلة الـ95+ إلى قمة النجاح</h1>
+  
+  <div id="mountain-path">
+    <div class="path-container">
+      <div class="path"></div>
+    </div>
+    <!-- سيتم إضافة الأيام هنا عبر الجافاسكريبت -->
+  </div>
 
-  <!-- نافذة المهام -->
+  <!-- النافذة السينمائية للمهام -->
   <div class="modal" id="task-modal">
-    <div class="modal-content" id="modal-content">
-      <button class="close-btn" onclick="closeModal()">إغلاق</button>
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">×</button>
       <h2 id="modal-title">مهام اليوم</h2>
       <div id="modal-hours"></div>
     </div>
@@ -127,6 +303,33 @@
     const totalDays = 20;
     const hoursPerDay = 4;
     const startHour = 4;
+
+    // إنشاء عناصر الطبيعة
+    function createNatureElements() {
+      // إضافة طيور
+      for (let i = 0; i < 5; i++) {
+        const bird = document.createElement('div');
+        bird.className = 'bird';
+        bird.style.top = `${Math.random() * 50 + 10}%`;
+        bird.style.left = `${Math.random() * 100}%`;
+        bird.style.animationDuration = `${Math.random() * 10 + 10}s`;
+        bird.style.animationDelay = `${Math.random() * 5}s`;
+        document.body.appendChild(bird);
+      }
+      
+      // إضافة سحب
+      for (let i = 0; i < 4; i++) {
+        const cloud = document.createElement('div');
+        cloud.className = 'cloud';
+        cloud.style.top = `${Math.random() * 30 + 10}%`;
+        cloud.style.left = `${Math.random() * 100}%`;
+        cloud.style.width = `${Math.random() * 200 + 100}px`;
+        cloud.style.height = `${Math.random() * 100 + 50}px`;
+        cloud.style.animationDuration = `${Math.random() * 40 + 40}s`;
+        cloud.style.animationDelay = `${Math.random() * 20}s`;
+        document.body.appendChild(cloud);
+      }
+    }
 
     function isTodayUnlocked(dayIndex) {
       const now = new Date();
@@ -156,25 +359,30 @@
     }
 
     function renderGame() {
-      const board = document.getElementById("game-board");
-      board.innerHTML = "";
+      const board = document.querySelector(".path-container");
+      board.innerHTML = '<div class="path"></div>';
+      
+      const pathHeight = document.getElementById("mountain-path").offsetHeight;
+      const daySpacing = pathHeight / totalDays;
 
       for (let day = 0; day < totalDays; day++) {
         const dayBox = document.createElement("div");
         dayBox.className = "day";
-        if (isDayComplete(day)) dayBox.classList.add("completed");
-
-        const title = document.createElement("h3");
-        title.textContent = `اليوم ${day + 1}`;
-        dayBox.appendChild(title);
-
+        dayBox.textContent = `اليوم ${day + 1}`;
+        
+        // تحديد موقع اليوم على الطريق
+        const topPosition = day * daySpacing + 50;
+        dayBox.style.top = `${topPosition}px`;
+        
+        if (isDayComplete(day)) {
+          dayBox.classList.add("completed");
+        }
+        
         if (isTodayUnlocked(day)) {
           dayBox.addEventListener("click", () => openModal(day));
         } else {
-          const lockMsg = document.createElement("p");
-          lockMsg.textContent = "مقفل حتى يومه";
-          lockMsg.style.opacity = 0.6;
-          dayBox.appendChild(lockMsg);
+          dayBox.classList.add("locked");
+          dayBox.title = "هذا اليوم مقفل، انتظر حتى يحين موعده";
         }
 
         board.appendChild(dayBox);
@@ -185,42 +393,78 @@
       const modal = document.getElementById("task-modal");
       const modalHours = document.getElementById("modal-hours");
       const modalTitle = document.getElementById("modal-title");
+      
       modalHours.innerHTML = "";
       modalTitle.textContent = `مهام اليوم ${dayIndex + 1}`;
-
+      
+      // إضافة تأثير صوتي للفتح (يمكن إزالته إذا لم يكن مرغوباً)
+      const openSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3');
+      openSound.play();
+      
+      // إضافة المهام
       for (let hour = 0; hour < hoursPerDay; hour++) {
         const hourDiv = document.createElement("div");
         hourDiv.className = "hour";
-        hourDiv.textContent = `ساعة ${hour + 1}`;
-
+        hourDiv.textContent = `ساعة ${hour + 1} من التركيز`;
+        
         if (isHourDone(dayIndex, hour)) {
           hourDiv.classList.add("done");
         }
-
+        
         hourDiv.addEventListener("click", () => {
           if (!hourDiv.classList.contains("done")) {
             hourDiv.classList.add("done");
             saveProgress(dayIndex, hour);
-            if (isDayComplete(dayIndex)) renderGame();
+            
+            // إضافة تأثير عند إكمال المهمة
+            hourDiv.style.transform = "scale(1.1)";
+            setTimeout(() => {
+              hourDiv.style.transform = "scale(1)";
+            }, 300);
+            
+            if (isDayComplete(dayIndex)) {
+              setTimeout(renderGame, 500);
+              // إشعار إكمال اليوم
+              const completeSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3');
+              completeSound.play();
+            }
           }
         });
-
+        
         modalHours.appendChild(hourDiv);
       }
-
+      
       modal.style.display = "flex";
     }
 
     function closeModal() {
-      document.getElementById("task-modal").style.display = "none";
+      const modal = document.getElementById("task-modal");
+      modal.style.animation = "fadeIn 0.5s reverse";
+      
+      // إضافة تأثير صوتي للإغلاق
+      const closeSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3');
+      closeSound.play();
+      
+      setTimeout(() => {
+        modal.style.display = "none";
+        modal.style.animation = "fadeIn 0.8s ease-out";
+      }, 500);
     }
 
+    // بدء التطبيق
     if (!localStorage.getItem("startDate")) {
       const today = new Date();
       localStorage.setItem("startDate", today.toISOString());
     }
-
+    
+    createNatureElements();
     renderGame();
+    
+    // إضافة تأثيرات عند تحميل الصفحة
+    window.addEventListener('load', () => {
+      document.body.style.opacity = '1';
+      document.body.style.transition = 'opacity 1.5s ease-in';
+    });
   </script>
 </body>
 </html>
