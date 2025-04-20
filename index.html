@@ -1,654 +1,156 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحدي الـ30 يوم</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #4a6fa5;
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-            --future-color: #e9ecef;
-            --past-color: rgba(233, 236, 239, 0.5);
-            --text-color: #333;
-            --light-text: #6c757d;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        body {
-            font-family: 'Tajawal', 'Arial', sans-serif;
-            background-color: #f8f9fa;
-            padding: 15px;
-            color: var(--text-color);
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 10px;
-        }
-        
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            margin: 15px 0;
-            font-size: 1.5rem;
-        }
-        
-        .month-header {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .month-header h2 {
-            margin: 0;
-            font-size: 1.3rem;
-        }
-        
-        .month-nav {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: var(--primary-color);
-            cursor: pointer;
-            padding: 5px;
-        }
-        
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 20px;
-            font-size: 1rem;
-            background-color: white;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            flex-wrap: wrap;
-        }
-        
-        .stat-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .stat-box i {
-            font-size: 1.2rem;
-        }
-        
-        .stat-box.correct i {
-            color: var(--success-color);
-        }
-        
-        .stat-box.incorrect i {
-            color: var(--danger-color);
-        }
-        
-        .calendar {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 12px;
-        }
-        
-        .day {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.2s ease;
-            cursor: pointer;
-            min-height: 100px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .day:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .day.correct {
-            border-right: 4px solid var(--success-color);
-        }
-        
-        .day.incorrect {
-            border-right: 4px solid var(--danger-color);
-        }
-        
-        .day.future {
-            background-color: var(--future-color);
-            color: var(--light-text);
-        }
-        
-        .day.past {
-            background-color: var(--past-color);
-            pointer-events: none;
-        }
-        
-        .day-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .day-title {
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-        
-        .day-points {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            min-width: 40px;
-            text-align: center;
-        }
-        
-        .task {
-            display: flex;
-            align-items: center;
-            margin-bottom: 6px;
-            padding: 5px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-        }
-        
-        .task i {
-            margin-left: 5px;
-            font-size: 0.9rem;
-        }
-        
-        .task.done {
-            color: var(--light-text);
-        }
-        
-        .task-name {
-            flex-grow: 1;
-            margin-right: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .task-points {
-            color: var(--primary-color);
-            font-weight: bold;
-            font-size: 0.7rem;
-        }
-        
-        .task.done .task-name {
-            text-decoration: line-through;
-        }
-        
-        .task.done .task-points {
-            color: var(--light-text);
-        }
-        
-        .more-tasks {
-            color: var(--light-text);
-            font-size: 0.7rem;
-            margin-top: auto;
-            text-align: center;
-            padding-top: 5px;
-        }
-        
-        /* Day Detail Styles */
-        .day-detail {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 100%;
-            max-width: 100%;
-            height: 100%;
-            background-color: white;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-            padding: 20px;
-            overflow-y: auto;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-        
-        .day-detail.active {
-            transform: translateX(0);
-        }
-        
-        .detail-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-            position: relative;
-        }
-        
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--light-text);
-            position: absolute;
-            right: 0;
-            top: 0;
-            cursor: pointer;
-            padding: 5px;
-        }
-        
-        .detail-title {
-            font-size: 1.3rem;
-            color: var(--primary-color);
-            margin-right: 30px;
-        }
-        
-        .progress-container {
-            margin: 15px 0;
-        }
-        
-        .progress-text {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-        
-        .progress-bar {
-            height: 10px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        
-        .progress {
-            height: 100%;
-            background-color: var(--success-color);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-        
-        .tasks-list {
-            margin-bottom: 20px;
-        }
-        
-        .add-task-form {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .add-task-form input {
-            flex: 1;
-            min-width: 120px;
-        }
-        
-        .add-task-form button {
-            flex: 1;
-            min-width: 100px;
-        }
-        
-        input[type="text"], input[type="number"] {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-family: inherit;
-        }
-        
-        input[type="number"] {
-            width: 60px;
-            text-align: center;
-        }
-        
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-family: inherit;
-        }
-        
-        button:hover {
-            background-color: #3a5a8c;
-        }
-        
-        .back-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 15px;
-            background: none;
-            color: var(--primary-color);
-            padding: 5px;
-        }
-        
-        .back-button i {
-            font-size: 1rem;
-        }
-        
-        @media (min-width: 768px) {
-            .container {
-                max-width: 750px;
-                padding: 15px;
-            }
-            
-            h1 {
-                font-size: 1.8rem;
-                margin: 20px 0;
-            }
-            
-            .month-header h2 {
-                font-size: 1.5rem;
-            }
-            
-            .calendar {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 15px;
-            }
-            
-            .day-detail {
-                max-width: 450px;
-            }
-        }
-        
-        @media (min-width: 992px) {
-            .container {
-                max-width: 970px;
-            }
-            
-            .calendar {
-                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>طريق الـ95+</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      color: #f9c00c;
+    }
+
+    #game-board {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .day {
+      background: #222;
+      border: 2px solid #444;
+      padding: 10px;
+      width: 160px;
+      border-radius: 10px;
+      transition: 0.3s;
+    }
+
+    .day.completed {
+      background: #28a745;
+      border-color: #0f0;
+    }
+
+    .day h3 {
+      margin-bottom: 10px;
+      font-size: 1.2em;
+    }
+
+    .hour {
+      margin: 5px;
+      padding: 8px;
+      background: #333;
+      border: 1px solid #666;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .hour.done {
+      background: #0f0;
+      text-decoration: line-through;
+      color: black;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1><i class="fas fa-calendar-alt"></i> تحدي الـ30 يوم</h1>
-        
-        <div class="month-header">
-            <button class="month-nav" id="prevMonth"><i class="fas fa-chevron-right"></i></button>
-            <h2 id="current-month">شهر محرم</h2>
-            <button class="month-nav" id="nextMonth"><i class="fas fa-chevron-left"></i></button>
-        </div>
-        
-        <div class="stats">
-            <div class="stat-box correct">
-                <i class="fas fa-check-circle"></i>
-                <span>الأيام الصحيحة: <span id="correctCount">0</span></span>
-            </div>
-            <div class="stat-box incorrect">
-                <i class="fas fa-times-circle"></i>
-                <span>الأيام الخاطئة: <span id="incorrectCount">0</span></span>
-            </div>
-        </div>
-        
-        <div class="calendar" id="calendar"></div>
-    </div>
-    
-    <div class="day-detail" id="dayDetail">
-        <div class="detail-header">
-            <button class="back-button" id="closeDetail">
-                <i class="fas fa-arrow-right"></i> رجوع
-            </button>
-            <h3 class="detail-title" id="detailDayTitle">اليوم 1</h3>
-            <div class="day-points"><span id="detailPoints">0</span>/10</div>
-        </div>
-        
-        <div class="progress-container">
-            <div class="progress-text">
-                <span>تقدمك اليوم</span>
-                <span><span id="progressPercent">0</span>%</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress" id="progressBar"></div>
-            </div>
-        </div>
-        
-        <div class="tasks-list" id="detailTasks"></div>
-        
-        <div class="add-task-form">
-            <input type="text" id="newTaskName" placeholder="اسم المهمة">
-            <input type="number" id="newTaskPoints" min="1" placeholder="نقاط" value="1">
-            <button id="addTaskBtn"><i class="fas fa-plus"></i> إضافة</button>
-        </div>
-    </div>
+  <h1>طريق الـ95+</h1>
+  <div id="game-board"></div>
 
-    <script>
-        const targetPoints = 10;
-        const totalDays = 30;
-        let days = [];
-        let currentMonth = new Date().getMonth();
-        const hijriMonthNames = ["محرم", "صفر", "ربيع الأول", "ربيع الثاني", 
-                                "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", 
-                                "رمضان", "شوال", "ذو القعدة", "ذو الحجة"];
-        let currentDate = new Date();
-        let currentDayIndex = currentDate.getDate() - 1;
-        let selectedDayIndex = -1;
-        let isNewUser = true;
+  <script>
+    const totalDays = 20;
+    const hoursPerDay = 4;
+    const startHour = 4; // 4 الفجر بتوقيت السعودية
 
-        function loadFromStorage() {
-            const data = localStorage.getItem("daysData");
-            if (data) {
-                days = JSON.parse(data);
-                isNewUser = false;
-            } else {
-                days = Array.from({ length: totalDays }, () => ({
-                    tasks: [],
-                    total: 0,
-                    completed: false
-                }));
-                isNewUser = true;
+    function isTodayUnlocked(dayIndex) {
+      const now = new Date();
+      const dayStart = new Date(localStorage.getItem("startDate"));
+      dayStart.setHours(startHour, 0, 0, 0);
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const diff = now - dayStart;
+      const daysPassed = Math.floor(diff / msPerDay);
+      return dayIndex <= daysPassed;
+    }
+
+    function saveProgress(dayIndex, hourIndex) {
+      const key = `day-${dayIndex}-hour-${hourIndex}`;
+      localStorage.setItem(key, "done");
+    }
+
+    function isHourDone(dayIndex, hourIndex) {
+      const key = `day-${dayIndex}-hour-${hourIndex}`;
+      return localStorage.getItem(key) === "done";
+    }
+
+    function isDayComplete(dayIndex) {
+      for (let i = 0; i < hoursPerDay; i++) {
+        if (!isHourDone(dayIndex, i)) return false;
+      }
+      return true;
+    }
+
+    function renderGame() {
+      const board = document.getElementById("game-board");
+      board.innerHTML = "";
+
+      for (let day = 0; day < totalDays; day++) {
+        const dayBox = document.createElement("div");
+        dayBox.className = "day";
+        if (isDayComplete(day)) dayBox.classList.add("completed");
+
+        const title = document.createElement("h3");
+        title.textContent = `اليوم ${day + 1}`;
+        dayBox.appendChild(title);
+
+        if (isTodayUnlocked(day)) {
+          for (let hour = 0; hour < hoursPerDay; hour++) {
+            const hourBtn = document.createElement("div");
+            hourBtn.className = "hour";
+            hourBtn.textContent = `ساعة ${hour + 1}`;
+
+            if (isHourDone(day, hour)) {
+              hourBtn.classList.add("done");
             }
-        }
 
-        function saveToStorage() {
-            localStorage.setItem("daysData", JSON.stringify(days));
-        }
-
-        function updateStats() {
-            let correct = 0;
-            let incorrect = 0;
-            
-            days.forEach((day, index) => {
-                if (index > currentDayIndex) return;
-                
-                if (day.total >= targetPoints) {
-                    correct++;
-                } else if (day.completed || (!isNewUser && index < currentDayIndex)) {
-                    incorrect++;
+            hourBtn.addEventListener("click", () => {
+              if (!hourBtn.classList.contains("done")) {
+                hourBtn.classList.add("done");
+                saveProgress(day, hour);
+                if (isDayComplete(day)) {
+                  dayBox.classList.add("completed");
                 }
+              }
             });
-            
-            document.getElementById("correctCount").textContent = correct;
-            document.getElementById("incorrectCount").textContent = incorrect;
+
+            dayBox.appendChild(hourBtn);
+          }
+        } else {
+          const lockMsg = document.createElement("p");
+          lockMsg.textContent = "مقفل حتى يومه";
+          lockMsg.style.opacity = 0.5;
+          dayBox.appendChild(lockMsg);
         }
 
-        function addTask(dayIndex, name, points) {
-            if (!name || points <= 0) return;
-            days[dayIndex].tasks.push({ name, points, done: false });
-            days[dayIndex].completed = true;
-            saveToStorage();
-            render();
-            
-            if (dayIndex === selectedDayIndex) {
-                renderDayDetail(dayIndex);
-            }
-        }
+        board.appendChild(dayBox);
+      }
+    }
 
-        function toggleTask(dayIndex, taskIndex) {
-            const task = days[dayIndex].tasks[taskIndex];
-            task.done = !task.done;
-            days[dayIndex].total += task.done ? task.points : -task.points;
-            days[dayIndex].completed = true;
-            saveToStorage();
-            render();
-            
-            if (dayIndex === selectedDayIndex) {
-                renderDayDetail(dayIndex);
-            }
-        }
+    // Initialize startDate if not set
+    if (!localStorage.getItem("startDate")) {
+      const today = new Date();
+      localStorage.setItem("startDate", today.toISOString());
+    }
 
-        function renderDayDetail(dayIndex) {
-            selectedDayIndex = dayIndex;
-            const day = days[dayIndex];
-            const detail = document.getElementById("dayDetail");
-            
-            document.getElementById("detailDayTitle").textContent = `اليوم ${dayIndex + 1}`;
-            document.getElementById("detailPoints").textContent = day.total;
-            
-            const progressPercent = Math.min((day.total / targetPoints) * 100, 100);
-            document.getElementById("progressBar").style.width = `${progressPercent}%`;
-            document.getElementById("progressPercent").textContent = Math.round(progressPercent);
-            
-            const tasksContainer = document.getElementById("detailTasks");
-            tasksContainer.innerHTML = "";
-            
-            if (day.tasks.length === 0) {
-                tasksContainer.innerHTML = '<p style="text-align: center; color: var(--light-text);">لا توجد مهام حتى الآن</p>';
-            } else {
-                day.tasks.forEach((task, taskIndex) => {
-                    const taskDiv = document.createElement("div");
-                    taskDiv.className = "task" + (task.done ? " done" : "");
-                    taskDiv.innerHTML = `
-                        <input type="checkbox" ${task.done ? "checked" : ""} 
-                               onclick="toggleTask(${dayIndex}, ${taskIndex})">
-                        <span class="task-name">${task.name}</span>
-                        <span class="task-points">+${task.points}</span>
-                    `;
-                    tasksContainer.appendChild(taskDiv);
-                });
-            }
-            
-            document.getElementById("newTaskName").value = "";
-            document.getElementById("newTaskPoints").value = "1";
-            
-            detail.classList.add("active");
-        }
-
-        function render() {
-            const calendar = document.getElementById("calendar");
-            calendar.innerHTML = "";
-            
-            document.getElementById("current-month").textContent = hijriMonthNames[currentMonth % 12];
-            
-            days.forEach((day, dayIndex) => {
-                const dayDiv = document.createElement("div");
-                dayDiv.className = "day";
-                
-                if (dayIndex < currentDayIndex) {
-                    dayDiv.classList.add("past");
-                    if (day.total >= targetPoints) {
-                        dayDiv.classList.add("correct");
-                    } else if (day.completed || !isNewUser) {
-                        dayDiv.classList.add("incorrect");
-                    }
-                } else if (dayIndex === currentDayIndex) {
-                    if (day.total >= targetPoints) {
-                        dayDiv.classList.add("correct");
-                    } else {
-                        dayDiv.classList.add("incorrect");
-                    }
-                } else {
-                    dayDiv.classList.add("future");
-                }
-                
-                if (dayIndex <= currentDayIndex) {
-                    dayDiv.onclick = () => renderDayDetail(dayIndex);
-                }
-                
-                const dayHeader = document.createElement("div");
-                dayHeader.className = "day-header";
-                dayHeader.innerHTML = `
-                    <div class="day-title">اليوم ${dayIndex + 1}</div>
-                    <div class="day-points">${day.total}/${targetPoints}</div>
-                `;
-                dayDiv.appendChild(dayHeader);
-                
-                const tasksList = document.createElement("div");
-                day.tasks.slice(0, 3).forEach(task => {
-                    const taskDiv = document.createElement("div");
-                    taskDiv.className = "task" + (task.done ? " done" : "");
-                    taskDiv.innerHTML = `
-                        <i class="far ${task.done ? "fa-check-square" : "fa-square"}"></i>
-                        <span class="task-name">${task.name}</span>
-                        <span class="task-points">+${task.points}</span>
-                    `;
-                    tasksList.appendChild(taskDiv);
-                });
-                
-                if (day.tasks.length > 3) {
-                    const moreTasks = document.createElement("div");
-                    moreTasks.className = "more-tasks";
-                    moreTasks.textContent = `و ${day.tasks.length - 3} مهام أخرى...`;
-                    tasksList.appendChild(moreTasks);
-                }
-                
-                dayDiv.appendChild(tasksList);
-                calendar.appendChild(dayDiv);
-            });
-            
-            updateStats();
-        }
-
-        window.onload = function () {
-            loadFromStorage();
-            render();
-            
-            document.getElementById("closeDetail").onclick = () => {
-                document.getElementById("dayDetail").classList.remove("active");
-            };
-            
-            document.getElementById("addTaskBtn").onclick = () => {
-                if (selectedDayIndex === -1) return;
-                const name = document.getElementById("newTaskName").value.trim();
-                const points = parseInt(document.getElementById("newTaskPoints").value);
-                addTask(selectedDayIndex, name, points);
-            };
-            
-            // Handle Enter key in input fields
-            document.getElementById("newTaskName").addEventListener("keypress", (e) => {
-                if (e.key === "Enter") {
-                    document.getElementById("addTaskBtn").click();
-                }
-            });
-            
-            document.getElementById("newTaskPoints").addEventListener("keypress", (e) => {
-                if (e.key === "Enter") {
-                    document.getElementById("addTaskBtn").click();
-                }
-            });
-            
-            // Month navigation
-            document.getElementById("prevMonth").onclick = () => {
-                currentMonth = (currentMonth - 1 + 12) % 12;
-                render();
-            };
-            
-            document.getElementById("nextMonth").onclick = () => {
-                currentMonth = (currentMonth + 1) % 12;
-                render();
-            };
-        };
-    </script>
+    renderGame();
+  </script>
 </body>
 </html>
