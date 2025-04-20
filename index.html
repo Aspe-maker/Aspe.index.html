@@ -5,60 +5,108 @@
   <title>طريق الـ95+</title>
   <style>
     body {
-      background: #111;
-      color: white;
-      font-family: 'Arial', sans-serif;
-      text-align: center;
       margin: 0;
-      padding: 20px;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(to top, #a8e6cf, #dcedc1);
+      background-image: url('https://i.imgur.com/b0hYQ6Y.jpg'); /* خلفية طبيعية */
+      background-size: cover;
+      background-attachment: fixed;
+      color: #333;
+      text-align: center;
     }
 
     h1 {
-      font-size: 2.5em;
-      margin-bottom: 20px;
-      color: #f9c00c;
+      font-size: 2.8em;
+      color: #2d572c;
+      margin: 30px 0;
+      text-shadow: 1px 1px 4px white;
     }
 
     #game-board {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      padding: 20px;
     }
 
     .day {
-      background: #222;
-      border: 2px solid #444;
+      position: relative;
+      background: rgba(255, 255, 255, 0.9);
+      border: 3px solid #7fb77e;
+      width: 200px;
+      border-radius: 15px;
       padding: 10px;
-      width: 160px;
-      border-radius: 10px;
-      transition: 0.3s;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .day:hover {
+      transform: scale(1.05);
     }
 
     .day.completed {
-      background: #28a745;
-      border-color: #0f0;
+      background: #b0f2b6;
+      border-color: #28a745;
     }
 
     .day h3 {
-      margin-bottom: 10px;
-      font-size: 1.2em;
+      margin: 10px 0;
+      font-size: 1.3em;
+      color: #2f5233;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(6px);
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 500px;
+      text-align: right;
+      animation: fadeIn 0.6s ease-in-out;
     }
 
     .hour {
-      margin: 5px;
-      padding: 8px;
-      background: #333;
-      border: 1px solid #666;
-      border-radius: 5px;
+      background: #eee;
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 8px;
       cursor: pointer;
+      border: 1px solid #aaa;
     }
 
     .hour.done {
-      background: #0f0;
+      background: #28a745;
+      color: white;
       text-decoration: line-through;
-      color: black;
       font-weight: bold;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .close-btn {
+      background: crimson;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      float: left;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -66,10 +114,19 @@
   <h1>طريق الـ95+</h1>
   <div id="game-board"></div>
 
+  <!-- نافذة المهام -->
+  <div class="modal" id="task-modal">
+    <div class="modal-content" id="modal-content">
+      <button class="close-btn" onclick="closeModal()">إغلاق</button>
+      <h2 id="modal-title">مهام اليوم</h2>
+      <div id="modal-hours"></div>
+    </div>
+  </div>
+
   <script>
     const totalDays = 20;
     const hoursPerDay = 4;
-    const startHour = 4; // 4 الفجر بتوقيت السعودية
+    const startHour = 4;
 
     function isTodayUnlocked(dayIndex) {
       const now = new Date();
@@ -112,31 +169,11 @@
         dayBox.appendChild(title);
 
         if (isTodayUnlocked(day)) {
-          for (let hour = 0; hour < hoursPerDay; hour++) {
-            const hourBtn = document.createElement("div");
-            hourBtn.className = "hour";
-            hourBtn.textContent = `ساعة ${hour + 1}`;
-
-            if (isHourDone(day, hour)) {
-              hourBtn.classList.add("done");
-            }
-
-            hourBtn.addEventListener("click", () => {
-              if (!hourBtn.classList.contains("done")) {
-                hourBtn.classList.add("done");
-                saveProgress(day, hour);
-                if (isDayComplete(day)) {
-                  dayBox.classList.add("completed");
-                }
-              }
-            });
-
-            dayBox.appendChild(hourBtn);
-          }
+          dayBox.addEventListener("click", () => openModal(day));
         } else {
           const lockMsg = document.createElement("p");
           lockMsg.textContent = "مقفل حتى يومه";
-          lockMsg.style.opacity = 0.5;
+          lockMsg.style.opacity = 0.6;
           dayBox.appendChild(lockMsg);
         }
 
@@ -144,7 +181,40 @@
       }
     }
 
-    // Initialize startDate if not set
+    function openModal(dayIndex) {
+      const modal = document.getElementById("task-modal");
+      const modalHours = document.getElementById("modal-hours");
+      const modalTitle = document.getElementById("modal-title");
+      modalHours.innerHTML = "";
+      modalTitle.textContent = `مهام اليوم ${dayIndex + 1}`;
+
+      for (let hour = 0; hour < hoursPerDay; hour++) {
+        const hourDiv = document.createElement("div");
+        hourDiv.className = "hour";
+        hourDiv.textContent = `ساعة ${hour + 1}`;
+
+        if (isHourDone(dayIndex, hour)) {
+          hourDiv.classList.add("done");
+        }
+
+        hourDiv.addEventListener("click", () => {
+          if (!hourDiv.classList.contains("done")) {
+            hourDiv.classList.add("done");
+            saveProgress(dayIndex, hour);
+            if (isDayComplete(dayIndex)) renderGame();
+          }
+        });
+
+        modalHours.appendChild(hourDiv);
+      }
+
+      modal.style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("task-modal").style.display = "none";
+    }
+
     if (!localStorage.getItem("startDate")) {
       const today = new Date();
       localStorage.setItem("startDate", today.toISOString());
