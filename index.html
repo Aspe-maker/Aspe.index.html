@@ -80,6 +80,14 @@
             font-size: 18px;
             margin-top: 10px;
         }
+        .feedback {
+            font-size: 18px;
+            color: #ff6347;
+            margin-top: 10px;
+        }
+        .correct {
+            color: #4CAF50;
+        }
     </style>
 </head>
 <body>
@@ -95,6 +103,8 @@
 
         <div id="result" style="display:none;"></div>
         <div id="time" style="display:none;"></div>
+        <div id="feedback" class="feedback" style="display:none;"></div>
+        <div id="correctCount" style="display:none;"></div>
         
         <button id="restartBtn" onclick="restartGame()">إعادة اللعبة</button>
     </div>
@@ -103,6 +113,7 @@
         let correctAnswers = 0;
         let currentQuestion = 0;
         let startTime;
+        let totalQuestions = 20;
         let questions = [];
         let answeredQuestions = [];
 
@@ -142,16 +153,17 @@
         }
 
         function nextQuestion() {
-            if (currentQuestion < 20) {
+            if (currentQuestion < totalQuestions) {
                 document.getElementById("question").innerText = `${questions[currentQuestion].num1} × ${questions[currentQuestion].num2}`;
                 document.getElementById("answer").value = "";
-                document.getElementById("result").innerText = "";
+                document.getElementById("feedback").style.display = "none";
             } else {
                 let endTime = new Date().getTime();
                 let timeTaken = (endTime - startTime) / 1000;
-                document.getElementById("result").innerText = `انتهت اللعبة! الإجابات الصحيحة: ${correctAnswers} من 20. الوقت: ${timeTaken} ثانية.`;
+                document.getElementById("result").innerText = `انتهت اللعبة! الإجابات الصحيحة: ${correctAnswers} من ${totalQuestions}.`;
                 document.getElementById("time").innerText = `الوقت المستغرق: ${timeTaken} ثانية.`;
                 document.getElementById("result").style.display = "block";
+                document.getElementById("feedback").style.display = "none";
                 document.getElementById("restartBtn").style.display = "block";
             }
         }
@@ -160,9 +172,21 @@
             let userAnswer = document.getElementById("answer").value;
             if (parseInt(userAnswer) === questions[currentQuestion].answer) {
                 correctAnswers++;
+                document.getElementById("feedback").innerText = "إجابة صحيحة!";
+                document.getElementById("feedback").classList.add("correct");
+            } else {
+                document.getElementById("feedback").innerText = "إجابة خاطئة!";
+                document.getElementById("feedback").classList.remove("correct");
             }
+            document.getElementById("feedback").style.display = "block";
             currentQuestion++;
+            updateCorrectCount();
             nextQuestion();
+        }
+
+        function updateCorrectCount() {
+            document.getElementById("correctCount").innerText = `الإجابات الصحيحة: ${correctAnswers}`;
+            document.getElementById("correctCount").style.display = "block";
         }
 
         function restartGame() {
@@ -172,9 +196,9 @@
             answeredQuestions = [];
             document.getElementById("restartBtn").style.display = "none";
             document.getElementById("result").style.display = "none";
+            document.getElementById("correctCount").style.display = "none";
             startGame();
         }
-
     </script>
 </body>
 </html>
