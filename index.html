@@ -82,11 +82,13 @@
         }
         .feedback {
             font-size: 18px;
-            color: #ff6347;
             margin-top: 10px;
         }
         .correct {
             color: #4CAF50;
+        }
+        .incorrect {
+            color: #FF6347;
         }
     </style>
 </head>
@@ -117,6 +119,7 @@
         let questions = [];
         let answeredQuestions = [];
 
+        // توليد الأسئلة
         function generateQuestion() {
             let num1 = Math.floor(Math.random() * 10) + 1;
             let num2 = Math.floor(Math.random() * 10) + 1;
@@ -133,6 +136,7 @@
             }
         }
 
+        // التحقق من عدم تكرار السؤال
         function isQuestionRepeated(question) {
             for (let i = 0; i < questions.length; i++) {
                 if (questions[i].num1 === question.num1 && questions[i].num2 === question.num2) {
@@ -142,6 +146,7 @@
             return false;
         }
 
+        // بدء اللعبة
         function startGame() {
             document.getElementById("playBtn").style.display = "none";
             document.getElementById("question").style.display = "block";
@@ -152,6 +157,7 @@
             nextQuestion();
         }
 
+        // الانتقال إلى السؤال التالي
         function nextQuestion() {
             if (currentQuestion < totalQuestions) {
                 document.getElementById("question").innerText = `${questions[currentQuestion].num1} × ${questions[currentQuestion].num2}`;
@@ -168,27 +174,32 @@
             }
         }
 
+        // التحقق من الإجابة
         function checkAnswer() {
             let userAnswer = document.getElementById("answer").value;
             if (parseInt(userAnswer) === questions[currentQuestion].answer) {
                 correctAnswers++;
                 document.getElementById("feedback").innerText = "إجابة صحيحة!";
+                document.getElementById("feedback").classList.remove("incorrect");
                 document.getElementById("feedback").classList.add("correct");
             } else {
                 document.getElementById("feedback").innerText = "إجابة خاطئة!";
                 document.getElementById("feedback").classList.remove("correct");
+                document.getElementById("feedback").classList.add("incorrect");
             }
             document.getElementById("feedback").style.display = "block";
             currentQuestion++;
             updateCorrectCount();
-            nextQuestion();
+            setTimeout(nextQuestion, 1000); // الانتقال للسؤال التالي بعد 1 ثانية
         }
 
+        // تحديث عدد الإجابات الصحيحة
         function updateCorrectCount() {
             document.getElementById("correctCount").innerText = `الإجابات الصحيحة: ${correctAnswers}`;
             document.getElementById("correctCount").style.display = "block";
         }
 
+        // إعادة اللعبة
         function restartGame() {
             correctAnswers = 0;
             currentQuestion = 0;
