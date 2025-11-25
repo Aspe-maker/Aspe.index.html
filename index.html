@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>مذكّرة المهام - واجهة زجاجية</title>
+<title>مذكرة الأهداف - تصميم زجاجي</title>
 <style>
   :root{
     --bg:#0f1724;
@@ -25,7 +25,6 @@
     padding:48px 20px;
   }
 
-  /* glass container */
   .panel{
     backdrop-filter: blur(8px) saturate(120%);
     -webkit-backdrop-filter: blur(8px) saturate(120%);
@@ -38,22 +37,14 @@
   }
   .panel:hover{transform: translateY(-6px); box-shadow: 0 18px 50px rgba(2,6,23,0.7)}
 
-  /* left column - calendar */
-  .calendar{
-    width:420px;
-    max-width:92vw;
-  }
-  .topbar{
-    display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;
-  }
+  .calendar{width:420px;max-width:92vw;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+
   .date-glass{
-    padding:12px 16px;
-    border-radius:12px;
-    display:flex; gap:12px; align-items:center;
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-    border:1px solid rgba(255,255,255,0.06);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+    padding:12px 16px;border-radius:12px;display:flex;gap:12px;align-items:center;
+    background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
   }
+
   .date-big{font-size:20px;font-weight:700}
   .date-small{font-size:12px;color:#bcd1ff90}
 
@@ -62,69 +53,53 @@
     grid-template-columns: repeat(7,1fr);
     gap:10px;
   }
-  .day {
-    padding:12px;
-    border-radius:10px;
-    min-height:78px;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-    transition: transform .28s cubic-bezier(.2,.9,.3,1), background .28s, border-color .28s;
-    cursor:pointer;
-    border:1px solid transparent;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  }
-  .day:hover{transform: translateY(-6px)}
-  .day.locked{opacity:0.66; pointer-events:none; filter:grayscale(.05)}
-  .day .day-num{font-weight:700}
-  .day .status{
-    display:inline-flex; align-items:center; gap:6px; font-size:13px; padding:6px 8px; border-radius:8px;
-  }
-  .status.ok{background: rgba(72,199,116,0.14); color:var(--success); border:1px solid rgba(72,199,116,0.12)}
-  .status.fail{background: rgba(255,107,107,0.08); color:var(--danger); border:1px solid rgba(255,107,107,0.12)}
-  .status.pending{background: rgba(124,92,255,0.06); color:var(--accent); border:1px solid rgba(124,92,255,0.12)}
 
-  /* right column - day editor */
-  .editor{
-    width:440px;
-    max-width:92vw;
-    display:flex;
-    flex-direction:column;
-    gap:12px;
+  .day{
+    padding:12px;border-radius:10px;min-height:78px;
+    display:flex;flex-direction:column;justify-content:space-between;
+    transition: transform .28s, background .28s;
+    cursor:pointer;border:1px solid transparent;
+    background: rgba(255,255,255,0.02);
   }
+  .day:hover{transform:translateY(-6px)}
+  .day.locked{opacity:0.66;pointer-events:none;filter:grayscale(.05)}
+
+  .day .day-num{font-weight:700}
+  .status{
+    display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:6px 8px;border-radius:8px;
+  }
+  .ok{background: rgba(72,199,116,0.14); color:var(--success);}
+  .fail{background: rgba(255,107,107,0.12); color:var(--danger);}
+  .pending{background: rgba(124,92,255,0.10); color:var(--accent);}
+
+  /* Editor */
+  .editor{width:440px;max-width:92vw;display:flex;flex-direction:column;gap:12px}
   .h{font-weight:800;font-size:16px}
   .card{padding:12px;border-radius:12px;background:var(--glass-bg);border:1px solid var(--glass-border)}
   label{font-size:13px;color:#c9dbffb3}
-  input[type="number"], input[type="text"]{
-    width:100%; padding:8px 10px; margin-top:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:inherit;
+  input[type="number"],input[type="text"]{
+    width:100%;padding:8px;margin-top:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;
   }
-  .tasks{display:flex;flex-direction:column;gap:8px; max-height:320px; overflow:auto; padding-right:6px}
-  .task{
-    display:flex;gap:8px;align-items:center;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);
-    transition: transform .18s, background .18s;
-  }
+  .tasks{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto;padding-right:6px}
+  .task{display:flex;gap:8px;align-items:center;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
   .task.done{opacity:0.7;text-decoration:line-through}
-  .task .pts{font-weight:700; padding:6px 8px; border-radius:8px; background:rgba(255,255,255,0.03); font-size:13px}
+  .pts{padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:8px;font-weight:700}
+
   .controls{display:flex;gap:8px;flex-wrap:wrap}
   button{
-    background:linear-gradient(90deg,var(--accent), #5e9bff);
-    color:white;padding:8px 12px;border-radius:10px;border:0;cursor:pointer;
-    box-shadow: 0 6px 20px rgba(124,92,255,0.14);
-    transition: transform .15s;
+    background:linear-gradient(90deg,var(--accent), #5e9bff);color:white;padding:8px 12px;border-radius:10px;border:0;cursor:pointer;
+    box-shadow:0 6px 20px rgba(124,92,255,0.14);transition:transform .15s;
   }
   button:active{transform:translateY(2px)}
 
-  .progress{
-    height:12px;background:rgba(255,255,255,0.04); border-radius:999px; overflow:hidden;
-  }
-  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent), #5e9bff); width:0%; transition:width .6s cubic-bezier(.2,.9,.3,1)}
+  .progress{height:12px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent), #5e9bff);width:0%;transition:width .6s}
 
   .stats{display:flex;gap:12px;align-items:center;justify-content:space-between}
   .stat{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)}
   .small{font-size:12px;color:#bcd1ff90}
 
-  /* responsive */
-  @media (max-width:980px){
+  @media(max-width:980px){
     .app{flex-direction:column;align-items:center}
     .calendar,.editor{width:96%}
   }
@@ -132,7 +107,9 @@
 </head>
 <body>
 <div class="app">
-  <div class="panel calendar" aria-hidden="false">
+
+  <!-- CALENDAR -->
+  <div class="panel calendar">
     <div class="topbar">
       <div class="date-glass">
         <div>
@@ -141,404 +118,351 @@
         </div>
       </div>
       <div style="text-align:left">
-        <div class="small">ابدأ التقويم من: <strong id="startInfo">26</strong></div>
-        <div class="small">التوقيت: <strong>الرياض</strong></div>
+        <div class="small">بداية التقويم: <b>26</b></div>
+        <div class="small">التاريخ: ميلادي</div>
       </div>
     </div>
 
-    <div class="calendar-grid" id="calendarGrid" role="grid"></div>
+    <div class="calendar-grid" id="calendarGrid"></div>
   </div>
 
+  <!-- EDITOR -->
   <div class="panel editor">
     <div class="h">محرر اليوم</div>
 
     <div class="card">
-      <label>اليوم المحدد: <div id="selectedDayLabel" style="display:inline-block;margin-inline-start:8px;font-weight:800">—</div></label>
-      <div style="margin-top:8px" class="small">حدد هدف النقاط لليوم</div>
-      <input type="number" id="dayTarget" min="1" value="20" />
-      <div style="height:8px"></div>
+      <label>اليوم المحدد: <span id="selectedDayLabel" style="font-weight:800"></span></label>
 
+      <div class="small">هدف النقاط</div>
+      <input type="number" id="dayTarget" min="1" value="20" />
+
+      <div style="height:8px"></div>
       <div class="small">المهام</div>
       <div class="tasks" id="tasksList"></div>
 
       <div style="display:flex;gap:8px;margin-top:8px">
-        <input id="newTaskText" type="text" placeholder="وصف المهمة" />
-        <input id="newTaskPts" type="number" style="width:90px" min="1" value="5" />
-        <button id="addTaskBtn">أضف مهمة</button>
+        <input type="text" id="newTaskText" placeholder="وصف المهمة" />
+        <input type="number" id="newTaskPts" value="5" style="width:90px" />
+        <button id="addTaskBtn">أضف</button>
       </div>
 
       <div style="height:12px"></div>
       <div class="small">التقدم</div>
-      <div class="progress" aria-hidden="true"><i id="progressFill"></i></div>
+      <div class="progress"><i id="progressFill"></i></div>
       <div style="display:flex;justify-content:space-between;margin-top:8px">
-        <div class="small">المجموع: <strong id="sumPts">0</strong></div>
-        <div class="small">الهدف: <strong id="showTarget">0</strong></div>
+        <div class="small">المجموع: <b id="sumPts">0</b></div>
+        <div class="small">الهدف: <b id="showTarget">0</b></div>
       </div>
 
-      <div style="height:10px"></div>
-      <div class="controls">
-        <button id="saveDayBtn">حفظ اليوم</button>
-        <button id="lockDayBtn">قفل اليوم الآن</button>
-        <button id="resetDayBtn" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">إعادة تعيين</button>
+      <div class="controls" style="margin-top:10px">
+        <button id="saveDayBtn">حفظ</button>
+        <button id="lockDayBtn">قفل اليوم</button>
+        <button id="resetDayBtn" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">إعادة</button>
       </div>
     </div>
 
     <div class="card stats">
-      <div class="stat"><div class="small">أيام مكتملة</div><div id="doneCount" style="font-weight:800;font-size:18px">0</div></div>
-      <div class="stat"><div class="small">أيام لم تنجز</div><div id="missedCount" style="font-weight:800;font-size:18px">0</div></div>
+      <div class="stat"><div class="small">أيام مكتملة</div><div id="doneCount">0</div></div>
+      <div class="stat"><div class="small">أيام فائتة</div><div id="missedCount">0</div></div>
       <div style="flex:1;text-align:left">
-        <div class="small">إجمالي الأيام المتتبعّة</div>
-        <div id="totalDays" style="font-weight:800">0</div>
+        <div class="small">إجمالي المتابعة</div>
+        <div id="totalDays">0</div>
       </div>
     </div>
-
   </div>
+
 </div>
 
 <script>
-/*
-  Simple SPA:
-  - Uses localStorage key "glassPlanner_v1"
-  - Calendar starts at day 26 of current month (configurable)
-  - Timezone: Asia/Riyadh (calculations based on locale conversion)
-*/
+// ===================================================================
+// CONFIG
+// ===================================================================
+const STORAGE_KEY = "glassPlanner_v1";
+const TIMEZONE = "Asia/Riyadh";
+const START_DAY_OF_MONTH = 26;
+const END_DATE = new Date("2026-01-03T00:00:00");
 
-const STORAGE_KEY = 'glassPlanner_v1';
-const START_DAY_OF_MONTH = 26; // بداية الجدول رقم اليوم من كل شهر
-const TIMEZONE = 'Asia/Riyadh';
-
+// ===================================================================
+// HELPERS
+// ===================================================================
 function nowRiyadh(){
-  // return Date object representing current time in Riyadh by creating ISO string of Intl parts
-  const d = new Date();
-  // compute offset by formatting into parts
-  // get YYYY-MM-DDTHH:MM:SS in Riyadh
-  const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: TIMEZONE, hour12:false,
-    year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  const parts = fmt.formatToParts(d).reduce((acc,p)=>{acc[p.type]=p.value;return acc;},{});
-  return new Date(`${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`);
+  return new Date(new Date().toLocaleString("en-US",{timeZone:TIMEZONE}));
 }
 
-function startOfDayRiyadh(d=null){
-  const x = d? new Date(d) : nowRiyadh();
+function formatKey(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+function fmt(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+function startDay(d){
+  const x = new Date(d);
   x.setHours(0,0,0,0);
   return x;
 }
 
-function formatDateKey(date){
-  // yyyy-mm-dd
-  const y = date.getFullYear();
-  const m = String(date.getMonth()+1).padStart(2,'0');
-  const da = String(date.getDate()).padStart(2,'0');
-  return `${y}-${m}-${da}`;
-}
+// ===================================================================
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"days":{}}');
+let selectedKey = null;
 
-function loadState(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) return {days:{}};
-    return JSON.parse(raw);
-  }catch(e){
-    return {days:{}};
-  }
-}
-function saveState(state){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-
-let state = loadState();
-let selectedDateKey = null;
-
-// build calendar grid: show 28 days starting from START_DAY_OF_MONTH going forward
+// ===================================================================
+// BUILD CALENDAR
+// ===================================================================
 function buildCalendar(){
-  const grid = document.getElementById('calendarGrid');
-  grid.innerHTML = '';
+  const grid = document.getElementById("calendarGrid");
+  grid.innerHTML = "";
+
   const now = nowRiyadh();
-  document.getElementById('todayStr').textContent = now.toLocaleDateString('ar-SA', {weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone:TIMEZONE});
-  document.getElementById('todayTime').textContent = now.toLocaleTimeString('ar-SA', {hour:'2-digit',minute:'2-digit',timeZone:TIMEZONE});
+  document.getElementById("todayStr").textContent = fmt(now);
+  document.getElementById("todayTime").textContent =
+    now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:TIMEZONE});
 
-  const year = now.getFullYear();
-  const month = now.getMonth(); // 0-based
-  // starting date = this month START_DAY_OF_MONTH
-  const start = new Date(year, month, START_DAY_OF_MONTH, 12); // noon safe
-  // if today date is before START_DAY_OF_MONTH, maybe want to start from previous month
-  if (now.getDate() < START_DAY_OF_MONTH){
-    start.setMonth(month-1);
-  }
-  // number of days to show: show 35 cells (5 weeks) to be safe
-  const totalCells = 35;
-  for(let i=0;i<totalCells;i++){
-    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate()+i, 12);
-    const key = formatDateKey(d);
-    const dayEl = document.createElement('div');
-    dayEl.className = 'day';
-    dayEl.dataset.key = key;
-
-    const num = document.createElement('div');
-    num.innerHTML = `<div class="day-num">${d.getDate()}</div><div class="small">${d.toLocaleDateString('ar-SA',{month:'short',year:'numeric',timeZone:TIMEZONE})}</div>`;
-    dayEl.appendChild(num);
-
-    const status = document.createElement('div');
-    status.className = 'status pending';
-    status.innerText = 'مفتوح';
-    dayEl.appendChild(status);
-
-    // populate state
-    const dayState = state.days[key];
-    if(dayState){
-      // show status
-      if(dayState.locked){
-        dayEl.classList.add('locked');
-        if(dayState.success) {
-          status.className='status ok'; status.innerText='صح';
-        } else {
-          status.className='status fail'; status.innerText='خطأ';
-        }
-      } else {
-        // show progress percentage
-        status.className='status pending';
-        status.innerText = `${dayState.sum || 0}/${dayState.target || 0} نقاط`;
-      }
-    } else {
-      status.className='status pending';
-      status.innerText = 'مفتوح';
-    }
-
-    // click handler
-    dayEl.addEventListener('click', ()=> { openDay(key, d); });
-
-    grid.appendChild(dayEl);
+  // determine starting point
+  let base = new Date(now.getFullYear(), now.getMonth(), START_DAY_OF_MONTH);
+  if(now.getDate() < START_DAY_OF_MONTH){
+    base.setMonth(base.getMonth() - 1);
   }
 
-  // auto-close previous days when day changes
-  applyAutoLock();
+  for(let i=0;i<60;i++){
+    let d = new Date(base);
+    d.setDate(base.getDate() + i);
+
+    if(d > END_DATE) break;
+
+    let key = formatKey(d);
+    let div = document.createElement("div");
+    div.className = "day";
+    div.dataset.key = key;
+
+    div.innerHTML = `
+      <div>
+        <div class="day-num">${d.getDate()}</div>
+        <div class="small">${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}</div>
+      </div>
+      <div class="status pending">مفتوح</div>
+    `;
+
+    div.onclick = ()=> openDay(key,d);
+
+    applyStatusToCell(div,key);
+    grid.appendChild(div);
+  }
+
+  autoLock();
   refreshStats();
 }
 
-function openDay(key, dateObj){
-  selectedDateKey = key;
-  const label = document.getElementById('selectedDayLabel');
-  label.textContent = new Date(dateObj).toLocaleDateString('ar-SA',{weekday:'long', day:'numeric', month:'short', year:'numeric', timeZone:TIMEZONE});
-  const dayState = state.days[key] || {target:20, tasks:[], sum:0, locked:false, success:false};
-  state.days[key] = dayState; // ensure exists
-  document.getElementById('dayTarget').value = dayState.target || 20;
-  document.getElementById('showTarget').textContent = dayState.target || 20;
-  renderTasks();
-  updateProgress();
-  highlightSelectedInCalendar();
-}
+// ===================================================================
+// APPLY STATUS TO CELL
+// ===================================================================
+function applyStatusToCell(cell,key){
+  let ds = state.days[key];
+  let st = cell.querySelector(".status");
 
-function renderTasks(){
-  const list = document.getElementById('tasksList'); list.innerHTML='';
-  const ds = state.days[selectedDateKey] || {tasks:[]};
-  (ds.tasks||[]).forEach((t, idx)=>{
-    const el = document.createElement('div');
-    el.className = 'task' + (t.done? ' done':'');
-    el.innerHTML = `
-      <input type="checkbox" ${t.done? 'checked': ''} data-idx="${idx}" />
-      <div style="flex:1">
-        <div style="font-weight:700">${t.title}</div>
-        <div class="small">${t.description || ''}</div>
-      </div>
-      <div class="pts">${t.pts}pt</div>
-      <button data-idx="${idx}" style="background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit;padding:6px;border-radius:8px">حذف</button>
-    `;
-    // checkbox toggle
-    el.querySelector('input[type=checkbox]').addEventListener('change', (e)=>{
-      const i = Number(e.target.dataset.idx);
-      state.days[selectedDateKey].tasks[i].done = e.target.checked;
-      recalcDay(selectedDateKey);
-      saveState(state);
-      renderTasks();
-      updateCalendarCell(selectedDateKey);
-    });
-    // delete
-    el.querySelector('button').addEventListener('click', (e)=>{
-      const i = Number(e.target.dataset.idx);
-      state.days[selectedDateKey].tasks.splice(i,1);
-      recalcDay(selectedDateKey);
-      saveState(state);
-      renderTasks();
-      updateCalendarCell(selectedDateKey);
-    });
+  if(!ds){
+    st.className="status pending";
+    st.textContent="مفتوح";
+    return;
+  }
 
-    list.appendChild(el);
-  });
-
-  if((ds.tasks||[]).length===0){
-    list.innerHTML = '<div class="small" style="opacity:0.8">ما فيه مهام بعد — أضف مهمة لتبدأ</div>';
+  if(ds.locked){
+    cell.classList.add("locked");
+    if(ds.success){
+      st.className="status ok"; st.textContent="صح";
+    } else {
+      st.className="status fail"; st.textContent="خطأ";
+    }
+  } else {
+    cell.classList.remove("locked");
+    st.className="status pending";
+    st.textContent=`${ds.sum||0}/${ds.target||0}`;
   }
 }
 
-function recalcDay(key){
-  const ds = state.days[key];
-  if(!ds) return;
-  const sum = (ds.tasks||[]).reduce((s,t)=> s + (t.done? t.pts:0), 0);
-  ds.sum = sum;
-  ds.success = ds.sum >= (ds.target || 0);
-  return ds;
+// ===================================================================
+// OPEN DAY
+// ===================================================================
+function openDay(key,d){
+  selectedKey = key;
+
+  document.getElementById("selectedDayLabel").textContent = fmt(d);
+
+  if(!state.days[key]){
+    state.days[key] = {target:20,tasks:[],sum:0,locked:false,success:false};
+  }
+
+  document.getElementById("dayTarget").value = state.days[key].target;
+
+  renderTasks();
+  updateProgress();
+}
+
+// ===================================================================
+function renderTasks(){
+  let box = document.getElementById("tasksList");
+  box.innerHTML="";
+
+  let ds = state.days[selectedKey];
+
+  ds.tasks.forEach((t,i)=>{
+    let div = document.createElement("div");
+    div.className="task"+(t.done?" done":"");
+
+    div.innerHTML = `
+      <input type="checkbox" ${t.done?"checked":""} data-i="${i}" />
+      <div style="flex:1;font-weight:700">${t.title}</div>
+      <div class="pts">${t.pts}</div>
+      <button data-del="${i}" style="background:transparent;border:1px solid rgba(255,255,255,0.1);padding:4px 8px;border-radius:8px">حذف</button>
+    `;
+
+    div.querySelector("input").onchange = (e)=>{
+      ds.tasks[i].done = e.target.checked;
+      recalc(selectedKey);
+      save();
+      renderTasks();
+      updateCell(selectedKey);
+    };
+
+    div.querySelector("button").onclick = ()=>{
+      ds.tasks.splice(i,1);
+      recalc(selectedKey);
+      save();
+      renderTasks();
+      updateCell(selectedKey);
+    };
+
+    box.appendChild(div);
+  });
+
+  if(ds.tasks.length===0){
+    box.innerHTML='<div class="small">ما فيه مهام</div>';
+  }
+}
+
+function recalc(key){
+  let ds = state.days[key];
+  ds.sum = ds.tasks.filter(t=>t.done).reduce((a,b)=>a+b.pts,0);
+  ds.success = ds.sum >= ds.target;
 }
 
 function updateProgress(){
-  const ds = state.days[selectedDateKey] || {sum:0,target:0};
-  document.getElementById('sumPts').textContent = ds.sum || 0;
-  document.getElementById('showTarget').textContent = ds.target || 0;
-  const pct = ds.target? Math.min(100, Math.round((ds.sum/ds.target)*100)) : 0;
-  document.getElementById('progressFill').style.width = pct + '%';
+  let ds = state.days[selectedKey];
+  document.getElementById("sumPts").textContent = ds.sum;
+  document.getElementById("showTarget").textContent = ds.target;
+  document.getElementById("progressFill").style.width =
+    (ds.target? ds.sum/ds.target*100 : 0) + "%";
 }
 
-function updateCalendarCell(key){
-  const cell = document.querySelector(`.day[data-key="${key}"]`);
-  if(!cell) return;
-  const ds = state.days[key];
-  const status = cell.querySelector('.status');
-  if(!ds) { status.className='status pending'; status.innerText='مفتوح'; cell.classList.remove('locked'); return; }
-  if(ds.locked){
-    cell.classList.add('locked');
-    if(ds.success){ status.className='status ok'; status.innerText='صح'; }
-    else { status.className='status fail'; status.innerText='خطأ'; }
-  } else {
-    cell.classList.remove('locked');
-    status.className='status pending';
-    status.innerText = `${ds.sum||0}/${ds.target||0} نقاط`;
-  }
+function updateCell(key){
+  let cell = document.querySelector(`.day[data-key="${key}"]`);
+  if(cell) applyStatusToCell(cell,key);
   refreshStats();
 }
 
-function highlightSelectedInCalendar(){
-  document.querySelectorAll('.day').forEach(e=> e.style.outline='none');
-  const el = document.querySelector(`.day[data-key="${selectedDateKey}"]`);
-  if(el) el.style.outline='2px solid rgba(124,92,255,0.18)';
-}
+document.getElementById("addTaskBtn").onclick = ()=>{
+  let txt = document.getElementById("newTaskText").value.trim();
+  let pts = parseInt(document.getElementById("newTaskPts").value)||1;
+  if(!txt) return;
 
-function addTask(){
-  const text = document.getElementById('newTaskText').value.trim();
-  const pts = Math.max(1, parseInt(document.getElementById('newTaskPts').value || 1));
-  if(!text) return;
-  const ds = state.days[selectedDateKey];
-  ds.tasks = ds.tasks || [];
-  ds.tasks.push({title:text, pts:pts, done:false});
-  recalcDay(selectedDateKey);
-  saveState(state);
-  document.getElementById('newTaskText').value='';
-  renderTasks(); updateProgress(); updateCalendarCell(selectedDateKey);
-}
+  state.days[selectedKey].tasks.push({title:txt,pts:pts,done:false});
+  recalc(selectedKey);
+  save();
+  renderTasks();
+  updateProgress();
+  updateCell(selectedKey);
 
-document.getElementById('addTaskBtn').addEventListener('click', addTask);
-document.getElementById('newTaskText').addEventListener('keydown', (e)=>{ if(e.key==='Enter') addTask(); });
+  document.getElementById("newTaskText").value="";
+};
 
-document.getElementById('dayTarget').addEventListener('input',(e)=>{
-  const v = Math.max(1, parseInt(e.target.value||1));
-  state.days[selectedDateKey].target = v;
-  saveState(state);
-  updateProgress(); updateCalendarCell(selectedDateKey);
-});
+document.getElementById("dayTarget").oninput = (e)=>{
+  let ds = state.days[selectedKey];
+  ds.target = parseInt(e.target.value)||1;
+  recalc(selectedKey);
+  save();
+  updateProgress();
+  updateCell(selectedKey);
+};
 
-document.getElementById('saveDayBtn').addEventListener('click', ()=>{
-  state.days[selectedDateKey].target = Math.max(1, parseInt(document.getElementById('dayTarget').value||1));
-  recalcDay(selectedDateKey);
-  saveState(state);
-  updateCalendarCell(selectedDateKey);
-  alert('حُفظ اليوم.');
-});
+document.getElementById("saveDayBtn").onclick = ()=>{
+  recalc(selectedKey);
+  save();
+  updateCell(selectedKey);
+  alert("تم حفظ اليوم.");
+};
 
-document.getElementById('lockDayBtn').addEventListener('click', ()=>{
-  lockDayNow(selectedDateKey);
-  saveState(state);
-  buildCalendar();
-});
+document.getElementById("lockDayBtn").onclick = ()=>{
+  let ds = state.days[selectedKey];
+  recalc(selectedKey);
+  ds.locked=true;
+  ds.success = ds.sum >= ds.target;
+  save();
+  updateCell(selectedKey);
+};
 
-document.getElementById('resetDayBtn').addEventListener('click', ()=>{
-  if(!confirm('ترجع اليوم كما كان و تحذف المهام المنجزة؟')) return;
-  state.days[selectedDateKey] = {target:20,tasks:[],sum:0,locked:false,success:false};
-  saveState(state);
-  renderTasks(); updateProgress(); buildCalendar();
-});
+document.getElementById("resetDayBtn").onclick = ()=>{
+  if(!confirm("متأكد؟")) return;
+  state.days[selectedKey] = {target:20,tasks:[],sum:0,locked:false,success:false};
+  save();
+  renderTasks();
+  updateProgress();
+  updateCell(selectedKey);
+};
 
-// lock function
-function lockDayNow(key){
-  const ds = state.days[key] || {target:20,tasks:[],sum:0};
-  recalcDay(key);
-  ds.locked = true;
-  ds.success = ds.sum >= (ds.target || 0);
-  state.days[key] = ds;
-  saveState(state);
-  updateCalendarCell(key);
-}
+// ===================================================================
+// AUTO LOCK
+// ===================================================================
+function autoLock(){
+  const now = startDay(nowRiyadh());
+  const todayKey = formatKey(now);
 
-// auto lock previous day at Riyadh midnight
-function applyAutoLock(){
-  const now = nowRiyadh();
-  const todayKey = formatDateKey(startOfDayRiyadh(now));
-  // previous day:
-  const prev = new Date(startOfDayRiyadh(now));
-  prev.setDate(prev.getDate() - 1);
-  const prevKey = formatDateKey(prev);
-
-  // lock any day whose date < today and not locked
-  for(const key in state.days){
-    if(key < todayKey && !state.days[key].locked){
-      // lock it now
-      recalcDay(key);
-      state.days[key].locked = true;
-      state.days[key].success = state.days[key].sum >= (state.days[key].target || 0);
+  for(const k in state.days){
+    if(k < todayKey){
+      if(!state.days[k].locked){
+        recalc(k);
+        state.days[k].locked=true;
+      }
     }
   }
-  // ensure prev gets locked too
-  if(state.days[prevKey] && !state.days[prevKey].locked){
-    recalcDay(prevKey);
-    state.days[prevKey].locked = true;
-    state.days[prevKey].success = state.days[prevKey].sum >= (state.days[prevKey].target || 0);
-  }
-  saveState(state);
-  // update calendar UI statuses
-  document.querySelectorAll('.day').forEach(el=>{
-    updateCalendarCell(el.dataset.key);
-  });
+  save();
+  document.querySelectorAll(".day").forEach(el=>applyStatusToCell(el,el.dataset.key));
 }
 
-// stats
+// ===================================================================
 function refreshStats(){
-  const keys = Object.keys(state.days);
-  let done=0, missed=0, total=0;
-  for(const k of keys){
-    // consider only days in our displayed range (start day onward)
-    const ds = state.days[k];
-    if(!ds) continue;
-    // determine if within range: compare to start date
+  let done=0,miss=0,total=0;
+
+  Object.values(state.days).forEach(d=>{
     total++;
-    if(ds.locked){
-      if(ds.success) done++; else missed++;
+    if(d.locked){
+      if(d.success) done++; else miss++;
     }
-  }
-  document.getElementById('doneCount').textContent = done;
-  document.getElementById('missedCount').textContent = missed;
-  document.getElementById('totalDays').textContent = total;
+  });
+
+  document.getElementById("doneCount").textContent = done;
+  document.getElementById("missedCount").textContent = miss;
+  document.getElementById("totalDays").textContent = total;
 }
 
-// small interval to update clock and auto-lock at midnight boundary
-setInterval(()=>{
-  const now = nowRiyadh();
-  document.getElementById('todayStr').textContent = now.toLocaleDateString('ar-SA', {weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone:TIMEZONE});
-  document.getElementById('todayTime').textContent = now.toLocaleTimeString('ar-SA', {hour:'2-digit',minute:'2-digit',timeZone:TIMEZONE});
-  // run auto-lock each minute to catch midnight
-  applyAutoLock();
-}, 60*1000);
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
 
-// initial
+// ===================================================================
 buildCalendar();
 
-// open today's cell by default
-const todayKey = formatDateKey(startOfDayRiyadh(nowRiyadh()));
-openDay(todayKey);
+// افتح يوم اليوم تلقائيًا
+openDay( formatKey(startDay(nowRiyadh())), new Date(nowRiyadh()) );
 
-// small UX: click calendar days while keyboard navigation
-document.addEventListener('keydown', (e)=>{
-  if(e.key==='ArrowLeft' || e.key==='ArrowRight'){
-    const all = Array.from(document.querySelectorAll('.day'));
-    const idx = all.findIndex(x=> x.dataset.key === selectedDateKey);
-    const next = e.key==='ArrowLeft' ? Math.max(0, idx-1) : Math.min(all.length-1, idx+1);
-    if(all[next]) all[next].click();
-  }
-});
+setInterval(()=>{
+  let now = nowRiyadh();
+  document.getElementById("todayStr").textContent = fmt(now);
+  document.getElementById("todayTime").textContent =
+    now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:TIMEZONE});
 
+  autoLock();
+},60000);
 </script>
 </body>
 </html>
