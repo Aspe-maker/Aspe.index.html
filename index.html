@@ -3,466 +3,473 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>مذكرة الأهداف - تصميم زجاجي</title>
+<title>مذكرة الأهداف — 25Nov → 03Jan</title>
 <style>
   :root{
-    --bg:#0f1724;
-    --glass-bg: rgba(255,255,255,0.06);
-    --accent: #7c5cff;
-    --success: #48c774;
-    --danger: #ff6b6b;
-    --glass-border: rgba(255,255,255,0.12);
-    --card-radius: 14px;
-  }
-  *{box-sizing:border-box;font-family: "Segoe UI", Tahoma, Arial, sans-serif}
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071022 0%, #0f1724 100%);color:#e6eef8;direction:rtl}
-  .app{
-    min-height:100vh;
-    display:flex;
-    gap:20px;
-    align-items:flex-start;
-    justify-content:center;
-    padding:48px 20px;
+    --bg:#ffffff;
+    --panel:#fbfcff;
+    --glass-bg: rgba(255,255,255,0.8);
+    --accent: #3b82f6; /* أزرق حي */
+    --accent-2: #06b6d4; /* تيل */
+    --success: #16a34a;
+    --danger: #ef4444;
+    --muted: #6b7280;
+    --glass-border: rgba(59,130,246,0.12);
+    --card-radius:16px;
+    --shadow: 0 8px 30px rgba(15,23,42,0.06);
   }
 
+  *{box-sizing:border-box;font-family: Inter, "Segoe UI", Tahoma, Arial, sans-serif}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#ffffff 0%, #f6f9ff 100%);color:#0b1220;direction:rtl}
+  .app{min-height:100vh;display:flex;gap:24px;align-items:flex-start;justify-content:center;padding:40px;transition:background .3s}
+
+  /* panel */
   .panel{
-    backdrop-filter: blur(8px) saturate(120%);
-    -webkit-backdrop-filter: blur(8px) saturate(120%);
-    background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
-    border: 1px solid var(--glass-border);
-    border-radius: var(--card-radius);
+    width:100%;
+    max-width:520px;
+    background:var(--panel);
+    border-radius:var(--card-radius);
     padding:18px;
-    box-shadow: 0 6px 30px rgba(2,6,23,0.6);
-    transition: transform .28s cubic-bezier(.2,.9,.3,1), box-shadow .28s;
+    box-shadow:var(--shadow);
+    border:1px solid var(--glass-border);
+    backdrop-filter: blur(6px) saturate(120%);
+    transition: transform .32s cubic-bezier(.2,.9,.3,1), box-shadow .32s;
   }
-  .panel:hover{transform: translateY(-6px); box-shadow: 0 18px 50px rgba(2,6,23,0.7)}
+  .panel:hover{transform:translateY(-6px); box-shadow:0 22px 50px rgba(15,23,42,0.08)}
 
-  .calendar{width:420px;max-width:92vw;}
-  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+  .layout{display:flex;gap:20px;width:100%;max-width:1100px}
+  .col{flex:1;min-width:280px}
 
-  .date-glass{
-    padding:12px 16px;border-radius:12px;display:flex;gap:12px;align-items:center;
-    background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+  /* top */
+  .top{
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;
+  }
+  .clock{
+    display:flex;flex-direction:column;
+  }
+  .clock .date{font-weight:800;font-size:18px}
+  .clock .time{color:var(--muted);font-size:13px}
+
+  .badge{
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    color:white;padding:8px 12px;border-radius:999px;font-weight:700;box-shadow:0 8px 22px rgba(59,130,246,0.12)
   }
 
-  .date-big{font-size:20px;font-weight:700}
-  .date-small{font-size:12px;color:#bcd1ff90}
-
-  .calendar-grid{
-    display:grid;
-    grid-template-columns: repeat(7,1fr);
-    gap:10px;
+  /* calendar grid */
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}
+  .cell{
+    background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(248,249,255,0.95));
+    border-radius:12px;padding:10px;min-height:88px;display:flex;flex-direction:column;justify-content:space-between;
+    border:1px solid rgba(11,18,32,0.04);cursor:pointer;transition:transform .22s,box-shadow .22s,opacity .22s;
   }
+  .cell:hover{transform:translateY(-6px); box-shadow:0 16px 40px rgba(11,18,32,0.06)}
+  .cell.locked{opacity:0.6;filter:grayscale(.05);cursor:default}
 
-  .day{
-    padding:12px;border-radius:10px;min-height:78px;
-    display:flex;flex-direction:column;justify-content:space-between;
-    transition: transform .28s, background .28s;
-    cursor:pointer;border:1px solid transparent;
-    background: rgba(255,255,255,0.02);
-  }
-  .day:hover{transform:translateY(-6px)}
-  .day.locked{opacity:0.66;pointer-events:none;filter:grayscale(.05)}
+  .cell .num{font-weight:800;font-size:16px}
+  .cell .ym{font-size:12px;color:var(--muted)}
 
-  .day .day-num{font-weight:700}
   .status{
-    display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:6px 8px;border-radius:8px;
+    display:inline-flex;align-items:center;gap:8px;padding:6px 8px;border-radius:999px;font-weight:700;font-size:13px;
   }
-  .ok{background: rgba(72,199,116,0.14); color:var(--success);}
-  .fail{background: rgba(255,107,107,0.12); color:var(--danger);}
-  .pending{background: rgba(124,92,255,0.10); color:var(--accent);}
+  .status.pending{background:rgba(59,130,246,0.08);color:var(--accent)}
+  .status.ok{background:rgba(22,163,74,0.08);color:var(--success)}
+  .status.fail{background:rgba(239,68,68,0.08);color:var(--danger)}
 
-  /* Editor */
-  .editor{width:440px;max-width:92vw;display:flex;flex-direction:column;gap:12px}
-  .h{font-weight:800;font-size:16px}
-  .card{padding:12px;border-radius:12px;background:var(--glass-bg);border:1px solid var(--glass-border)}
-  label{font-size:13px;color:#c9dbffb3}
-  input[type="number"],input[type="text"]{
-    width:100%;padding:8px;margin-top:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;
+  /* editor */
+  .h{font-weight:900;font-size:16px;margin-bottom:8px}
+  .card{background:linear-gradient(180deg,#ffffff,#fbfcff);border-radius:12px;padding:12px;border:1px solid rgba(11,18,32,0.04)}
+  label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+  input[type="text"], input[type="number"]{
+    width:100%;padding:10px;border-radius:10px;border:1px solid rgba(11,18,32,0.06);font-size:14px;background:transparent;
   }
-  .tasks{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto;padding-right:6px}
-  .task{display:flex;gap:8px;align-items:center;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
-  .task.done{opacity:0.7;text-decoration:line-through}
-  .pts{padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:8px;font-weight:700}
 
-  .controls{display:flex;gap:8px;flex-wrap:wrap}
-  button{
-    background:linear-gradient(90deg,var(--accent), #5e9bff);color:white;padding:8px 12px;border-radius:10px;border:0;cursor:pointer;
-    box-shadow:0 6px 20px rgba(124,92,255,0.14);transition:transform .15s;
+  .tasks{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow:auto;padding-right:6px}
+  .task{
+    display:flex;gap:8px;align-items:center;padding:8px;border-radius:10px;border:1px solid rgba(11,18,32,0.04);
+    transition:transform .15s,background .18s;
   }
-  button:active{transform:translateY(2px)}
+  .task:hover{transform:translateY(-4px)}
+  .task.done{opacity:0.6;text-decoration:line-through;background:linear-gradient(90deg, rgba(16,185,129,0.03),transparent)}
 
-  .progress{height:12px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden}
-  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent), #5e9bff);width:0%;transition:width .6s}
+  .pts{padding:6px 8px;border-radius:8px;background:linear-gradient(90deg,#eef2ff,#f0f9ff);font-weight:800;color:#0b1220}
 
-  .stats{display:flex;gap:12px;align-items:center;justify-content:space-between}
-  .stat{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)}
-  .small{font-size:12px;color:#bcd1ff90}
+  .controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .btn{
+    padding:10px 14px;border-radius:12px;border:0;font-weight:800;cursor:pointer;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;box-shadow:0 10px 30px rgba(59,130,246,0.12)
+  }
+  .btn.ghost{background:transparent;border:1px solid rgba(11,18,32,0.06);color:var(--muted);box-shadow:none}
 
+  .progress{height:12px;background:rgba(11,18,32,0.03);border-radius:999px;overflow:hidden;margin-top:8px}
+  .progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .7s cubic-bezier(.2,.9,.3,1)}
+
+  .stats{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:12px}
+  .stat{background:linear-gradient(180deg,#ffffff,#fbfcff);padding:10px;border-radius:12px;border:1px solid rgba(11,18,32,0.04);text-align:center;flex:1}
+  .stat .big{font-weight:900;font-size:18px}
+
+  /* responsive */
   @media(max-width:980px){
-    .app{flex-direction:column;align-items:center}
-    .calendar,.editor{width:96%}
+    .layout{flex-direction:column}
+    .panel{max-width:100%}
   }
+
+  /* subtle animations */
+  .fade-in{animation:fadeIn .45s ease both}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
-<div class="app">
+  <div class="app">
+    <div class="layout" style="width:100%;max-width:1100px">
 
-  <!-- CALENDAR -->
-  <div class="panel calendar">
-    <div class="topbar">
-      <div class="date-glass">
-        <div>
-          <div class="date-big" id="todayStr">—</div>
-          <div class="date-small" id="todayTime">—</div>
+      <!-- CALENDAR COLUMN -->
+      <div class="col panel fade-in" id="leftCol">
+        <div class="top">
+          <div class="clock">
+            <div class="date" id="todayStr">—</div>
+            <div class="time" id="todayTime">—</div>
+          </div>
+          <div class="badge">25-11-2025 → 03-01-2026</div>
         </div>
-      </div>
-      <div style="text-align:left">
-        <div class="small">بداية التقويم: <b>26</b></div>
-        <div class="small">التاريخ: ميلادي</div>
-      </div>
-    </div>
 
-    <div class="calendar-grid" id="calendarGrid"></div>
-  </div>
-
-  <!-- EDITOR -->
-  <div class="panel editor">
-    <div class="h">محرر اليوم</div>
-
-    <div class="card">
-      <label>اليوم المحدد: <span id="selectedDayLabel" style="font-weight:800"></span></label>
-
-      <div class="small">هدف النقاط</div>
-      <input type="number" id="dayTarget" min="1" value="20" />
-
-      <div style="height:8px"></div>
-      <div class="small">المهام</div>
-      <div class="tasks" id="tasksList"></div>
-
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <input type="text" id="newTaskText" placeholder="وصف المهمة" />
-        <input type="number" id="newTaskPts" value="5" style="width:90px" />
-        <button id="addTaskBtn">أضف</button>
+        <div class="grid" id="calendarGrid" aria-hidden="false"></div>
       </div>
 
-      <div style="height:12px"></div>
-      <div class="small">التقدم</div>
-      <div class="progress"><i id="progressFill"></i></div>
-      <div style="display:flex;justify-content:space-between;margin-top:8px">
-        <div class="small">المجموع: <b id="sumPts">0</b></div>
-        <div class="small">الهدف: <b id="showTarget">0</b></div>
-      </div>
+      <!-- EDITOR COLUMN -->
+      <div class="col panel fade-in" id="rightCol">
+        <div class="h">محرر اليوم</div>
 
-      <div class="controls" style="margin-top:10px">
-        <button id="saveDayBtn">حفظ</button>
-        <button id="lockDayBtn">قفل اليوم</button>
-        <button id="resetDayBtn" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">إعادة</button>
-      </div>
-    </div>
+        <div class="card">
+          <label>اليوم المحدد</label>
+          <div style="font-weight:900;margin-bottom:8px" id="selectedDayLabel">—</div>
 
-    <div class="card stats">
-      <div class="stat"><div class="small">أيام مكتملة</div><div id="doneCount">0</div></div>
-      <div class="stat"><div class="small">أيام فائتة</div><div id="missedCount">0</div></div>
-      <div style="flex:1;text-align:left">
-        <div class="small">إجمالي المتابعة</div>
-        <div id="totalDays">0</div>
+          <label>هدف النقاط</label>
+          <input type="number" id="dayTarget" min="1" value="20" />
+
+          <div style="height:10px"></div>
+          <label>المهام</label>
+          <div class="tasks" id="tasksList"></div>
+
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <input type="text" id="newTaskText" placeholder="وصف المهمة" />
+            <input type="number" id="newTaskPts" value="5" style="width:96px" />
+            <button class="btn" id="addTaskBtn">أضف</button>
+          </div>
+
+          <div class="progress"><i id="progressFill"></i></div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px">
+            <div class="small">المجموع: <b id="sumPts">0</b></div>
+            <div class="small">الهدف: <b id="showTarget">0</b></div>
+          </div>
+
+          <div class="controls">
+            <button class="btn" id="saveDayBtn">حفظ</button>
+            <button class="btn" id="lockDayBtn">قفل الآن</button>
+            <button class="btn ghost" id="resetDayBtn">إعادة</button>
+          </div>
+
+          <div class="stats">
+            <div class="stat"><div class="small">مكتملة</div><div class="big" id="doneCount">0</div></div>
+            <div class="stat"><div class="small">فائتة</div><div class="big" id="missedCount">0</div></div>
+            <div class="stat"><div class="small">المتابعة</div><div class="big" id="totalDays">0</div></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
-
-</div>
 
 <script>
-// ===================================================================
-// CONFIG
-// ===================================================================
-const STORAGE_KEY = "glassPlanner_v1";
+/* ======= CONFIG ======= */
+const STORAGE_KEY = "glassPlanner_v2";
 const TIMEZONE = "Asia/Riyadh";
-const START_DAY_OF_MONTH = 26;
-const END_DATE = new Date("2026-01-03T00:00:00");
+const START_DATE = new Date("2025-11-25T00:00:00"); // يبدأ من 25 نوفمبر 2025
+const END_DATE = new Date("2026-01-03T00:00:00");   // ينتهي عند 3 يناير 2026
 
-// ===================================================================
-// HELPERS
-// ===================================================================
+/* ======= HELPERS: timezone-aware 'now' in Riyadh ======= */
 function nowRiyadh(){
+  // create Date object representing current time in Riyadh
   return new Date(new Date().toLocaleString("en-US",{timeZone:TIMEZONE}));
 }
-
-function formatKey(d){
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-}
-
-function fmt(d){
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-}
-
-function startDay(d){
-  const x = new Date(d);
+function startOfDayRiyadh(d=null){
+  const x = d? new Date(d) : nowRiyadh();
   x.setHours(0,0,0,0);
   return x;
 }
+function formatKey(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function fmtYMD(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
 
-// ===================================================================
+/* ======= state ======= */
 let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"days":{}}');
 let selectedKey = null;
 
-// ===================================================================
-// BUILD CALENDAR
-// ===================================================================
+/* ======= build calendar from START_DATE to END_DATE inclusive ======= */
 function buildCalendar(){
   const grid = document.getElementById("calendarGrid");
   grid.innerHTML = "";
 
+  // update top clock
   const now = nowRiyadh();
-  document.getElementById("todayStr").textContent = fmt(now);
-  document.getElementById("todayTime").textContent =
-    now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:TIMEZONE});
+  document.getElementById("todayStr").textContent = fmtYMD(now);
+  document.getElementById("todayTime").textContent = now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:TIMEZONE});
 
-  // determine starting point
-  let base = new Date(now.getFullYear(), now.getMonth(), START_DAY_OF_MONTH);
-  if(now.getDate() < START_DAY_OF_MONTH){
-    base.setMonth(base.getMonth() - 1);
-  }
+  // iterate days
+  let cur = new Date(START_DATE);
+  while(cur <= END_DATE){
+    const key = formatKey(cur);
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.dataset.key = key;
 
-  for(let i=0;i<60;i++){
-    let d = new Date(base);
-    d.setDate(base.getDate() + i);
-
-    if(d > END_DATE) break;
-
-    let key = formatKey(d);
-    let div = document.createElement("div");
-    div.className = "day";
-    div.dataset.key = key;
-
-    div.innerHTML = `
+    cell.innerHTML = `
       <div>
-        <div class="day-num">${d.getDate()}</div>
-        <div class="small">${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}</div>
+        <div class="num">${cur.getDate()}</div>
+        <div class="ym">${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,"0")}</div>
       </div>
       <div class="status pending">مفتوح</div>
     `;
 
-    div.onclick = ()=> openDay(key,d);
+    cell.addEventListener("click", ()=> openDay(key, new Date(cur)));
 
-    applyStatusToCell(div,key);
-    grid.appendChild(div);
+    applyStatusToCell(cell,key);
+    grid.appendChild(cell);
+
+    cur.setDate(cur.getDate() + 1);
   }
 
+  // auto-lock any past days now
   autoLock();
   refreshStats();
 }
 
-// ===================================================================
-// APPLY STATUS TO CELL
-// ===================================================================
+/* ======= status rendering ======= */
 function applyStatusToCell(cell,key){
-  let ds = state.days[key];
-  let st = cell.querySelector(".status");
-
+  const ds = state.days[key];
+  const st = cell.querySelector(".status");
   if(!ds){
-    st.className="status pending";
-    st.textContent="مفتوح";
+    st.className = "status pending";
+    st.textContent = "مفتوح";
+    cell.classList.remove("locked");
     return;
   }
-
   if(ds.locked){
     cell.classList.add("locked");
     if(ds.success){
-      st.className="status ok"; st.textContent="صح";
+      st.className = "status ok"; st.textContent = "صح";
     } else {
-      st.className="status fail"; st.textContent="خطأ";
+      st.className = "status fail"; st.textContent = "خطأ";
     }
   } else {
     cell.classList.remove("locked");
-    st.className="status pending";
-    st.textContent=`${ds.sum||0}/${ds.target||0}`;
+    st.className = "status pending";
+    st.textContent = `${ds.sum||0}/${ds.target||0}`;
   }
 }
 
-// ===================================================================
-// OPEN DAY
-// ===================================================================
-function openDay(key,d){
+/* ======= open / render day ======= */
+function openDay(key,dateObj){
   selectedKey = key;
+  document.getElementById("selectedDayLabel").textContent = fmtYMD(dateObj);
 
-  document.getElementById("selectedDayLabel").textContent = fmt(d);
-
-  if(!state.days[key]){
-    state.days[key] = {target:20,tasks:[],sum:0,locked:false,success:false};
-  }
+  if(!state.days[key]) state.days[key] = {target:20,tasks:[],sum:0,locked:false,success:false};
 
   document.getElementById("dayTarget").value = state.days[key].target;
-
   renderTasks();
   updateProgress();
+  highlightSelected(key);
 }
 
-// ===================================================================
 function renderTasks(){
-  let box = document.getElementById("tasksList");
-  box.innerHTML="";
-
-  let ds = state.days[selectedKey];
-
+  const container = document.getElementById("tasksList");
+  container.innerHTML = "";
+  const ds = state.days[selectedKey];
+  if(!ds) return;
   ds.tasks.forEach((t,i)=>{
-    let div = document.createElement("div");
-    div.className="task"+(t.done?" done":"");
-
-    div.innerHTML = `
-      <input type="checkbox" ${t.done?"checked":""} data-i="${i}" />
-      <div style="flex:1;font-weight:700">${t.title}</div>
+    const el = document.createElement("div");
+    el.className = "task" + (t.done? " done": "");
+    el.innerHTML = `
+      <input type="checkbox" ${t.done? "checked": ""} data-i="${i}" />
+      <div style="flex:1;font-weight:800">${t.title}</div>
       <div class="pts">${t.pts}</div>
-      <button data-del="${i}" style="background:transparent;border:1px solid rgba(255,255,255,0.1);padding:4px 8px;border-radius:8px">حذف</button>
+      <button data-del="${i}" style="background:transparent;border:1px solid rgba(11,18,32,0.06);padding:6px;border-radius:8px">حذف</button>
     `;
-
-    div.querySelector("input").onchange = (e)=>{
-      ds.tasks[i].done = e.target.checked;
+    // checkbox toggle
+    el.querySelector('input').addEventListener('change', (e)=>{
+      const idx = Number(e.target.dataset.i);
+      ds.tasks[idx].done = e.target.checked;
       recalc(selectedKey);
       save();
       renderTasks();
+      updateProgress();
       updateCell(selectedKey);
-    };
-
-    div.querySelector("button").onclick = ()=>{
-      ds.tasks.splice(i,1);
+    });
+    // delete
+    el.querySelector('button').addEventListener('click', ()=>{
+      const idx = Number(el.querySelector('button').dataset.del);
+      ds.tasks.splice(idx,1);
       recalc(selectedKey);
       save();
       renderTasks();
+      updateProgress();
       updateCell(selectedKey);
-    };
-
-    box.appendChild(div);
+    });
+    container.appendChild(el);
   });
-
-  if(ds.tasks.length===0){
-    box.innerHTML='<div class="small">ما فيه مهام</div>';
+  if(ds.tasks.length === 0){
+    container.innerHTML = '<div style="color:var(--muted)">ما فيه مهام</div>';
   }
 }
 
 function recalc(key){
-  let ds = state.days[key];
-  ds.sum = ds.tasks.filter(t=>t.done).reduce((a,b)=>a+b.pts,0);
-  ds.success = ds.sum >= ds.target;
+  const ds = state.days[key];
+  if(!ds) return;
+  ds.sum = ds.tasks.filter(t=>t.done).reduce((a,b)=>a + (b.pts||0), 0);
+  ds.success = ds.sum >= (ds.target || 0);
 }
 
 function updateProgress(){
-  let ds = state.days[selectedKey];
-  document.getElementById("sumPts").textContent = ds.sum;
-  document.getElementById("showTarget").textContent = ds.target;
-  document.getElementById("progressFill").style.width =
-    (ds.target? ds.sum/ds.target*100 : 0) + "%";
+  const ds = state.days[selectedKey] || {sum:0,target:0};
+  document.getElementById("sumPts").textContent = ds.sum || 0;
+  document.getElementById("showTarget").textContent = ds.target || 0;
+  const pct = ds.target ? Math.min(100, Math.round((ds.sum/ds.target)*100)) : 0;
+  document.getElementById("progressFill").style.width = pct + "%";
 }
 
 function updateCell(key){
-  let cell = document.querySelector(`.day[data-key="${key}"]`);
+  const cell = document.querySelector(`.cell[data-key="${key}"]`);
   if(cell) applyStatusToCell(cell,key);
   refreshStats();
 }
 
-document.getElementById("addTaskBtn").onclick = ()=>{
-  let txt = document.getElementById("newTaskText").value.trim();
-  let pts = parseInt(document.getElementById("newTaskPts").value)||1;
+/* ======= controls ======= */
+document.getElementById("addTaskBtn").addEventListener("click", ()=>{
+  const txt = document.getElementById("newTaskText").value.trim();
+  const pts = Math.max(1, parseInt(document.getElementById("newTaskPts").value || 1));
   if(!txt) return;
-
-  state.days[selectedKey].tasks.push({title:txt,pts:pts,done:false});
+  const ds = state.days[selectedKey];
+  ds.tasks.push({title:txt,pts:pts,done:false});
   recalc(selectedKey);
   save();
   renderTasks();
   updateProgress();
   updateCell(selectedKey);
+  document.getElementById("newTaskText").value = "";
+});
 
-  document.getElementById("newTaskText").value="";
-};
-
-document.getElementById("dayTarget").oninput = (e)=>{
-  let ds = state.days[selectedKey];
-  ds.target = parseInt(e.target.value)||1;
+document.getElementById("dayTarget").addEventListener("input", (e)=>{
+  const v = Math.max(1, parseInt(e.target.value || 1));
+  state.days[selectedKey].target = v;
   recalc(selectedKey);
   save();
   updateProgress();
   updateCell(selectedKey);
-};
+});
 
-document.getElementById("saveDayBtn").onclick = ()=>{
+document.getElementById("saveDayBtn").addEventListener("click", ()=>{
   recalc(selectedKey);
   save();
   updateCell(selectedKey);
   alert("تم حفظ اليوم.");
-};
+});
 
-document.getElementById("lockDayBtn").onclick = ()=>{
-  let ds = state.days[selectedKey];
+document.getElementById("lockDayBtn").addEventListener("click", ()=>{
+  if(!state.days[selectedKey]) return;
   recalc(selectedKey);
-  ds.locked=true;
-  ds.success = ds.sum >= ds.target;
+  state.days[selectedKey].locked = true;
+  state.days[selectedKey].success = state.days[selectedKey].sum >= (state.days[selectedKey].target || 0);
   save();
   updateCell(selectedKey);
-};
+});
 
-document.getElementById("resetDayBtn").onclick = ()=>{
-  if(!confirm("متأكد؟")) return;
+document.getElementById("resetDayBtn").addEventListener("click", ()=>{
+  if(!confirm("تأكيد إعادة اليوم؟")) return;
   state.days[selectedKey] = {target:20,tasks:[],sum:0,locked:false,success:false};
   save();
   renderTasks();
   updateProgress();
   updateCell(selectedKey);
-};
+});
 
-// ===================================================================
-// AUTO LOCK
-// ===================================================================
+/* ======= auto-lock at Riyadh midnight (تصحيح تلقائي عند انتهاء اليوم) ======= */
+let lastCheckedDateKey = formatKey(startOfDayRiyadh());
+
 function autoLock(){
-  const now = startDay(nowRiyadh());
-  const todayKey = formatKey(now);
+  const today = startOfDayRiyadh();
+  const todayKey = formatKey(today);
 
-  for(const k in state.days){
-    if(k < todayKey){
-      if(!state.days[k].locked){
-        recalc(k);
-        state.days[k].locked=true;
+  // If day changed since last check, auto-lock previous days < today
+  if(lastCheckedDateKey !== todayKey){
+    // lock all days with key < todayKey and not yet locked
+    for(const key in state.days){
+      if(key < todayKey && !state.days[key].locked){
+        recalc(key);
+        state.days[key].locked = true;
+        state.days[key].success = state.days[key].sum >= (state.days[key].target || 0);
       }
     }
+    save();
+    // refresh UI
+    document.querySelectorAll('.cell').forEach(c => applyStatusToCell(c, c.dataset.key));
+    refreshStats();
+    lastCheckedDateKey = todayKey;
   }
-  save();
-  document.querySelectorAll(".day").forEach(el=>applyStatusToCell(el,el.dataset.key));
 }
 
-// ===================================================================
+/* run autoLock immediately and every 30 seconds to catch midnight */
+autoLock();
+setInterval(()=>{
+  // update top clock
+  const now = nowRiyadh();
+  document.getElementById("todayStr").textContent = fmtYMD(now);
+  document.getElementById("todayTime").textContent = now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:TIMEZONE});
+  autoLock();
+}, 30*1000); // كل 30 ثانية يتأكد — يكفي لضمان القفل التلقائي بسرعة بعد منتصف الليل
+
+/* ======= stats ======= */
 function refreshStats(){
-  let done=0,miss=0,total=0;
-
-  Object.values(state.days).forEach(d=>{
+  let done=0, missed=0, total=0;
+  for(const key in state.days){
+    // consider only in-range days (between START_DATE and END_DATE)
+    if(key < formatKey(START_DATE) || key > formatKey(END_DATE)) continue;
     total++;
-    if(d.locked){
-      if(d.success) done++; else miss++;
+    const ds = state.days[key];
+    if(ds && ds.locked){
+      if(ds.success) done++; else missed++;
     }
-  });
-
+  }
   document.getElementById("doneCount").textContent = done;
-  document.getElementById("missedCount").textContent = miss;
+  document.getElementById("missedCount").textContent = missed;
   document.getElementById("totalDays").textContent = total;
 }
 
+/* ======= save/load ======= */
 function save(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-// ===================================================================
+/* ======= highlight selected cell ======= */
+function highlightSelected(key){
+  document.querySelectorAll('.cell').forEach(c => c.style.outline = 'none');
+  const el = document.querySelector(`.cell[data-key="${key}"]`);
+  if(el) el.style.outline = '3px solid rgba(59,130,246,0.12)';
+}
+
+/* ======= init ======= */
 buildCalendar();
+// open today's cell if in range, else open first available start date
+const todayKey = formatKey(startOfDayRiyadh());
+if(todayKey >= formatKey(START_DATE) && todayKey <= formatKey(END_DATE)){
+  openDay(todayKey, startOfDayRiyadh());
+} else {
+  // open START_DATE
+  openDay(formatKey(START_DATE), new Date(START_DATE));
+}
 
-// افتح يوم اليوم تلقائيًا
-openDay( formatKey(startDay(nowRiyadh())), new Date(nowRiyadh()) );
-
-setInterval(()=>{
-  let now = nowRiyadh();
-  document.getElementById("todayStr").textContent = fmt(now);
-  document.getElementById("todayTime").textContent =
-    now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:TIMEZONE});
-
-  autoLock();
-},60000);
+// save on unload
+window.addEventListener('beforeunload', ()=> save());
 </script>
 </body>
 </html>
