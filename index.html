@@ -1,475 +1,60 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>مذكرة الأهداف — 25Nov → 03Jan</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>قلب + F</title>
 <style>
-  :root{
-    --bg:#ffffff;
-    --panel:#fbfcff;
-    --glass-bg: rgba(255,255,255,0.8);
-    --accent: #3b82f6; /* أزرق حي */
-    --accent-2: #06b6d4; /* تيل */
-    --success: #16a34a;
-    --danger: #ef4444;
-    --muted: #6b7280;
-    --glass-border: rgba(59,130,246,0.12);
-    --card-radius:16px;
-    --shadow: 0 8px 30px rgba(15,23,42,0.06);
+  body {
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #f0f0f0;
   }
-
-  *{box-sizing:border-box;font-family: Inter, "Segoe UI", Tahoma, Arial, sans-serif}
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#ffffff 0%, #f6f9ff 100%);color:#0b1220;direction:rtl}
-  .app{min-height:100vh;display:flex;gap:24px;align-items:flex-start;justify-content:center;padding:40px;transition:background .3s}
-
-  /* panel */
-  .panel{
-    width:100%;
-    max-width:520px;
-    background:var(--panel);
-    border-radius:var(--card-radius);
-    padding:18px;
-    box-shadow:var(--shadow);
-    border:1px solid var(--glass-border);
-    backdrop-filter: blur(6px) saturate(120%);
-    transition: transform .32s cubic-bezier(.2,.9,.3,1), box-shadow .32s;
+  button {
+    padding: 12px 24px;
+    font-size: 18px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #3498db;
+    color: white;
   }
-  .panel:hover{transform:translateY(-6px); box-shadow:0 22px 50px rgba(15,23,42,0.08)}
-
-  .layout{display:flex;gap:20px;width:100%;max-width:1100px}
-  .col{flex:1;min-width:280px}
-
-  /* top */
-  .top{
-    display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;
+  pre {
+    font-size: 24px;
+    line-height: 18px;
+    color: #e74c3c;
+    text-align: center;
+    white-space: pre;
+    display: none; /* يبدأ مخفي */
   }
-  .clock{
-    display:flex;flex-direction:column;
-  }
-  .clock .date{font-weight:800;font-size:18px}
-  .clock .time{color:var(--muted);font-size:13px}
-
-  .badge{
-    background:linear-gradient(90deg,var(--accent),var(--accent-2));
-    color:white;padding:8px 12px;border-radius:999px;font-weight:700;box-shadow:0 8px 22px rgba(59,130,246,0.12)
-  }
-
-  /* calendar grid */
-  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}
-  .cell{
-    background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(248,249,255,0.95));
-    border-radius:12px;padding:10px;min-height:88px;display:flex;flex-direction:column;justify-content:space-between;
-    border:1px solid rgba(11,18,32,0.04);cursor:pointer;transition:transform .22s,box-shadow .22s,opacity .22s;
-  }
-  .cell:hover{transform:translateY(-6px); box-shadow:0 16px 40px rgba(11,18,32,0.06)}
-  .cell.locked{opacity:0.6;filter:grayscale(.05);cursor:default}
-
-  .cell .num{font-weight:800;font-size:16px}
-  .cell .ym{font-size:12px;color:var(--muted)}
-
-  .status{
-    display:inline-flex;align-items:center;gap:8px;padding:6px 8px;border-radius:999px;font-weight:700;font-size:13px;
-  }
-  .status.pending{background:rgba(59,130,246,0.08);color:var(--accent)}
-  .status.ok{background:rgba(22,163,74,0.08);color:var(--success)}
-  .status.fail{background:rgba(239,68,68,0.08);color:var(--danger)}
-
-  /* editor */
-  .h{font-weight:900;font-size:16px;margin-bottom:8px}
-  .card{background:linear-gradient(180deg,#ffffff,#fbfcff);border-radius:12px;padding:12px;border:1px solid rgba(11,18,32,0.04)}
-  label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
-  input[type="text"], input[type="number"]{
-    width:100%;padding:10px;border-radius:10px;border:1px solid rgba(11,18,32,0.06);font-size:14px;background:transparent;
-  }
-
-  .tasks{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow:auto;padding-right:6px}
-  .task{
-    display:flex;gap:8px;align-items:center;padding:8px;border-radius:10px;border:1px solid rgba(11,18,32,0.04);
-    transition:transform .15s,background .18s;
-  }
-  .task:hover{transform:translateY(-4px)}
-  .task.done{opacity:0.6;text-decoration:line-through;background:linear-gradient(90deg, rgba(16,185,129,0.03),transparent)}
-
-  .pts{padding:6px 8px;border-radius:8px;background:linear-gradient(90deg,#eef2ff,#f0f9ff);font-weight:800;color:#0b1220}
-
-  .controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-  .btn{
-    padding:10px 14px;border-radius:12px;border:0;font-weight:800;cursor:pointer;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;box-shadow:0 10px 30px rgba(59,130,246,0.12)
-  }
-  .btn.ghost{background:transparent;border:1px solid rgba(11,18,32,0.06);color:var(--muted);box-shadow:none}
-
-  .progress{height:12px;background:rgba(11,18,32,0.03);border-radius:999px;overflow:hidden;margin-top:8px}
-  .progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .7s cubic-bezier(.2,.9,.3,1)}
-
-  .stats{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:12px}
-  .stat{background:linear-gradient(180deg,#ffffff,#fbfcff);padding:10px;border-radius:12px;border:1px solid rgba(11,18,32,0.04);text-align:center;flex:1}
-  .stat .big{font-weight:900;font-size:18px}
-
-  /* responsive */
-  @media(max-width:980px){
-    .layout{flex-direction:column}
-    .panel{max-width:100%}
-  }
-
-  /* subtle animations */
-  .fade-in{animation:fadeIn .45s ease both}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
-  <div class="app">
-    <div class="layout" style="width:100%;max-width:1100px">
 
-      <!-- CALENDAR COLUMN -->
-      <div class="col panel fade-in" id="leftCol">
-        <div class="top">
-          <div class="clock">
-            <div class="date" id="todayStr">—</div>
-            <div class="time" id="todayTime">—</div>
-          </div>
-          <div class="badge">25-11-2025 → 03-01-2026</div>
-        </div>
-
-        <div class="grid" id="calendarGrid" aria-hidden="false"></div>
-      </div>
-
-      <!-- EDITOR COLUMN -->
-      <div class="col panel fade-in" id="rightCol">
-        <div class="h">محرر اليوم</div>
-
-        <div class="card">
-          <label>اليوم المحدد</label>
-          <div style="font-weight:900;margin-bottom:8px" id="selectedDayLabel">—</div>
-
-          <label>هدف النقاط</label>
-          <input type="number" id="dayTarget" min="1" value="20" />
-
-          <div style="height:10px"></div>
-          <label>المهام</label>
-          <div class="tasks" id="tasksList"></div>
-
-          <div style="display:flex;gap:8px;margin-top:10px">
-            <input type="text" id="newTaskText" placeholder="وصف المهمة" />
-            <input type="number" id="newTaskPts" value="5" style="width:96px" />
-            <button class="btn" id="addTaskBtn">أضف</button>
-          </div>
-
-          <div class="progress"><i id="progressFill"></i></div>
-          <div style="display:flex;justify-content:space-between;margin-top:8px">
-            <div class="small">المجموع: <b id="sumPts">0</b></div>
-            <div class="small">الهدف: <b id="showTarget">0</b></div>
-          </div>
-
-          <div class="controls">
-            <button class="btn" id="saveDayBtn">حفظ</button>
-            <button class="btn" id="lockDayBtn">قفل الآن</button>
-            <button class="btn ghost" id="resetDayBtn">إعادة</button>
-          </div>
-
-          <div class="stats">
-            <div class="stat"><div class="small">مكتملة</div><div class="big" id="doneCount">0</div></div>
-            <div class="stat"><div class="small">فائتة</div><div class="big" id="missedCount">0</div></div>
-            <div class="stat"><div class="small">المتابعة</div><div class="big" id="totalDays">0</div></div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
+<button onclick="showHeart()">اضغط هنا</button>
+<pre id="heart"></pre>
 
 <script>
-/* ======= CONFIG ======= */
-const STORAGE_KEY = "glassPlanner_v2";
-const TIMEZONE = "Asia/Riyadh";
-const START_DATE = new Date("2025-11-25T00:00:00"); // يبدأ من 25 نوفمبر 2025
-const END_DATE = new Date("2026-01-03T00:00:00");   // ينتهي عند 3 يناير 2026
-
-/* ======= HELPERS: timezone-aware 'now' in Riyadh ======= */
-function nowRiyadh(){
-  // create Date object representing current time in Riyadh
-  return new Date(new Date().toLocaleString("en-US",{timeZone:TIMEZONE}));
+function showHeart() {
+  const heart = `
+   **   **
+  *  * *  *
+  *   F   *
+   *     *
+    *   *
+     * *
+      *
+  `;
+  const heartEl = document.getElementById("heart");
+  heartEl.textContent = heart;
+  heartEl.style.display = "block"; // يظهر القلب عند الضغط
 }
-function startOfDayRiyadh(d=null){
-  const x = d? new Date(d) : nowRiyadh();
-  x.setHours(0,0,0,0);
-  return x;
-}
-function formatKey(d){
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-}
-function fmtYMD(d){
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-}
-
-/* ======= state ======= */
-let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"days":{}}');
-let selectedKey = null;
-
-/* ======= build calendar from START_DATE to END_DATE inclusive ======= */
-function buildCalendar(){
-  const grid = document.getElementById("calendarGrid");
-  grid.innerHTML = "";
-
-  // update top clock
-  const now = nowRiyadh();
-  document.getElementById("todayStr").textContent = fmtYMD(now);
-  document.getElementById("todayTime").textContent = now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:TIMEZONE});
-
-  // iterate days
-  let cur = new Date(START_DATE);
-  while(cur <= END_DATE){
-    const key = formatKey(cur);
-    const cell = document.createElement("div");
-    cell.className = "cell";
-    cell.dataset.key = key;
-
-    cell.innerHTML = `
-      <div>
-        <div class="num">${cur.getDate()}</div>
-        <div class="ym">${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,"0")}</div>
-      </div>
-      <div class="status pending">مفتوح</div>
-    `;
-
-    cell.addEventListener("click", ()=> openDay(key, new Date(cur)));
-
-    applyStatusToCell(cell,key);
-    grid.appendChild(cell);
-
-    cur.setDate(cur.getDate() + 1);
-  }
-
-  // auto-lock any past days now
-  autoLock();
-  refreshStats();
-}
-
-/* ======= status rendering ======= */
-function applyStatusToCell(cell,key){
-  const ds = state.days[key];
-  const st = cell.querySelector(".status");
-  if(!ds){
-    st.className = "status pending";
-    st.textContent = "مفتوح";
-    cell.classList.remove("locked");
-    return;
-  }
-  if(ds.locked){
-    cell.classList.add("locked");
-    if(ds.success){
-      st.className = "status ok"; st.textContent = "صح";
-    } else {
-      st.className = "status fail"; st.textContent = "خطأ";
-    }
-  } else {
-    cell.classList.remove("locked");
-    st.className = "status pending";
-    st.textContent = `${ds.sum||0}/${ds.target||0}`;
-  }
-}
-
-/* ======= open / render day ======= */
-function openDay(key,dateObj){
-  selectedKey = key;
-  document.getElementById("selectedDayLabel").textContent = fmtYMD(dateObj);
-
-  if(!state.days[key]) state.days[key] = {target:20,tasks:[],sum:0,locked:false,success:false};
-
-  document.getElementById("dayTarget").value = state.days[key].target;
-  renderTasks();
-  updateProgress();
-  highlightSelected(key);
-}
-
-function renderTasks(){
-  const container = document.getElementById("tasksList");
-  container.innerHTML = "";
-  const ds = state.days[selectedKey];
-  if(!ds) return;
-  ds.tasks.forEach((t,i)=>{
-    const el = document.createElement("div");
-    el.className = "task" + (t.done? " done": "");
-    el.innerHTML = `
-      <input type="checkbox" ${t.done? "checked": ""} data-i="${i}" />
-      <div style="flex:1;font-weight:800">${t.title}</div>
-      <div class="pts">${t.pts}</div>
-      <button data-del="${i}" style="background:transparent;border:1px solid rgba(11,18,32,0.06);padding:6px;border-radius:8px">حذف</button>
-    `;
-    // checkbox toggle
-    el.querySelector('input').addEventListener('change', (e)=>{
-      const idx = Number(e.target.dataset.i);
-      ds.tasks[idx].done = e.target.checked;
-      recalc(selectedKey);
-      save();
-      renderTasks();
-      updateProgress();
-      updateCell(selectedKey);
-    });
-    // delete
-    el.querySelector('button').addEventListener('click', ()=>{
-      const idx = Number(el.querySelector('button').dataset.del);
-      ds.tasks.splice(idx,1);
-      recalc(selectedKey);
-      save();
-      renderTasks();
-      updateProgress();
-      updateCell(selectedKey);
-    });
-    container.appendChild(el);
-  });
-  if(ds.tasks.length === 0){
-    container.innerHTML = '<div style="color:var(--muted)">ما فيه مهام</div>';
-  }
-}
-
-function recalc(key){
-  const ds = state.days[key];
-  if(!ds) return;
-  ds.sum = ds.tasks.filter(t=>t.done).reduce((a,b)=>a + (b.pts||0), 0);
-  ds.success = ds.sum >= (ds.target || 0);
-}
-
-function updateProgress(){
-  const ds = state.days[selectedKey] || {sum:0,target:0};
-  document.getElementById("sumPts").textContent = ds.sum || 0;
-  document.getElementById("showTarget").textContent = ds.target || 0;
-  const pct = ds.target ? Math.min(100, Math.round((ds.sum/ds.target)*100)) : 0;
-  document.getElementById("progressFill").style.width = pct + "%";
-}
-
-function updateCell(key){
-  const cell = document.querySelector(`.cell[data-key="${key}"]`);
-  if(cell) applyStatusToCell(cell,key);
-  refreshStats();
-}
-
-/* ======= controls ======= */
-document.getElementById("addTaskBtn").addEventListener("click", ()=>{
-  const txt = document.getElementById("newTaskText").value.trim();
-  const pts = Math.max(1, parseInt(document.getElementById("newTaskPts").value || 1));
-  if(!txt) return;
-  const ds = state.days[selectedKey];
-  ds.tasks.push({title:txt,pts:pts,done:false});
-  recalc(selectedKey);
-  save();
-  renderTasks();
-  updateProgress();
-  updateCell(selectedKey);
-  document.getElementById("newTaskText").value = "";
-});
-
-document.getElementById("dayTarget").addEventListener("input", (e)=>{
-  const v = Math.max(1, parseInt(e.target.value || 1));
-  state.days[selectedKey].target = v;
-  recalc(selectedKey);
-  save();
-  updateProgress();
-  updateCell(selectedKey);
-});
-
-document.getElementById("saveDayBtn").addEventListener("click", ()=>{
-  recalc(selectedKey);
-  save();
-  updateCell(selectedKey);
-  alert("تم حفظ اليوم.");
-});
-
-document.getElementById("lockDayBtn").addEventListener("click", ()=>{
-  if(!state.days[selectedKey]) return;
-  recalc(selectedKey);
-  state.days[selectedKey].locked = true;
-  state.days[selectedKey].success = state.days[selectedKey].sum >= (state.days[selectedKey].target || 0);
-  save();
-  updateCell(selectedKey);
-});
-
-document.getElementById("resetDayBtn").addEventListener("click", ()=>{
-  if(!confirm("تأكيد إعادة اليوم؟")) return;
-  state.days[selectedKey] = {target:20,tasks:[],sum:0,locked:false,success:false};
-  save();
-  renderTasks();
-  updateProgress();
-  updateCell(selectedKey);
-});
-
-/* ======= auto-lock at Riyadh midnight (تصحيح تلقائي عند انتهاء اليوم) ======= */
-let lastCheckedDateKey = formatKey(startOfDayRiyadh());
-
-function autoLock(){
-  const today = startOfDayRiyadh();
-  const todayKey = formatKey(today);
-
-  // If day changed since last check, auto-lock previous days < today
-  if(lastCheckedDateKey !== todayKey){
-    // lock all days with key < todayKey and not yet locked
-    for(const key in state.days){
-      if(key < todayKey && !state.days[key].locked){
-        recalc(key);
-        state.days[key].locked = true;
-        state.days[key].success = state.days[key].sum >= (state.days[key].target || 0);
-      }
-    }
-    save();
-    // refresh UI
-    document.querySelectorAll('.cell').forEach(c => applyStatusToCell(c, c.dataset.key));
-    refreshStats();
-    lastCheckedDateKey = todayKey;
-  }
-}
-
-/* run autoLock immediately and every 30 seconds to catch midnight */
-autoLock();
-setInterval(()=>{
-  // update top clock
-  const now = nowRiyadh();
-  document.getElementById("todayStr").textContent = fmtYMD(now);
-  document.getElementById("todayTime").textContent = now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:TIMEZONE});
-  autoLock();
-}, 30*1000); // كل 30 ثانية يتأكد — يكفي لضمان القفل التلقائي بسرعة بعد منتصف الليل
-
-/* ======= stats ======= */
-function refreshStats(){
-  let done=0, missed=0, total=0;
-  for(const key in state.days){
-    // consider only in-range days (between START_DATE and END_DATE)
-    if(key < formatKey(START_DATE) || key > formatKey(END_DATE)) continue;
-    total++;
-    const ds = state.days[key];
-    if(ds && ds.locked){
-      if(ds.success) done++; else missed++;
-    }
-  }
-  document.getElementById("doneCount").textContent = done;
-  document.getElementById("missedCount").textContent = missed;
-  document.getElementById("totalDays").textContent = total;
-}
-
-/* ======= save/load ======= */
-function save(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-/* ======= highlight selected cell ======= */
-function highlightSelected(key){
-  document.querySelectorAll('.cell').forEach(c => c.style.outline = 'none');
-  const el = document.querySelector(`.cell[data-key="${key}"]`);
-  if(el) el.style.outline = '3px solid rgba(59,130,246,0.12)';
-}
-
-/* ======= init ======= */
-buildCalendar();
-// open today's cell if in range, else open first available start date
-const todayKey = formatKey(startOfDayRiyadh());
-if(todayKey >= formatKey(START_DATE) && todayKey <= formatKey(END_DATE)){
-  openDay(todayKey, startOfDayRiyadh());
-} else {
-  // open START_DATE
-  openDay(formatKey(START_DATE), new Date(START_DATE));
-}
-
-// save on unload
-window.addEventListener('beforeunload', ()=> save());
 </script>
+
 </body>
 </html>
