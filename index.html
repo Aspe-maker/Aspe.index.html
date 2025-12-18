@@ -1,127 +1,143 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إهداء خاص</title>
+    <title>انفجار القلب وحرف F</title>
     <style>
         body {
             margin: 0;
+            overflow: hidden;
             background-color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            overflow: hidden;
-            font-family: 'Arial', sans-serif;
         }
-
-        #startBtn {
-            padding: 12px 35px;
-            font-size: 18px;
-            background: #ff0055;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
-            transition: 0.3s;
-            z-index: 10;
-        }
-
-        .container {
-            position: relative;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-        }
-
         canvas {
-            /* تنعيم الحواف */
-            filter: drop-shadow(0 0 10px #ff0055);
-            max-width: 90vw;
-            max-height: 90vh;
-        }
-
-        #content {
-            position: absolute;
-            top: 48%; /* رفع النص قليلاً ليتوسط فراغ القلب بدقة */
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            opacity: 0;
-            transition: opacity 2s ease-in-out;
-        }
-
-        #text {
-            color: white;
-            font-size: 32px; /* تصغير حجم الخط */
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px #ff0055;
-            white-space: nowrap;
+            display: block;
         }
     </style>
 </head>
 <body>
 
-    <button id="startBtn">اضغط هنا ❤️</button>
-
-    <div class="container" id="mainContainer">
-        <canvas id="heartCanvas"></canvas>
-        <div id="content">
-            <div id="text">سبا ونبا</div>
-        </div>
-    </div>
+<canvas id="heartCanvas"></canvas>
 
 <script>
-    const startBtn = document.getElementById('startBtn');
-    const container = document.getElementById('mainContainer');
-    const canvas = document.getElementById('heartCanvas');
-    const ctx = canvas.getContext('2d');
-    const content = document.getElementById('content');
+const canvas = document.getElementById('heartCanvas');
+const ctx = canvas.getContext('2d');
 
-    // تحديد حجم الكانفاس
-    canvas.width = 500;
-    canvas.height = 500;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-    let t = 0;
+let particles = [];
+const particleCount = 600; 
+let stage = 0; // 0: قلب، 1: انكماش، 2: حرف F
+let progress = 0;
 
-    function getHeartPoint(t) {
-        // تم تقليل معامل الضرب من 14 إلى 10 لتصغير الحجم
-        let x = 16 * Math.pow(Math.sin(t), 3);
-        let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-        return { 
-            x: x * 10 + canvas.width / 2, 
-            y: y * 10 + canvas.height / 2 
-        };
+// معادلة رسم القلب
+function getHeartPoint(t) {
+    let x = 16 * Math.pow(Math.sin(t), 3);
+    let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+    return { x: x * 15, y: y * 15 };
+}
+
+// معادلة رسم حرف F
+function getFPoint(t) {
+    let x, y;
+    if (t < 0.4) { // الخط العامودي
+        x = -50;
+        y = -100 + (t / 0.4) * 200;
+    } else if (t < 0.7) { // الخط الأفقي العلوي
+        x = -50 + ((t - 0.4) / 0.3) * 100;
+        y = -100;
+    } else { // الخط الأفقي الأوسط
+        x = -50 + ((t - 0.7) / 0.3) * 80;
+        y = 0;
+    }
+    return { x: x, y: y };
+}
+
+class Particle {
+    constructor() {
+        this.reset();
     }
 
-    function draw() {
-        if (t <= 2 * Math.PI) {
-            const point = getHeartPoint(t);
-            
-            ctx.strokeStyle = '#ff0055';
-            ctx.lineWidth = 1.5;
-            
-            ctx.beginPath();
-            ctx.moveTo(canvas.width / 2, canvas.height / 2);
-            ctx.lineTo(point.x, point.y);
-            ctx.stroke();
+    reset() {
+        this.x = canvas.width / 2;
+        this.y = canvas.height / 2;
+        this.targetX = this.x;
+        this.targetY = this.y;
+        this.color = `hsl(${Math.random() * 20 + 340}, 100%, 60%)`; // درجات الوردي والأحمر
+        this.size = Math.random() * 2 + 1;
+        this.speed = 0.05 + Math.random() * 0.02;
+    }
 
-            t += 0.03; 
-            requestAnimationFrame(draw);
-        } else {
-            content.style.opacity = '1';
+    update() {
+        // حركة ناعمة نحو الهدف
+        this.x += (this.targetX - this.x) * this.speed;
+        this.y += (this.targetY - this.y) * this.speed;
+    }
+
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function init() {
+    for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+    }
+}
+
+function animate() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // تأثير التلاشي (Tail)
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    progress += 0.01;
+
+    if (progress > 2) {
+        progress = 0;
+        stage = (stage + 1) % 3;
+    }
+
+    particles.forEach((p, i) => {
+        let t = (i / particleCount) * Math.PI * 2;
+        let target;
+
+        if (stage === 0) { // تشكيل القلب
+            target = getHeartPoint(t);
+            p.targetX = canvas.width / 2 + target.x;
+            p.targetY = canvas.height / 2 + target.y;
+            p.color = '#ff3e6c';
+        } else if (stage === 1) { // انكماش للمركز
+            p.targetX = canvas.width / 2;
+            p.targetY = canvas.height / 2;
+        } else if (stage === 2) { // تشكيل حرف F
+            let ft = i / particleCount;
+            target = getFPoint(ft);
+            p.targetX = canvas.width / 2 + target.x;
+            p.targetY = canvas.height / 2 + target.y;
+            p.color = '#3e9cff'; // تغيير اللون للأزرق عند حرف F
         }
-    }
 
-    startBtn.addEventListener('click', () => {
-        startBtn.style.display = 'none';
-        container.style.display = 'flex';
-        draw();
+        p.update();
+        p.draw();
     });
+
+    requestAnimationFrame(animate);
+}
+
+init();
+animate();
+
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
 </script>
 
 </body>
