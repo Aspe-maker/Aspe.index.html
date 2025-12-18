@@ -3,74 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تأثير انفجار القلب وحرف F</title>
+    <title>Realist Heart Explosion</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #050505;
+            background-color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            font-family: sans-serif;
         }
         canvas {
             position: absolute;
             top: 0;
             left: 0;
-            pointer-events: none;
+            filter: blur(0.5px) contrast(1.2); /* زيادة التباين للواقعية */
         }
-        #btn-trigger {
-            padding: 15px 30px;
-            font-size: 18px;
-            background: #ff3e6c;
-            color: white;
-            border: none;
-            border-radius: 50px;
+        #btn-start {
+            padding: 12px 28px;
+            background: none;
+            color: #ff2d55;
+            border: 2px solid #ff2d55;
+            border-radius: 5px;
             cursor: pointer;
-            z-index: 10;
-            box-shadow: 0 0 20px rgba(255, 62, 108, 0.5);
+            font-weight: bold;
+            z-index: 100;
             transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
-        #btn-trigger:hover {
-            transform: scale(1.1);
-            background: #ff1e50;
+        #btn-start:hover {
+            background: #ff2d55;
+            color: white;
+            box-shadow: 0 0 30px #ff2d55;
         }
     </style>
 </head>
 <body>
 
-    <button id="btn-trigger">اضغط للمفاجأة ❤️</button>
+    <button id="btn-start">ابدأ العرض</button>
     <canvas id="canvas"></canvas>
 
 <script>
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const btn = document.getElementById('btn-trigger');
+const btn = document.getElementById('btn-start');
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let particles = [];
-const particleCount = 800; // عدد جزيئات كبير لجرافيكس أفضل
-let animationStep = 'idle'; // idle, explode_heart, shrink, explode_f
+const particleCount = 1200; // زيادة العدد لزيادة الكثافة الواقعية
 
-// معادلات النقاط (تم تصغير الحجم هنا)
+// معادلة القلب المصغر
 function getHeartPoint(t) {
     let x = 16 * Math.pow(Math.sin(t), 3);
     let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-    return { x: x * 10, y: y * 10 }; // ضربنا في 10 بدلاً من 15 لتصغيره
+    return { x: x * 8, y: y * 8 }; 
 }
 
+// معادلة حرف F
 function getFPoint(t) {
     let x, y;
-    if (t < 0.4) { 
-        x = -40; y = -80 + (t / 0.4) * 160; 
-    } else if (t < 0.7) { 
-        x = -40 + ((t - 0.4) / 0.3) * 80; y = -80;
+    if (t < 0.5) { 
+        x = -30; y = -70 + (t / 0.5) * 140; 
+    } else if (t < 0.8) { 
+        x = -30 + ((t - 0.5) / 0.3) * 70; y = -70;
     } else { 
-        x = -40 + ((t - 0.7) / 0.3) * 60; y = 0;
+        x = -30 + ((t - 0.8) / 0.2) * 50; y = 0;
     }
     return { x: x, y: y };
 }
@@ -83,88 +84,97 @@ class Particle {
     reset() {
         this.x = canvas.width / 2;
         this.y = canvas.height / 2;
-        this.vx = 0;
-        this.vy = 0;
-        this.accX = 0;
-        this.accY = 0;
-        this.friction = 0.85; // احتكاك عالي ليعطي شعور الانفجار ثم التوقف
-        this.color = '#ff3e6c';
-        this.size = Math.random() * 2 + 0.5;
+        this.vx = (Math.random() - 0.5) * 2;
+        this.vy = (Math.random() - 0.5) * 2;
+        this.friction = 0.94; // احتكاك ناعم
+        this.gravity = 0.02;  // جاذبية خفيفة جداً للواقعية
+        this.color = '#ff2d55';
+        this.opacity = Math.random();
+        this.size = Math.random() * 1.5 + 0.5;
     }
 
-    applyForce(tx, ty) {
-        // حساب القوة المطلوبة للوصول للنقطة (انفجار)
-        let dist = Math.hypot(tx - this.x, ty - this.y);
-        let force = dist * 0.15; 
-        let angle = Math.atan2(ty - this.y, tx - this.x);
+    // تطبيق قوة الانفجار نحو الهدف
+    explodeTo(tx, ty, color) {
+        const dx = tx - this.x;
+        const dy = ty - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const force = dist * (0.05 + Math.random() * 0.05); // عشوائية في القوة
+        const angle = Math.atan2(dy, dx);
+        
         this.vx += Math.cos(angle) * force;
         this.vy += Math.sin(angle) * force;
+        this.color = color;
     }
 
     update() {
         this.vx *= this.friction;
         this.vy *= this.friction;
+        this.vy += this.gravity; 
         this.x += this.vx;
         this.y += this.vy;
+        
+        // تذبذب خفيف في الحجم للبريق
+        this.size *= 0.99;
+        if(this.size < 0.5) this.size = Math.random() * 1.5 + 0.5;
     }
 
     draw() {
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
         ctx.fillStyle = this.color;
-        ctx.shadowBlur = 5;
+        ctx.shadowBlur = 8;
         ctx.shadowColor = this.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
     }
 }
 
-function initParticles() {
+function init() {
     particles = [];
     for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle());
     }
 }
 
-function explodeTo(shapeFunc) {
+function runSequence() {
+    // 1. انفجار القلب
     particles.forEach((p, i) => {
-        let t;
-        let target;
-        if (shapeFunc === 'heart') {
-            t = (i / particleCount) * Math.PI * 2;
-            target = getHeartPoint(t);
-        } else {
-            t = i / particleCount;
-            target = getFPoint(t);
-        }
-        p.applyForce(canvas.width / 2 + target.x, canvas.height / 2 + target.y);
+        const t = (i / particleCount) * Math.PI * 2;
+        const target = getHeartPoint(t);
+        p.explodeTo(canvas.width/2 + target.x, canvas.height/2 + target.y, '#ff2d55');
     });
-}
 
-function shrinkToCenter() {
-    particles.forEach(p => {
-        p.applyForce(canvas.width / 2, canvas.height / 2);
-    });
+    // 2. الانكماش
+    setTimeout(() => {
+        particles.forEach(p => {
+            p.explodeTo(canvas.width/2, canvas.height/2, '#ff2d55');
+            p.friction = 0.85; // زيادة الاحتكاك للسرعة في العودة
+        });
+
+        // 3. انفجار حرف F
+        setTimeout(() => {
+            particles.forEach((p, i) => {
+                const t = i / particleCount;
+                const target = getFPoint(t);
+                p.friction = 0.94;
+                p.explodeTo(canvas.width/2 + target.x, canvas.height/2 + target.y, '#00d2ff');
+            });
+        }, 1200);
+
+    }, 3000);
 }
 
 btn.addEventListener('click', () => {
-    btn.style.display = 'none'; // إخفاء الزر
-    initParticles();
-    
-    // تسلسل الانفجارات
-    explodeTo('heart'); 
-
-    setTimeout(() => {
-        shrinkToCenter(); // انكماش
-        setTimeout(() => {
-            explodeTo('f'); // انفجار حرف F
-            particles.forEach(p => p.color = '#00f2ff'); // تغيير اللون للأزرق المتوهج
-        }, 1000);
-    }, 2500);
+    btn.style.display = 'none';
+    init();
+    runSequence();
 });
 
 function animate() {
-    // خلفية سوداء شبه شفافة لترك أثر "Glowing Trail"
-    ctx.fillStyle = 'rgba(5, 5, 5, 0.15)';
+    // مسح الشاشة مع بقاء أثر بسيط جداً
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     particles.forEach(p => {
