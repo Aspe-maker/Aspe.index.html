@@ -3,57 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>انفجار القلب وحرف F</title>
+    <title>تأثير انفجار القلب وحرف F</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #000;
+            background-color: #050505;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            font-family: sans-serif;
         }
         canvas {
-            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        #btn-trigger {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #ff3e6c;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(255, 62, 108, 0.5);
+            transition: 0.3s;
+        }
+        #btn-trigger:hover {
+            transform: scale(1.1);
+            background: #ff1e50;
         }
     </style>
 </head>
 <body>
 
-<canvas id="heartCanvas"></canvas>
+    <button id="btn-trigger">اضغط للمفاجأة ❤️</button>
+    <canvas id="canvas"></canvas>
 
 <script>
-const canvas = document.getElementById('heartCanvas');
+const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
+const btn = document.getElementById('btn-trigger');
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let particles = [];
-const particleCount = 600; 
-let stage = 0; // 0: قلب، 1: انكماش، 2: حرف F
-let progress = 0;
+const particleCount = 800; // عدد جزيئات كبير لجرافيكس أفضل
+let animationStep = 'idle'; // idle, explode_heart, shrink, explode_f
 
-// معادلة رسم القلب
+// معادلات النقاط (تم تصغير الحجم هنا)
 function getHeartPoint(t) {
     let x = 16 * Math.pow(Math.sin(t), 3);
     let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-    return { x: x * 15, y: y * 15 };
+    return { x: x * 10, y: y * 10 }; // ضربنا في 10 بدلاً من 15 لتصغيره
 }
 
-// معادلة رسم حرف F
 function getFPoint(t) {
     let x, y;
-    if (t < 0.4) { // الخط العامودي
-        x = -50;
-        y = -100 + (t / 0.4) * 200;
-    } else if (t < 0.7) { // الخط الأفقي العلوي
-        x = -50 + ((t - 0.4) / 0.3) * 100;
-        y = -100;
-    } else { // الخط الأفقي الأوسط
-        x = -50 + ((t - 0.7) / 0.3) * 80;
-        y = 0;
+    if (t < 0.4) { 
+        x = -40; y = -80 + (t / 0.4) * 160; 
+    } else if (t < 0.7) { 
+        x = -40 + ((t - 0.4) / 0.3) * 80; y = -80;
+    } else { 
+        x = -40 + ((t - 0.7) / 0.3) * 60; y = 0;
     }
     return { x: x, y: y };
 }
@@ -66,64 +83,91 @@ class Particle {
     reset() {
         this.x = canvas.width / 2;
         this.y = canvas.height / 2;
-        this.targetX = this.x;
-        this.targetY = this.y;
-        this.color = `hsl(${Math.random() * 20 + 340}, 100%, 60%)`; // درجات الوردي والأحمر
-        this.size = Math.random() * 2 + 1;
-        this.speed = 0.05 + Math.random() * 0.02;
+        this.vx = 0;
+        this.vy = 0;
+        this.accX = 0;
+        this.accY = 0;
+        this.friction = 0.85; // احتكاك عالي ليعطي شعور الانفجار ثم التوقف
+        this.color = '#ff3e6c';
+        this.size = Math.random() * 2 + 0.5;
+    }
+
+    applyForce(tx, ty) {
+        // حساب القوة المطلوبة للوصول للنقطة (انفجار)
+        let dist = Math.hypot(tx - this.x, ty - this.y);
+        let force = dist * 0.15; 
+        let angle = Math.atan2(ty - this.y, tx - this.x);
+        this.vx += Math.cos(angle) * force;
+        this.vy += Math.sin(angle) * force;
     }
 
     update() {
-        // حركة ناعمة نحو الهدف
-        this.x += (this.targetX - this.x) * this.speed;
-        this.y += (this.targetY - this.y) * this.speed;
+        this.vx *= this.friction;
+        this.vy *= this.friction;
+        this.x += this.vx;
+        this.y += this.vy;
     }
 
     draw() {
         ctx.fillStyle = this.color;
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = this.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
     }
 }
 
-function init() {
+function initParticles() {
+    particles = [];
     for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle());
     }
 }
 
+function explodeTo(shapeFunc) {
+    particles.forEach((p, i) => {
+        let t;
+        let target;
+        if (shapeFunc === 'heart') {
+            t = (i / particleCount) * Math.PI * 2;
+            target = getHeartPoint(t);
+        } else {
+            t = i / particleCount;
+            target = getFPoint(t);
+        }
+        p.applyForce(canvas.width / 2 + target.x, canvas.height / 2 + target.y);
+    });
+}
+
+function shrinkToCenter() {
+    particles.forEach(p => {
+        p.applyForce(canvas.width / 2, canvas.height / 2);
+    });
+}
+
+btn.addEventListener('click', () => {
+    btn.style.display = 'none'; // إخفاء الزر
+    initParticles();
+    
+    // تسلسل الانفجارات
+    explodeTo('heart'); 
+
+    setTimeout(() => {
+        shrinkToCenter(); // انكماش
+        setTimeout(() => {
+            explodeTo('f'); // انفجار حرف F
+            particles.forEach(p => p.color = '#00f2ff'); // تغيير اللون للأزرق المتوهج
+        }, 1000);
+    }, 2500);
+});
+
 function animate() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // تأثير التلاشي (Tail)
+    // خلفية سوداء شبه شفافة لترك أثر "Glowing Trail"
+    ctx.fillStyle = 'rgba(5, 5, 5, 0.15)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    progress += 0.01;
-
-    if (progress > 2) {
-        progress = 0;
-        stage = (stage + 1) % 3;
-    }
-
-    particles.forEach((p, i) => {
-        let t = (i / particleCount) * Math.PI * 2;
-        let target;
-
-        if (stage === 0) { // تشكيل القلب
-            target = getHeartPoint(t);
-            p.targetX = canvas.width / 2 + target.x;
-            p.targetY = canvas.height / 2 + target.y;
-            p.color = '#ff3e6c';
-        } else if (stage === 1) { // انكماش للمركز
-            p.targetX = canvas.width / 2;
-            p.targetY = canvas.height / 2;
-        } else if (stage === 2) { // تشكيل حرف F
-            let ft = i / particleCount;
-            target = getFPoint(ft);
-            p.targetX = canvas.width / 2 + target.x;
-            p.targetY = canvas.height / 2 + target.y;
-            p.color = '#3e9cff'; // تغيير اللون للأزرق عند حرف F
-        }
-
+    particles.forEach(p => {
         p.update();
         p.draw();
     });
@@ -131,7 +175,6 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-init();
 animate();
 
 window.addEventListener('resize', () => {
