@@ -1,168 +1,138 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Extreme Realistic Particles</title>
+    <title>مخطط صيانة التطبيق</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        canvas { position: absolute; top: 0; left: 0; }
-        #btn-start {
-            padding: 15px 35px; background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 2px; cursor: pointer; z-index: 100; letter-spacing: 4px; font-family: 'Segoe UI', sans-serif;
-            transition: 0.5s; backdrop-filter: blur(5px);
+        :root {
+            --bg-color: #121212;
+            --box-bg: #3b3b3b;
+            --decision-bg: #4a4a4a;
+            --text-color: #ffffff;
+            --accent-color: #00bcd4;
         }
-        #btn-start:hover { background: white; color: black; box-shadow: 0 0 50px rgba(255,255,255,0.2); }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* الزر الرئيسي */
+        #startBtn {
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, #333, #555);
+            color: white;
+            border: 2px solid var(--accent-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+        }
+
+        #startBtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px var(--accent-color);
+        }
+
+        /* حاوية الشجرة (مخفية في البداية) */
+        .workflow-wrapper {
+            display: none;
+            opacity: 0;
+            transform: scale(0.8) translateY(50px);
+            transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+            width: 90%;
+            max-width: 1000px;
+        }
+
+        /* الحالة السينمائية عند الظهور */
+        .workflow-wrapper.active {
+            display: grid;
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            align-items: center;
+        }
+
+        /* تنسيق المربعات */
+        .box {
+            background: var(--box-bg);
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #666;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* تنسيق المعين (قرار) */
+        .decision {
+            background: var(--decision-bg);
+            width: 100px;
+            height: 100px;
+            margin: auto;
+            transform: rotate(45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--accent-color);
+        }
+
+        .decision span {
+            transform: rotate(-45deg);
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        /* إخفاء الزر بعد الضغط */
+        .fade-out {
+            opacity: 0 !important;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
-    <button id="btn-start">ACTIVATE</button>
-    <canvas id="canvas"></canvas>
+    <button id="startBtn" onclick="showWorkflow()">مخطط سير العمل لصيانة تطبيق</button>
 
-<script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const btn = document.getElementById('btn-start');
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let particles = [];
-const particleCount = 2200; // كثافة عالية جداً لوضوح الحرف
-let mode = 'off'; 
-
-function getHeartPoint(t) {
-    let x = 16 * Math.pow(Math.sin(t), 3);
-    let y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-    return { x: x * 8.5, y: y * 8.5 }; 
-}
-
-function getFPoint(t) {
-    let x, y;
-    // تقسيم الجزيئات بدقة لرسم أضلاع الحرف F
-    if (t < 0.5) { // العمود
-        x = -40; y = -90 + (t / 0.5) * 180;
-    } else if (t < 0.8) { // الضلع العلوي
-        x = -40 + ((t - 0.5) / 0.3) * 100; y = -90;
-    } else { // الضلع الأوسط
-        x = -40 + ((t - 0.8) / 0.2) * 70; y = 0;
-    }
-    return { x: x, y: y };
-}
-
-class Particle {
-    constructor() {
-        this.x = canvas.width / 2 + (Math.random() - 0.5) * 10;
-        this.y = canvas.height / 2 + (Math.random() - 0.5) * 10;
-        this.vx = 0; this.vy = 0;
-        this.targetX = this.x; this.targetY = this.y;
-        this.color = '#ff1744';
-        this.size = Math.random() * 1.2 + 0.3;
-        this.friction = 0.9;
-        this.spring = 0.03; // قوة الجذب للنقطة لجعل الشكل واضحاً
-    }
-
-    update() {
-        if (mode !== 'off') {
-            // نظام فيزياء النوابض (Spring Physics) لجعل الحرف حاداً وواضحاً
-            let dx = this.targetX - this.x;
-            let dy = this.targetY - this.y;
-            this.vx += dx * this.spring;
-            this.vy += dy * this.spring;
-            this.vx += (Math.random() - 0.5) * 0.5; // "رعشة" واقعية للضوء
-        }
+    <div id="workflow" class="workflow-wrapper">
+        <div class="box">تقرير الخطأ</div>
+        <div class="decision"><span>هل تم حل المشكلة؟</span></div>
+        <div class="box">أطلق نسخة التطبيق الجديدة</div>
         
-        this.vx *= this.friction;
-        this.vy *= this.friction;
-        this.x += this.vx;
-        this.y += this.vy;
-    }
-
-    draw() {
-        // الطبقة الخارجية (التوهج)
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = this.color;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
+        <div class="box" style="grid-column: span 2;">طلب الحصول على تحديثات للتطبيق</div>
         
-        // الطبقة الداخلية (مركز الضوء الأبيض) للواقعية
-        if (Math.random() > 0.9) {
-            ctx.fillStyle = "white";
-            ctx.fillRect(this.x, this.y, 1, 1);
+        <div class="box">اصلح مشكلات الخلل البرمجي</div>
+        <div class="box">حدث متطلبات الأجهزة</div>
+        <div class="box">اصلح مشكلات الأمان</div>
+    </div>
+
+    <script>
+        function showWorkflow() {
+            const btn = document.getElementById('startBtn');
+            const workflow = document.getElementById('workflow');
+
+            // إخفاء الزر
+            btn.classList.add('fade-out');
+
+            // إظهار المخطط بعد فترة قصيرة بتأثير سينمائي
+            setTimeout(() => {
+                btn.style.display = 'none';
+                workflow.style.display = 'grid';
+                // Trigger reflow
+                workflow.offsetHeight; 
+                workflow.classList.add('active');
+            }, 600);
         }
-    }
-}
-
-function init() {
-    particles = [];
-    for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-    }
-}
-
-function setTarget(type) {
-    particles.forEach((p, i) => {
-        let t, target;
-        if (type === 'heart') {
-            t = (i / particleCount) * Math.PI * 2;
-            target = getHeartPoint(t);
-            p.color = `hsl(345, 100%, ${50 + Math.random() * 20}%)`;
-            p.spring = 0.02 + Math.random() * 0.02;
-        } else if (type === 'f') {
-            t = i / particleCount;
-            target = getFPoint(t);
-            p.color = `hsl(190, 100%, ${50 + Math.random() * 20}%)`;
-            p.spring = 0.04; // قوة أكبر عند حرف F ليكون حاداً
-        } else {
-            target = { x: 0, y: 0 };
-            p.spring = 0.08;
-        }
-        p.targetX = canvas.width / 2 + target.x;
-        p.targetY = canvas.height / 2 + target.y;
-    });
-}
-
-btn.addEventListener('click', () => {
-    btn.style.display = 'none';
-    mode = 'on';
-    init();
-    
-    // 1. انفجار القلب
-    setTarget('heart');
-
-    // 2. انكماش سريع
-    setTimeout(() => {
-        setTarget('center');
-        
-        // 3. انفجار حرف F بوضوح عالي
-        setTimeout(() => {
-            setTarget('f');
-        }, 800);
-    }, 2500);
-});
-
-function animate() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    particles.forEach(p => {
-        p.update();
-        p.draw();
-    });
-
-    requestAnimationFrame(animate);
-}
-
-animate();
-
-window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-});
-</script>
-
+    </script>
 </body>
 </html>
