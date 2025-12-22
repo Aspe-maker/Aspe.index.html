@@ -2,136 +2,133 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مخطط صيانة التطبيق</title>
+    <title>مخطط سير عمل صيانة التطبيق</title>
     <style>
         :root {
-            --bg-color: #121212;
-            --box-bg: #3b3b3b;
-            --decision-bg: #4a4a4a;
-            --text-color: #ffffff;
-            --accent-color: #00bcd4;
+            --primary-bg: #f4f7f6;
+            --box-blue: #d1e9ff;
+            --box-purple: #e2d1f9;
+            --box-red: #ffd1d1;
+            --text-color: #333;
+            --border-color: #555;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--primary-bg);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            overflow: hidden;
+            padding: 50px;
         }
 
-        /* الزر الرئيسي */
-        #startBtn {
-            padding: 20px 40px;
-            font-size: 1.5rem;
-            background: linear-gradient(45deg, #333, #555);
-            color: white;
-            border: 2px solid var(--accent-color);
-            border-radius: 10px;
+        #mainBtn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
             cursor: pointer;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 10;
+            background: #333;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            transition: 0.3s;
         }
 
-        #startBtn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px var(--accent-color);
-        }
+        #mainBtn:hover { background: #555; }
 
-        /* حاوية الشجرة (مخفية في البداية) */
-        .workflow-wrapper {
+        /* حاوية المخطط */
+        .diagram-wrapper {
             display: none;
-            opacity: 0;
-            transform: scale(0.8) translateY(50px);
-            transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
-            width: 90%;
-            max-width: 1000px;
+            position: relative;
+            width: 1000px;
+            height: 800px;
+            margin-top: 40px;
         }
 
-        /* الحالة السينمائية عند الظهور */
-        .workflow-wrapper.active {
-            display: grid;
-            opacity: 1;
-            transform: scale(1) translateY(0);
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            align-items: center;
-        }
-
-        /* تنسيق المربعات */
-        .box {
-            background: var(--box-bg);
-            padding: 15px;
+        /* العناصر الأساسية */
+        .node {
+            position: absolute;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
             text-align: center;
-            border: 1px solid #666;
+            background: white;
             font-size: 0.9rem;
-            border-radius: 4px;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+            opacity: 0; /* مخفي للتحريك */
+            transform: translateY(10px);
+            transition: all 0.6s ease-out;
         }
 
-        /* تنسيق المعين (قرار) */
+        .node.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* أشكال المعين (اتخاذ القرار) */
         .decision {
-            background: var(--decision-bg);
-            width: 100px;
-            height: 100px;
-            margin: auto;
-            transform: rotate(45deg);
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            transform: rotate(45deg) scale(0);
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid var(--accent-color);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .decision span {
             transform: rotate(-45deg);
-            font-size: 0.8rem;
-            text-align: center;
+            font-size: 0.75rem;
+            font-weight: bold;
         }
 
-        /* إخفاء الزر بعد الضغط */
-        .fade-out {
-            opacity: 0 !important;
-            pointer-events: none;
-        }
+        .decision.show { transform: rotate(45deg) scale(1); }
+
+        /* تحديد الألوان والمواقع (تقريبي للمحاكاة) */
+        .start { background: var(--box-red); right: 10px; top: 350px; }
+        .tech-path { background: var(--box-blue); }
+        .feature-path { background: var(--box-blue); }
+        .design-path { background: var(--box-blue); }
+        .test-path { background: var(--box-purple); }
+
     </style>
 </head>
 <body>
 
-    <button id="startBtn" onclick="showWorkflow()">مخطط سير العمل لصيانة تطبيق</button>
+    <button id="mainBtn" onclick="startAnimation()">مخطط سير العمل لصيانة تطبيق</button>
 
-    <div id="workflow" class="workflow-wrapper">
-        <div class="box">تقرير الخطأ</div>
-        <div class="decision"><span>هل تم حل المشكلة؟</span></div>
-        <div class="box">أطلق نسخة التطبيق الجديدة</div>
+    <div id="diagram" class="diagram-wrapper">
+        <div class="node start" style="transition-delay: 0.2s;">طلب الحصول على تحديثات للتطبيق</div>
         
-        <div class="box" style="grid-column: span 2;">طلب الحصول على تحديثات للتطبيق</div>
+        <div class="decision" style="right: 150px; top: 150px; transition-delay: 0.8s;"><span>مشكلة تقنية</span></div>
+        <div class="node tech-path" style="right: 300px; top: 100px; transition-delay: 1.2s;">أصلح مشكلات الخلل البرمجي</div>
+        <div class="node tech-path" style="right: 300px; top: 160px; transition-delay: 1.4s;">حدث متطلبات الأجهزة</div>
+        <div class="node tech-path" style="right: 300px; top: 220px; transition-delay: 1.6s;">أصلح مشكلات الأمان</div>
         
-        <div class="box">اصلح مشكلات الخلل البرمجي</div>
-        <div class="box">حدث متطلبات الأجهزة</div>
-        <div class="box">اصلح مشكلات الأمان</div>
+        <div class="decision" style="right: 150px; top: 400px; transition-delay: 2s;"><span>مشكلات الميزات</span></div>
+        <div class="node feature-path" style="right: 300px; top: 400px; transition-delay: 2.4s;">عدل الميزات / ميزات جديدة</div>
+
+        <div class="decision" style="right: 150px; top: 600px; transition-delay: 2.8s;"><span>مشكلة التصميم</span></div>
+        <div class="node design-path" style="right: 300px; top: 600px; transition-delay: 3.2s;">حسن واجهة المستخدم وتجربة المستخدم</div>
+
+        <div class="node test-path" style="right: 500px; top: 350px; transition-delay: 4s;">اختبر التغييرات</div>
+        <div class="decision" style="right: 650px; top: 350px; transition-delay: 4.5s;"><span>هل تم حل المشكلة؟</span></div>
+        <div class="node" style="right: 800px; top: 350px; transition-delay: 5s;">أطلق نسخة التطبيق الجديدة</div>
     </div>
 
     <script>
-        function showWorkflow() {
-            const btn = document.getElementById('startBtn');
-            const workflow = document.getElementById('workflow');
-
-            // إخفاء الزر
-            btn.classList.add('fade-out');
-
-            // إظهار المخطط بعد فترة قصيرة بتأثير سينمائي
-            setTimeout(() => {
-                btn.style.display = 'none';
-                workflow.style.display = 'grid';
-                // Trigger reflow
-                workflow.offsetHeight; 
-                workflow.classList.add('active');
-            }, 600);
+        function startAnimation() {
+            document.getElementById('mainBtn').style.display = 'none';
+            const diagram = document.getElementById('diagram');
+            diagram.style.display = 'block';
+            
+            // تفعيل التحريك لكل عنصر تدريجياً
+            const elements = diagram.querySelectorAll('.node, .decision');
+            elements.forEach(el => {
+                setTimeout(() => {
+                    el.classList.add('show');
+                }, 100); 
+            });
         }
     </script>
 </body>
