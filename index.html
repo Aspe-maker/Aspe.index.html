@@ -2,15 +2,14 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>مخطط الصيانة الكامل - 23 خانة</title>
+    <title>مخطط سير العمل - مشروع فايزة الغامدي</title>
     <style>
         :root {
-            --bg-color: #f4f4f4;
+            --bg-color: #f8f9fa;
             --box-blue: #d6eaf8;
             --box-pink: #fadbd8;
-            --box-grey: #e5e7e9;
-            --box-dark: #566573;
             --box-report: #d2b4de;
+            --box-dark: #566573;
             --border: #2c3e50;
         }
 
@@ -18,50 +17,57 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             display: flex;
-            justify-content: center;
-            padding-top: 50px;
-            overflow-x: auto;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
 
+        /* الحاوية الرئيسية */
         #canvas {
             position: relative;
-            width: 1400px;
+            width: 1500px; /* زيادة العرض لاستيعاب التباعد */
             height: 900px;
             background: white;
             border: 1px solid #ccc;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            display: none; /* مخفي للبداية */
+            display: none;
+            margin-top: 20px;
+            overflow: hidden;
+            border-radius: 8px;
         }
 
-        /* الأشكال */
+        /* تنسيق العناصر (Nodes) */
         .node {
             position: absolute;
             padding: 10px;
             border: 2px solid var(--border);
             text-align: center;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2;
-            opacity: 0; /* للأنيميشن */
+            opacity: 0;
             transition: all 0.5s ease-out;
             background: white;
-            box-shadow: 3px 3px 5px rgba(0,0,0,0.2);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* المستطيلات (الإجراءات) */
+        /* المربعات المستطيلة */
         .rect {
-            width: 140px;
+            width: 130px;
             height: 60px;
             background-color: var(--box-blue);
+            border-radius: 4px;
         }
 
         /* المعين (القرارات) */
         .diamond {
-            width: 100px;
-            height: 100px;
+            width: 90px;
+            height: 90px;
             background: white;
             transform: rotate(45deg);
             display: flex;
@@ -70,38 +76,40 @@
         }
         .diamond span {
             transform: rotate(-45deg);
-            font-size: 12px;
-            width: 100%;
+            font-size: 11px;
+            width: 120%; /* للسماح للنص بالعرض */
+            line-height: 1.2;
         }
 
-        /* شكل التقرير (متموج من الأسفل) */
+        /* شكل التقرير */
         .report {
             width: 100px;
-            height: 70px;
+            height: 60px;
             background: var(--box-report);
-            border-radius: 0 0 50% 50% / 0 0 20% 20%;
+            border-radius: 0 0 50% 50% / 0 0 15% 15%; /* تأثير الورقة المتموجة */
         }
 
-        /* البداية والنهاية */
+        /* ألوان خاصة */
         .start-node { background-color: var(--box-pink); }
         .end-node { background-color: var(--box-dark); color: white; }
-        .beta-node { background-color: #95a5a6; color: white; }
+        .beta-node { background-color: #7f8c8d; color: white; }
 
-        /* النصوص (نعم/لا) */
+        /* تنسيق نصوص الأسهم (نعم/لا) */
         .label {
             position: absolute;
             font-size: 12px;
             font-weight: bold;
             z-index: 3;
             background: white;
-            padding: 2px;
+            padding: 2px 5px;
+            border-radius: 3px;
             opacity: 0;
             transition: opacity 0.5s;
         }
-        .label.no { color: red; }
-        .label.yes { color: green; }
+        .label.no { color: #c0392b; border: 1px solid #c0392b; }
+        .label.yes { color: #27ae60; border: 1px solid #27ae60; }
 
-        /* الأسهم SVG */
+        /* طبقة الرسم SVG */
         svg {
             position: absolute;
             top: 0;
@@ -118,202 +126,230 @@
             opacity: 0;
             transition: opacity 0.5s;
         }
-        .path-no { stroke: red; } /* المسار الأحمر */
+        .path-no { stroke: #c0392b; } /* لون خط الخطأ أحمر */
 
         /* زر التشغيل */
         #startBtn {
-            padding: 20px 40px;
-            font-size: 20px;
+            padding: 15px 40px;
+            font-size: 18px;
             cursor: pointer;
-            background: #333;
+            background: #2c3e50;
             color: white;
             border: none;
+            border-radius: 5px;
+            margin-top: 100px;
+            transition: transform 0.2s;
         }
-        .visible { opacity: 1 !important; transform: scale(1) !important; }
+        #startBtn:hover { transform: scale(1.05); }
+
+        /* التذييل */
+        .footer {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #555;
+            font-weight: bold;
+            border-top: 2px solid #ddd;
+            padding-top: 10px;
+            width: 100%;
+            text-align: center;
+            opacity: 0; /* يظهر في النهاية */
+            transition: opacity 1s;
+        }
+
+        /* كلاس التفعيل */
+        .visible { opacity: 1 !important; transform: scale(1) rotate(0deg) !important; }
+        .diamond.visible { transform: scale(1) rotate(45deg) !important; }
 
     </style>
 </head>
 <body>
 
-<button id="startBtn" onclick="runAnimation()">اضغط لعرض المخطط السينمائي (23 خانة)</button>
+    <button id="startBtn" onclick="runAnimation()">مخطط سير العمل لصيانة تطبيق</button>
 
-<div id="canvas">
-    <svg id="svgLayer">
-        <defs>
-            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-                <path d="M0,0 L0,6 L9,3 z" fill="#333" />
-            </marker>
-            <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-                <path d="M0,0 L0,6 L9,3 z" fill="red" />
-            </marker>
-        </defs>
+    <div id="canvas">
+        <svg id="svgLayer">
+            <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+                </marker>
+                <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#c0392b" />
+                </marker>
+            </defs>
         </svg>
 
-    <div class="node rect start-node" id="n1" style="right: 20px; top: 380px;">طلب الحصول على تحديثات للتطبيق</div>
+        <div class="node rect start-node" id="n1" style="right: 20px; top: 380px;">طلب الحصول على تحديثات للتطبيق</div>
 
-    <div class="node diamond" id="n2" style="right: 250px; top: 100px;"><span>مشكلة تقنية</span></div>
-    <div class="node diamond" id="n3" style="right: 250px; top: 380px;"><span>مشكلات الميزات</span></div>
-    <div class="node diamond" id="n4" style="right: 250px; top: 650px;"><span>مشكلة التصميم</span></div>
+        <div class="node diamond" id="n2" style="right: 250px; top: 100px;"><span>مشكلة تقنية</span></div>
+        <div class="node diamond" id="n3" style="right: 250px; top: 380px;"><span>مشكلات الميزات</span></div>
+        <div class="node diamond" id="n4" style="right: 250px; top: 650px;"><span>مشكلة التصميم</span></div>
 
-    <div class="node rect" id="n5" style="right: 450px; top: 40px;">أصلح مشكلات الخلل البرمجي</div>
-    <div class="node rect" id="n6" style="right: 450px; top: 110px;">حدث متطلبات الأجهزة</div>
-    <div class="node rect" id="n7" style="right: 450px; top: 180px;">أصلح مشكلات الأمان</div>
-    
-    <div class="node rect" id="n8" style="right: 450px; top: 350px;">عدل الميزات</div>
-    <div class="node rect" id="n9" style="right: 450px; top: 420px;">ميزات جديدة</div>
-
-    <div class="node rect" id="n10" style="right: 450px; top: 650px;">حسن واجهة وتجربة المستخدم</div>
-
-    <div class="node rect" id="n11" style="right: 700px; top: 110px;">اختبر التغييرات</div>
-    <div class="node rect" id="n12" style="right: 700px; top: 380px;">اختبر التغييرات</div>
-    <div class="node rect" id="n13" style="right: 700px; top: 650px;">اختبر التغييرات</div>
-
-    <div class="node diamond" id="n14" style="right: 900px; top: 100px;"><span>هل تم حل المشكلات؟</span></div>
-    <div class="node diamond" id="n15" style="right: 900px; top: 380px;"><span>هل تم حل المشكلة؟</span></div>
-    <div class="node diamond" id="n16" style="right: 900px; top: 650px;"><span>هل تم حل المشكلة؟</span></div>
-
-    <div class="node report" id="n17" style="right: 915px; top: 10px;">تقرير الخطأ</div>
-    <div class="node report" id="n18" style="right: 915px; top: 280px;">تقرير الخطأ</div>
-    <div class="node report" id="n19" style="right: 915px; top: 550px;">تقرير الخطأ</div>
-
-    <div class="node rect beta-node" id="n20" style="right: 1100px; top: 380px; height: 80px;">أختبر نسخة التطبيق التجريبية</div>
-
-    <div class="node diamond" id="n21" style="right: 1250px; top: 380px;"><span>هل تم حل المشكلات؟</span></div>
-
-    <div class="node report" id="n22" style="right: 1265px; top: 250px;">تقرير الخطأ</div>
-
-    <div class="node rect end-node" id="n23" style="right: 1250px; top: 600px;">أطلق نسخة التطبيق الجديدة</div>
-
-</div>
-
-<script>
-    // تعريف المسارات (من -> إلى، النوع)
-    // النوع: standard (أسود) أو error (أحمر)
-    const paths = [
-        // البداية للتفرعات
-        { from: 'n1', to: 'n2', text: '' }, // للتقني
-        { from: 'n1', to: 'n3', text: '' }, // للميزات
-        { from: 'n1', to: 'n4', text: '' }, // للتصميم
+        <div class="node rect" id="n5" style="right: 450px; top: 40px;">أصلح مشكلات الخلل البرمجي</div>
+        <div class="node rect" id="n6" style="right: 450px; top: 110px;">حدث متطلبات الأجهزة</div>
+        <div class="node rect" id="n7" style="right: 450px; top: 180px;">أصلح مشكلات الأمان</div>
         
-        // قرارات تقنية
-        { from: 'n2', to: 'n5', text: 'نعم' },
-        { from: 'n2', to: 'n6', text: '' },
-        { from: 'n2', to: 'n7', text: '' },
-        { from: 'n2', to: 'n3', text: 'لا', type: 'error' }, // سهم أحمر للأسفل
+        <div class="node rect" id="n8" style="right: 450px; top: 350px;">عدل الميزات</div>
+        <div class="node rect" id="n9" style="right: 450px; top: 420px;">ميزات جديدة</div>
 
-        // قرارات ميزات
-        { from: 'n3', to: 'n8', text: 'نعم' },
-        { from: 'n3', to: 'n9', text: '' },
-        { from: 'n3', to: 'n4', text: 'لا', type: 'error' },
+        <div class="node rect" id="n10" style="right: 450px; top: 650px;">حسن واجهة وتجربة المستخدم</div>
 
-        // قرارات تصميم
-        { from: 'n4', to: 'n10', text: 'نعم' },
-        { from: 'n4', to: 'n23', text: 'لا', type: 'error' }, // افتراضياً للنهاية أو توقف حسب الصورة
+        <div class="node rect" id="n11" style="right: 700px; top: 110px;">اختبر التغييرات</div>
+        <div class="node rect" id="n12" style="right: 700px; top: 380px;">اختبر التغييرات</div>
+        <div class="node rect" id="n13" style="right: 700px; top: 650px;">اختبر التغييرات</div>
 
-        // عمليات -> اختبار
-        { from: 'n5', to: 'n11', text: '' },
-        { from: 'n6', to: 'n11', text: '' },
-        { from: 'n7', to: 'n11', text: '' },
-        { from: 'n8', to: 'n12', text: '' },
-        { from: 'n9', to: 'n12', text: '' },
-        { from: 'n10', to: 'n13', text: '' },
+        <div class="node diamond" id="n14" style="right: 900px; top: 100px;"><span>هل تم حل المشكلات؟</span></div>
+        <div class="node diamond" id="n15" style="right: 900px; top: 380px;"><span>هل تم حل المشكلة؟</span></div>
+        <div class="node diamond" id="n16" style="right: 900px; top: 650px;"><span>هل تم حل المشكلة؟</span></div>
 
-        // اختبار -> هل تم الحل
-        { from: 'n11', to: 'n14', text: '' },
-        { from: 'n12', to: 'n15', text: '' },
-        { from: 'n13', to: 'n16', text: '' },
+        <div class="node report" id="n17" style="right: 900px; top: 10px;">تقرير الخطأ</div>
+        <div class="node report" id="n18" style="right: 900px; top: 280px;">تقرير الخطأ</div>
+        <div class="node report" id="n19" style="right: 900px; top: 550px;">تقرير الخطأ</div>
 
-        // هل تم الحل -> نعم (للنسخة التجريبية)
-        { from: 'n14', to: 'n20', text: 'نعم' },
-        { from: 'n15', to: 'n20', text: 'نعم' },
-        { from: 'n16', to: 'n20', text: 'نعم' },
+        <div class="node rect beta-node" id="n20" style="right: 1150px; top: 380px;">أختبر نسخة التطبيق التجريبية</div>
 
-        // هل تم الحل -> لا (تقرير) - أحمر
-        { from: 'n14', to: 'n17', text: 'لا', type: 'error' },
-        { from: 'n15', to: 'n18', text: 'لا', type: 'error' },
-        { from: 'n16', to: 'n19', text: 'لا', type: 'error' },
+        <div class="node diamond" id="n21" style="right: 1350px; top: 375px;"><span>هل تم حل المشكلات؟</span></div>
 
-        // العودة من التقرير
-        { from: 'n17', to: 'n11', text: '' }, // سهم راجع
-        { from: 'n18', to: 'n12', text: '' },
-        { from: 'n19', to: 'n13', text: '' },
+        <div class="node report" id="n22" style="right: 1350px; top: 250px;">تقرير الخطأ</div>
 
-        // النسخة التجريبية
-        { from: 'n20', to: 'n21', text: '' },
+        <div class="node rect end-node" id="n23" style="right: 1330px; top: 550px;">أطلق نسخة التطبيق الجديدة</div>
+    </div>
 
-        // القرار النهائي
-        { from: 'n21', to: 'n23', text: 'نعم' },
-        { from: 'n21', to: 'n22', text: 'لا', type: 'error' },
-        { from: 'n22', to: 'n20', text: '' } // عودة
-    ];
+    <div id="footer" class="footer">مشروع فايزة الغامدي</div>
 
-    function runAnimation() {
-        document.getElementById('startBtn').style.display = 'none';
-        document.getElementById('canvas').style.display = 'block';
-
-        // رسم الخطوط أولاً
-        drawSVGPaths();
-
-        // تشغيل الأنيميشن
-        let delay = 0;
-        // ترتيب ظهور العناصر (Nodes)
-        for (let i = 1; i <= 23; i++) {
-            setTimeout(() => {
-                let el = document.getElementById('n' + i);
-                if(el) el.classList.add('visible');
-            }, delay);
-            delay += 200; // سرعة الظهور
-        }
-        
-        // إظهار الخطوط والنصوص
-        setTimeout(() => {
-            document.querySelectorAll('path, .label').forEach(el => el.classList.add('visible'));
-        }, delay);
-    }
-
-    function drawSVGPaths() {
-        const svg = document.getElementById('svgLayer');
-        const containerRect = document.getElementById('canvas').getBoundingClientRect();
-
-        paths.forEach(p => {
-            let fromEl = document.getElementById(p.from).getBoundingClientRect();
-            let toEl = document.getElementById(p.to).getBoundingClientRect();
-
-            // حساب المراكز بالنسبة للـ canvas
-            let x1 = fromEl.left + fromEl.width / 2 - containerRect.left;
-            let y1 = fromEl.top + fromEl.height / 2 - containerRect.top;
-            let x2 = toEl.left + toEl.width / 2 - containerRect.left;
-            let y2 = toEl.top + toEl.height / 2 - containerRect.top;
-
-            // إنشاء المسار
-            let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    <script>
+        // تعريف المسارات بدقة
+        const paths = [
+            { from: 'n1', to: 'n2', text: '' },
+            { from: 'n1', to: 'n3', text: '' },
+            { from: 'n1', to: 'n4', text: '' },
             
-            // رسم خط بسيط (يمكن تحسينه ليكون متكسر L-shape)
-            // هنا نستخدم منحنى بسيط لضمان الاتصال
-            let d = `M${x1},${y1} L${x2},${y2}`; 
-            
-            // تعديل بسيط للأسهم الراجعة (التقارير) لتكون منحنية
-            if (p.to === 'n11' && p.from === 'n17') d = `M${x1},${y1} Q${x1+50},${y1+50} ${x2},${y2}`;
-            
-            path.setAttribute("d", d);
-            path.setAttribute("marker-end", p.type === 'error' ? "url(#arrow-red)" : "url(#arrow)");
-            if (p.type === 'error') path.classList.add('path-no');
-            
-            svg.appendChild(path);
+            // المسار التقني
+            { from: 'n2', to: 'n5', text: 'نعم' },
+            { from: 'n2', to: 'n6', text: '' },
+            { from: 'n2', to: 'n7', text: '' },
+            { from: 'n2', to: 'n3', text: 'لا', type: 'error' },
 
-            // إضافة النص (نعم/لا)
-            if (p.text) {
-                let lbl = document.createElement('div');
-                lbl.className = 'label ' + (p.type === 'error' ? 'no' : 'yes');
-                lbl.innerText = p.text;
-                // وضع النص في منتصف الخط
-                lbl.style.left = ((x1 + x2) / 2) + 'px';
-                lbl.style.top = ((y1 + y2) / 2) + 'px';
-                document.getElementById('canvas').appendChild(lbl);
+            // المسار الميزات
+            { from: 'n3', to: 'n8', text: 'نعم' },
+            { from: 'n3', to: 'n9', text: '' },
+            { from: 'n3', to: 'n4', text: 'لا', type: 'error' },
+
+            // المسار التصميم
+            { from: 'n4', to: 'n10', text: 'نعم' },
+            // افتراض سهم خروج في حالة الرفض كما في الصورة (أو توقف)
+            
+            // التوصيل للاختبار
+            { from: 'n5', to: 'n11', text: '' },
+            { from: 'n6', to: 'n11', text: '' },
+            { from: 'n7', to: 'n11', text: '' },
+            { from: 'n8', to: 'n12', text: '' },
+            { from: 'n9', to: 'n12', text: '' },
+            { from: 'n10', to: 'n13', text: '' },
+
+            // الاختبار -> هل تم الحل
+            { from: 'n11', to: 'n14', text: '' },
+            { from: 'n12', to: 'n15', text: '' },
+            { from: 'n13', to: 'n16', text: '' },
+
+            // هل تم الحل -> نعم (للنسخة التجريبية)
+            { from: 'n14', to: 'n20', text: 'نعم' },
+            { from: 'n15', to: 'n20', text: 'نعم' },
+            { from: 'n16', to: 'n20', text: 'نعم' },
+
+            // هل تم الحل -> لا (تقرير خطأ)
+            { from: 'n14', to: 'n17', text: 'لا', type: 'error' },
+            { from: 'n15', to: 'n18', text: 'لا', type: 'error' },
+            { from: 'n16', to: 'n19', text: 'لا', type: 'error' },
+
+            // العودة من التقرير
+            { from: 'n17', to: 'n11', text: '' },
+            { from: 'n18', to: 'n12', text: '' },
+            { from: 'n19', to: 'n13', text: '' },
+
+            // النسخة التجريبية -> القرار النهائي (الآن المسافة أكبر سيظهر الخط)
+            { from: 'n20', to: 'n21', text: '' },
+
+            // القرار النهائي
+            { from: 'n21', to: 'n23', text: 'نعم' },
+            { from: 'n21', to: 'n22', text: 'لا', type: 'error' },
+            { from: 'n22', to: 'n20', text: '' }
+        ];
+
+        function runAnimation() {
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('canvas').style.display = 'block';
+
+            // رسم الخطوط
+            drawSVGPaths();
+
+            let delay = 0;
+            // إظهار العناصر (Nodes)
+            for (let i = 1; i <= 23; i++) {
+                setTimeout(() => {
+                    let el = document.getElementById('n' + i);
+                    if(el) el.classList.add('visible');
+                }, delay);
+                delay += 150; // تسريع الحركة قليلاً
             }
-        });
-    }
-</script>
 
+            // إظهار الخطوط والنصوص
+            setTimeout(() => {
+                document.querySelectorAll('path, .label').forEach(el => el.classList.add('visible'));
+            }, delay);
+
+            // إظهار التذييل في النهاية
+            setTimeout(() => {
+                document.getElementById('footer').style.opacity = '1';
+            }, delay + 500);
+        }
+
+        function drawSVGPaths() {
+            const svg = document.getElementById('svgLayer');
+            const containerRect = document.getElementById('canvas').getBoundingClientRect();
+
+            paths.forEach(p => {
+                let fromEl = document.getElementById(p.from).getBoundingClientRect();
+                let toEl = document.getElementById(p.to).getBoundingClientRect();
+
+                let x1 = fromEl.left + fromEl.width / 2 - containerRect.left;
+                let y1 = fromEl.top + fromEl.height / 2 - containerRect.top;
+                let x2 = toEl.left + toEl.width / 2 - containerRect.left;
+                let y2 = toEl.top + toEl.height / 2 - containerRect.top;
+
+                let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                
+                // حساب مسار الخط (بسيط ومباشر)
+                let d = `M${x1},${y1} L${x2},${y2}`;
+                
+                // تحسين الخطوط الراجعة للتقارير لتكون منحنية قليلاً لتبدو أجمل
+                if(p.type === 'error' && (p.to === 'n11' || p.to === 'n12' || p.to === 'n13' || p.to === 'n20')) {
+                     // محاولة رسم منحنى بسيط
+                }
+
+                path.setAttribute("d", d);
+                path.setAttribute("marker-end", p.type === 'error' ? "url(#arrow-red)" : "url(#arrow)");
+                if (p.type === 'error') path.classList.add('path-no');
+                
+                svg.appendChild(path);
+
+                // إضافة النص
+                if (p.text) {
+                    let lbl = document.createElement('div');
+                    lbl.className = 'label ' + (p.type === 'error' ? 'no' : 'yes');
+                    lbl.innerText = p.text;
+                    
+                    // حساب منتصف الخط لوضع النص
+                    let midX = (x1 + x2) / 2;
+                    let midY = (y1 + y2) / 2;
+                    
+                    // إزاحة النص قليلاً للأعلى حتى لا يغطي الخط
+                    lbl.style.left = (midX - 10) + 'px'; // تعديل المركز
+                    lbl.style.top = (midY - 15) + 'px';
+                    
+                    document.getElementById('canvas').appendChild(lbl);
+                }
+            });
+        }
+    </script>
 </body>
 </html>
