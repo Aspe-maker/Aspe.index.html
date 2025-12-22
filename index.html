@@ -2,134 +2,318 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>مخطط سير عمل صيانة التطبيق</title>
+    <title>مخطط الصيانة الكامل - 23 خانة</title>
     <style>
         :root {
-            --primary-bg: #f4f7f6;
-            --box-blue: #d1e9ff;
-            --box-purple: #e2d1f9;
-            --box-red: #ffd1d1;
-            --text-color: #333;
-            --border-color: #555;
+            --bg-color: #f4f4f4;
+            --box-blue: #d6eaf8;
+            --box-pink: #fadbd8;
+            --box-grey: #e5e7e9;
+            --box-dark: #566573;
+            --box-report: #d2b4de;
+            --border: #2c3e50;
         }
 
         body {
-            background-color: var(--primary-bg);
-            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 50px;
+            justify-content: center;
+            padding-top: 50px;
+            overflow-x: auto;
         }
 
-        #mainBtn {
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            background: #333;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            transition: 0.3s;
-        }
-
-        #mainBtn:hover { background: #555; }
-
-        /* حاوية المخطط */
-        .diagram-wrapper {
-            display: none;
+        #canvas {
             position: relative;
-            width: 1000px;
-            height: 800px;
-            margin-top: 40px;
+            width: 1400px;
+            height: 900px;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: none; /* مخفي للبداية */
         }
 
-        /* العناصر الأساسية */
+        /* الأشكال */
         .node {
             position: absolute;
-            padding: 10px 15px;
-            border: 1px solid var(--border-color);
+            padding: 10px;
+            border: 2px solid var(--border);
             text-align: center;
-            background: white;
-            font-size: 0.9rem;
-            opacity: 0; /* مخفي للتحريك */
-            transform: translateY(10px);
-            transition: all 0.6s ease-out;
-        }
-
-        .node.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* أشكال المعين (اتخاذ القرار) */
-        .decision {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            background: #fff;
-            border: 1px solid var(--border-color);
-            transform: rotate(45deg) scale(0);
+            font-size: 14px;
+            font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2;
+            opacity: 0; /* للأنيميشن */
+            transition: all 0.5s ease-out;
+            background: white;
+            box-shadow: 3px 3px 5px rgba(0,0,0,0.2);
         }
 
-        .decision span {
+        /* المستطيلات (الإجراءات) */
+        .rect {
+            width: 140px;
+            height: 60px;
+            background-color: var(--box-blue);
+        }
+
+        /* المعين (القرارات) */
+        .diamond {
+            width: 100px;
+            height: 100px;
+            background: white;
+            transform: rotate(45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .diamond span {
             transform: rotate(-45deg);
-            font-size: 0.75rem;
-            font-weight: bold;
+            font-size: 12px;
+            width: 100%;
         }
 
-        .decision.show { transform: rotate(45deg) scale(1); }
+        /* شكل التقرير (متموج من الأسفل) */
+        .report {
+            width: 100px;
+            height: 70px;
+            background: var(--box-report);
+            border-radius: 0 0 50% 50% / 0 0 20% 20%;
+        }
 
-        /* تحديد الألوان والمواقع (تقريبي للمحاكاة) */
-        .start { background: var(--box-red); right: 10px; top: 350px; }
-        .tech-path { background: var(--box-blue); }
-        .feature-path { background: var(--box-blue); }
-        .design-path { background: var(--box-blue); }
-        .test-path { background: var(--box-purple); }
+        /* البداية والنهاية */
+        .start-node { background-color: var(--box-pink); }
+        .end-node { background-color: var(--box-dark); color: white; }
+        .beta-node { background-color: #95a5a6; color: white; }
+
+        /* النصوص (نعم/لا) */
+        .label {
+            position: absolute;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 3;
+            background: white;
+            padding: 2px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .label.no { color: red; }
+        .label.yes { color: green; }
+
+        /* الأسهم SVG */
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        path {
+            fill: none;
+            stroke: #333;
+            stroke-width: 2;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .path-no { stroke: red; } /* المسار الأحمر */
+
+        /* زر التشغيل */
+        #startBtn {
+            padding: 20px 40px;
+            font-size: 20px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+            border: none;
+        }
+        .visible { opacity: 1 !important; transform: scale(1) !important; }
 
     </style>
 </head>
 <body>
 
-    <button id="mainBtn" onclick="startAnimation()">مخطط سير العمل لصيانة تطبيق</button>
+<button id="startBtn" onclick="runAnimation()">اضغط لعرض المخطط السينمائي (23 خانة)</button>
 
-    <div id="diagram" class="diagram-wrapper">
-        <div class="node start" style="transition-delay: 0.2s;">طلب الحصول على تحديثات للتطبيق</div>
+<div id="canvas">
+    <svg id="svgLayer">
+        <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+            </marker>
+            <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="red" />
+            </marker>
+        </defs>
+        </svg>
+
+    <div class="node rect start-node" id="n1" style="right: 20px; top: 380px;">طلب الحصول على تحديثات للتطبيق</div>
+
+    <div class="node diamond" id="n2" style="right: 250px; top: 100px;"><span>مشكلة تقنية</span></div>
+    <div class="node diamond" id="n3" style="right: 250px; top: 380px;"><span>مشكلات الميزات</span></div>
+    <div class="node diamond" id="n4" style="right: 250px; top: 650px;"><span>مشكلة التصميم</span></div>
+
+    <div class="node rect" id="n5" style="right: 450px; top: 40px;">أصلح مشكلات الخلل البرمجي</div>
+    <div class="node rect" id="n6" style="right: 450px; top: 110px;">حدث متطلبات الأجهزة</div>
+    <div class="node rect" id="n7" style="right: 450px; top: 180px;">أصلح مشكلات الأمان</div>
+    
+    <div class="node rect" id="n8" style="right: 450px; top: 350px;">عدل الميزات</div>
+    <div class="node rect" id="n9" style="right: 450px; top: 420px;">ميزات جديدة</div>
+
+    <div class="node rect" id="n10" style="right: 450px; top: 650px;">حسن واجهة وتجربة المستخدم</div>
+
+    <div class="node rect" id="n11" style="right: 700px; top: 110px;">اختبر التغييرات</div>
+    <div class="node rect" id="n12" style="right: 700px; top: 380px;">اختبر التغييرات</div>
+    <div class="node rect" id="n13" style="right: 700px; top: 650px;">اختبر التغييرات</div>
+
+    <div class="node diamond" id="n14" style="right: 900px; top: 100px;"><span>هل تم حل المشكلات؟</span></div>
+    <div class="node diamond" id="n15" style="right: 900px; top: 380px;"><span>هل تم حل المشكلة؟</span></div>
+    <div class="node diamond" id="n16" style="right: 900px; top: 650px;"><span>هل تم حل المشكلة؟</span></div>
+
+    <div class="node report" id="n17" style="right: 915px; top: 10px;">تقرير الخطأ</div>
+    <div class="node report" id="n18" style="right: 915px; top: 280px;">تقرير الخطأ</div>
+    <div class="node report" id="n19" style="right: 915px; top: 550px;">تقرير الخطأ</div>
+
+    <div class="node rect beta-node" id="n20" style="right: 1100px; top: 380px; height: 80px;">أختبر نسخة التطبيق التجريبية</div>
+
+    <div class="node diamond" id="n21" style="right: 1250px; top: 380px;"><span>هل تم حل المشكلات؟</span></div>
+
+    <div class="node report" id="n22" style="right: 1265px; top: 250px;">تقرير الخطأ</div>
+
+    <div class="node rect end-node" id="n23" style="right: 1250px; top: 600px;">أطلق نسخة التطبيق الجديدة</div>
+
+</div>
+
+<script>
+    // تعريف المسارات (من -> إلى، النوع)
+    // النوع: standard (أسود) أو error (أحمر)
+    const paths = [
+        // البداية للتفرعات
+        { from: 'n1', to: 'n2', text: '' }, // للتقني
+        { from: 'n1', to: 'n3', text: '' }, // للميزات
+        { from: 'n1', to: 'n4', text: '' }, // للتصميم
         
-        <div class="decision" style="right: 150px; top: 150px; transition-delay: 0.8s;"><span>مشكلة تقنية</span></div>
-        <div class="node tech-path" style="right: 300px; top: 100px; transition-delay: 1.2s;">أصلح مشكلات الخلل البرمجي</div>
-        <div class="node tech-path" style="right: 300px; top: 160px; transition-delay: 1.4s;">حدث متطلبات الأجهزة</div>
-        <div class="node tech-path" style="right: 300px; top: 220px; transition-delay: 1.6s;">أصلح مشكلات الأمان</div>
-        
-        <div class="decision" style="right: 150px; top: 400px; transition-delay: 2s;"><span>مشكلات الميزات</span></div>
-        <div class="node feature-path" style="right: 300px; top: 400px; transition-delay: 2.4s;">عدل الميزات / ميزات جديدة</div>
+        // قرارات تقنية
+        { from: 'n2', to: 'n5', text: 'نعم' },
+        { from: 'n2', to: 'n6', text: '' },
+        { from: 'n2', to: 'n7', text: '' },
+        { from: 'n2', to: 'n3', text: 'لا', type: 'error' }, // سهم أحمر للأسفل
 
-        <div class="decision" style="right: 150px; top: 600px; transition-delay: 2.8s;"><span>مشكلة التصميم</span></div>
-        <div class="node design-path" style="right: 300px; top: 600px; transition-delay: 3.2s;">حسن واجهة المستخدم وتجربة المستخدم</div>
+        // قرارات ميزات
+        { from: 'n3', to: 'n8', text: 'نعم' },
+        { from: 'n3', to: 'n9', text: '' },
+        { from: 'n3', to: 'n4', text: 'لا', type: 'error' },
 
-        <div class="node test-path" style="right: 500px; top: 350px; transition-delay: 4s;">اختبر التغييرات</div>
-        <div class="decision" style="right: 650px; top: 350px; transition-delay: 4.5s;"><span>هل تم حل المشكلة؟</span></div>
-        <div class="node" style="right: 800px; top: 350px; transition-delay: 5s;">أطلق نسخة التطبيق الجديدة</div>
-    </div>
+        // قرارات تصميم
+        { from: 'n4', to: 'n10', text: 'نعم' },
+        { from: 'n4', to: 'n23', text: 'لا', type: 'error' }, // افتراضياً للنهاية أو توقف حسب الصورة
 
-    <script>
-        function startAnimation() {
-            document.getElementById('mainBtn').style.display = 'none';
-            const diagram = document.getElementById('diagram');
-            diagram.style.display = 'block';
-            
-            // تفعيل التحريك لكل عنصر تدريجياً
-            const elements = diagram.querySelectorAll('.node, .decision');
-            elements.forEach(el => {
-                setTimeout(() => {
-                    el.classList.add('show');
-                }, 100); 
-            });
+        // عمليات -> اختبار
+        { from: 'n5', to: 'n11', text: '' },
+        { from: 'n6', to: 'n11', text: '' },
+        { from: 'n7', to: 'n11', text: '' },
+        { from: 'n8', to: 'n12', text: '' },
+        { from: 'n9', to: 'n12', text: '' },
+        { from: 'n10', to: 'n13', text: '' },
+
+        // اختبار -> هل تم الحل
+        { from: 'n11', to: 'n14', text: '' },
+        { from: 'n12', to: 'n15', text: '' },
+        { from: 'n13', to: 'n16', text: '' },
+
+        // هل تم الحل -> نعم (للنسخة التجريبية)
+        { from: 'n14', to: 'n20', text: 'نعم' },
+        { from: 'n15', to: 'n20', text: 'نعم' },
+        { from: 'n16', to: 'n20', text: 'نعم' },
+
+        // هل تم الحل -> لا (تقرير) - أحمر
+        { from: 'n14', to: 'n17', text: 'لا', type: 'error' },
+        { from: 'n15', to: 'n18', text: 'لا', type: 'error' },
+        { from: 'n16', to: 'n19', text: 'لا', type: 'error' },
+
+        // العودة من التقرير
+        { from: 'n17', to: 'n11', text: '' }, // سهم راجع
+        { from: 'n18', to: 'n12', text: '' },
+        { from: 'n19', to: 'n13', text: '' },
+
+        // النسخة التجريبية
+        { from: 'n20', to: 'n21', text: '' },
+
+        // القرار النهائي
+        { from: 'n21', to: 'n23', text: 'نعم' },
+        { from: 'n21', to: 'n22', text: 'لا', type: 'error' },
+        { from: 'n22', to: 'n20', text: '' } // عودة
+    ];
+
+    function runAnimation() {
+        document.getElementById('startBtn').style.display = 'none';
+        document.getElementById('canvas').style.display = 'block';
+
+        // رسم الخطوط أولاً
+        drawSVGPaths();
+
+        // تشغيل الأنيميشن
+        let delay = 0;
+        // ترتيب ظهور العناصر (Nodes)
+        for (let i = 1; i <= 23; i++) {
+            setTimeout(() => {
+                let el = document.getElementById('n' + i);
+                if(el) el.classList.add('visible');
+            }, delay);
+            delay += 200; // سرعة الظهور
         }
-    </script>
+        
+        // إظهار الخطوط والنصوص
+        setTimeout(() => {
+            document.querySelectorAll('path, .label').forEach(el => el.classList.add('visible'));
+        }, delay);
+    }
+
+    function drawSVGPaths() {
+        const svg = document.getElementById('svgLayer');
+        const containerRect = document.getElementById('canvas').getBoundingClientRect();
+
+        paths.forEach(p => {
+            let fromEl = document.getElementById(p.from).getBoundingClientRect();
+            let toEl = document.getElementById(p.to).getBoundingClientRect();
+
+            // حساب المراكز بالنسبة للـ canvas
+            let x1 = fromEl.left + fromEl.width / 2 - containerRect.left;
+            let y1 = fromEl.top + fromEl.height / 2 - containerRect.top;
+            let x2 = toEl.left + toEl.width / 2 - containerRect.left;
+            let y2 = toEl.top + toEl.height / 2 - containerRect.top;
+
+            // إنشاء المسار
+            let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            
+            // رسم خط بسيط (يمكن تحسينه ليكون متكسر L-shape)
+            // هنا نستخدم منحنى بسيط لضمان الاتصال
+            let d = `M${x1},${y1} L${x2},${y2}`; 
+            
+            // تعديل بسيط للأسهم الراجعة (التقارير) لتكون منحنية
+            if (p.to === 'n11' && p.from === 'n17') d = `M${x1},${y1} Q${x1+50},${y1+50} ${x2},${y2}`;
+            
+            path.setAttribute("d", d);
+            path.setAttribute("marker-end", p.type === 'error' ? "url(#arrow-red)" : "url(#arrow)");
+            if (p.type === 'error') path.classList.add('path-no');
+            
+            svg.appendChild(path);
+
+            // إضافة النص (نعم/لا)
+            if (p.text) {
+                let lbl = document.createElement('div');
+                lbl.className = 'label ' + (p.type === 'error' ? 'no' : 'yes');
+                lbl.innerText = p.text;
+                // وضع النص في منتصف الخط
+                lbl.style.left = ((x1 + x2) / 2) + 'px';
+                lbl.style.top = ((y1 + y2) / 2) + 'px';
+                document.getElementById('canvas').appendChild(lbl);
+            }
+        });
+    }
+</script>
+
 </body>
 </html>
