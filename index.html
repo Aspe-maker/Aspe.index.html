@@ -1,899 +1,183 @@
 <!DOCTYPE html>
+
 <html lang="ar" dir="rtl">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>بطاقات المذاكرة</title>
-  <style>
-    :root{
-      --bg1:#0f172a;
-      --bg2:#111827;
-      --card:#0b1220cc;
-      --glass:#ffffff12;
-      --line:#ffffff20;
-      --text:#e5eefc;
-      --muted:#a9b6cc;
-      --accent:#7c3aed;
-      --accent2:#22c55e;
-      --danger:#ef4444;
-      --shadow: 0 20px 60px rgba(0,0,0,.35);
-      --radius: 24px;
-    }
 
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial;
-      min-height:100vh;
-      color:var(--text);
-      background:
-        radial-gradient(circle at top left, #4f46e522 0, transparent 30%),
-        radial-gradient(circle at top right, #22c55e18 0, transparent 28%),
-        radial-gradient(circle at bottom left, #06b6d422 0, transparent 28%),
-        linear-gradient(135deg, var(--bg1), var(--bg2));
-      overflow-x:hidden;
-    }
+<meta charset="UTF-8">
 
-    .bg-blur{
-      position:fixed;
-      inset:auto;
-      width:360px;
-      height:360px;
-      border-radius:50%;
-      filter: blur(60px);
-      opacity:.22;
-      pointer-events:none;
-      animation: float 10s ease-in-out infinite;
-    }
-    .b1{ background:#7c3aed; top:-120px; right:-100px; }
-    .b2{ background:#22c55e; bottom:-120px; left:-120px; animation-delay: -4s; }
-    .b3{ background:#06b6d4; top:40%; left:40%; animation-delay:-7s; opacity:.12; }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    @keyframes float{
-      0%,100%{ transform: translateY(0) translateX(0) scale(1); }
-      50%{ transform: translateY(18px) translateX(-10px) scale(1.08); }
-    }
+<title>حاسبة التوافق ❤️</title>
 
-    .wrap{
-      width:min(1200px, 92vw);
-      margin:0 auto;
-      padding:28px 0 42px;
-      position:relative;
-      z-index:1;
-    }
+<style>
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      margin-bottom:24px;
-    }
+*{
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:14px;
-    }
+    box-sizing:border-box;
 
-    .logo{
-      width:52px;
-      height:52px;
-      border-radius:18px;
-      background: linear-gradient(135deg, #7c3aed, #06b6d4);
-      display:grid;
-      place-items:center;
-      box-shadow: var(--shadow);
-      font-size:28px;
-    }
+    font-family:Arial;
 
-    h1{
-      margin:0;
-      font-size: clamp(22px, 3vw, 34px);
-      letter-spacing:.2px;
-    }
+}
 
-    .sub{
-      margin:4px 0 0;
-      color:var(--muted);
-      font-size:14px;
-    }
+body{
 
-    .glass{
-      background: linear-gradient(180deg, #ffffff12, #ffffff08);
-      border:1px solid var(--line);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-      border-radius: var(--radius);
-    }
+    margin:0;
 
-    .screen{
-      display:none;
-      animation: pop .28s ease;
-    }
-    .screen.active{ display:block; }
+    background:linear-gradient(135deg,#ff4d6d,#ff8fab);
 
-    @keyframes pop{
-      from{ opacity:0; transform: translateY(10px) scale(.99); }
-      to{ opacity:1; transform: translateY(0) scale(1); }
-    }
+    min-height:100vh;
 
-    .hero{
-      padding:28px;
-    }
+    display:flex;
 
-    .hero-grid{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:20px;
-    }
+    justify-content:center;
 
-    .panel{
-      padding:24px;
-      border-radius:24px;
-      background: linear-gradient(180deg, #ffffff10, #ffffff07);
-      border:1px solid var(--line);
-    }
+    align-items:center;
 
-    .welcome{
-      font-size: clamp(24px, 4vw, 44px);
-      line-height:1.15;
-      margin:0 0 12px;
-    }
+    padding:20px;
 
-    .desc{
-      margin:0 0 22px;
-      color:var(--muted);
-      line-height:1.8;
-      font-size:16px;
-    }
+}
 
-    .choice-grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:14px;
-    }
+.box{
 
-    .choice{
-      padding:18px;
-      border-radius:20px;
-      background: linear-gradient(180deg, #ffffff10, #ffffff06);
-      border:1px solid var(--line);
-      cursor:pointer;
-      transition: .25s ease;
-      min-height:140px;
-      position:relative;
-      overflow:hidden;
-    }
+    background:white;
 
-    .choice:hover{
-      transform: translateY(-4px);
-      border-color:#ffffff3a;
-      box-shadow: 0 16px 32px rgba(0,0,0,.22);
-    }
+    width:100%;
 
-    .choice .icon{
-      font-size:30px;
-      margin-bottom:12px;
-      display:inline-block;
-    }
+    max-width:350px;
 
-    .choice h3{
-      margin:0 0 8px;
-      font-size:18px;
-    }
+    padding:25px;
 
-    .choice p{
-      margin:0;
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.6;
-    }
+    border-radius:20px;
 
-    .choice.primary{
-      background: linear-gradient(135deg, #7c3aed22, #06b6d422);
-      border-color:#a78bfa55;
-    }
+    text-align:center;
 
-    .form-row{
-      display:flex;
-      gap:10px;
-      margin-top:14px;
-      flex-wrap:wrap;
-    }
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
 
-    input, textarea, button, select{
-      font: inherit;
-    }
+}
 
-    .input{
-      width:100%;
-      border:none;
-      outline:none;
-      color:var(--text);
-      background:#0b1220b8;
-      border:1px solid #ffffff1f;
-      padding:14px 16px;
-      border-radius:16px;
-      transition:.2s ease;
-    }
-    .input:focus{
-      border-color:#8b5cf6aa;
-      box-shadow: 0 0 0 4px rgba(139,92,246,.15);
-    }
+h2{
 
-    .btn{
-      border:none;
-      color:white;
-      cursor:pointer;
-      padding:13px 16px;
-      border-radius:16px;
-      font-weight:700;
-      transition:.22s ease;
-      background: linear-gradient(135deg, #7c3aed, #06b6d4);
-      box-shadow: 0 12px 28px rgba(124,58,237,.25);
-    }
-    .btn:hover{ transform: translateY(-2px); }
-    .btn.secondary{
-      background: linear-gradient(135deg, #1f2937, #111827);
-      border:1px solid #ffffff1f;
-      box-shadow:none;
-    }
-    .btn.success{
-      background: linear-gradient(135deg, #16a34a, #22c55e);
-    }
-    .btn.danger{
-      background: linear-gradient(135deg, #b91c1c, #ef4444);
-    }
+    margin-bottom:20px;
 
-    .auth-box{
-      margin-top:16px;
-      display:none;
-    }
-    .auth-box.active{ display:block; }
+}
 
-    .small{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
-      margin-top:10px;
-    }
+input{
 
-    .app{
-      display:grid;
-      grid-template-columns: 380px 1fr;
-      gap:20px;
-    }
+    width:100%;
 
-    .section-title{
-      margin:0 0 12px;
-      font-size:18px;
-    }
+    padding:14px;
 
-    .stack{
-      display:grid;
-      gap:14px;
-    }
+    margin-bottom:15px;
 
-    .mini{
-      font-size:13px;
-      color:var(--muted);
-      margin:0 0 10px;
-    }
+    border-radius:12px;
 
-    .divider{
-      height:1px;
-      background:linear-gradient(90deg, transparent, #ffffff26, transparent);
-      margin:18px 0;
-    }
+    border:2px solid #ddd;
 
-    .stats{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:10px;
-      margin-top:16px;
-    }
+    font-size:18px;
 
-    .stat{
-      padding:14px;
-      border-radius:18px;
-      background:#ffffff09;
-      border:1px solid var(--line);
-      text-align:center;
-    }
-    .stat b{
-      display:block;
-      font-size:18px;
-      margin-bottom:4px;
-    }
-    .stat span{
-      color:var(--muted);
-      font-size:12px;
-    }
+}
 
-    .card-area{
-      padding:24px;
-      display:grid;
-      place-items:center;
-      min-height:620px;
-      position:relative;
-      overflow:hidden;
-    }
+input:focus{
 
-    .flashcard{
-      width:min(100%, 560px);
-      height:360px;
-      perspective: 1200px;
-      margin-top:8px;
-    }
+    outline:none;
 
-    .flashcard-inner{
-      position:relative;
-      width:100%;
-      height:100%;
-      transform-style:preserve-3d;
-      transition: transform .7s cubic-bezier(.2,.8,.2,1);
-      cursor:pointer;
-    }
+    border-color:#ff4d6d;
 
-    .flashcard.flipped .flashcard-inner{
-      transform: rotateY(180deg);
-    }
+}
 
-    .face{
-      position:absolute;
-      inset:0;
-      backface-visibility:hidden;
-      border-radius: 30px;
-      border:1px solid #ffffff24;
-      background:
-        radial-gradient(circle at top right, #ffffff14, transparent 34%),
-        linear-gradient(180deg, #121a2fdd, #0a1020ee);
-      box-shadow: 0 26px 60px rgba(0,0,0,.35);
-      padding:28px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
+button{
 
-    .face.back{
-      transform: rotateY(180deg);
-      background:
-        radial-gradient(circle at top left, #ffffff12, transparent 34%),
-        linear-gradient(180deg, #0d1f1add, #08111bee);
-    }
+    width:100%;
 
-    .card-label{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      color:#c7d2fe;
-      font-size:13px;
-      background:#ffffff10;
-      width:max-content;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid #ffffff1f;
-    }
+    padding:14px;
 
-    .card-text{
-      font-size: clamp(24px, 3vw, 38px);
-      line-height:1.5;
-      margin:18px 0;
-      text-align:center;
-      font-weight:700;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
+    border:none;
 
-    .hint{
-      text-align:center;
-      color:var(--muted);
-      font-size:13px;
-    }
+    border-radius:12px;
 
-    .card-controls{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      justify-content:center;
-      margin-top:18px;
-    }
+    background:#ff4d6d;
 
-    .deck-list{
-      display:grid;
-      gap:10px;
-      max-height:260px;
-      overflow:auto;
-      padding-right:4px;
-    }
+    color:white;
 
-    .deck-item{
-      padding:12px 14px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:#ffffff09;
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:center;
-    }
+    font-size:18px;
 
-    .deck-item strong{
-      font-size:14px;
-    }
+    cursor:pointer;
 
-    .deck-item span{
-      color:var(--muted);
-      font-size:12px;
-    }
+}
 
-    .card-preview{
-      display:grid;
-      gap:10px;
-      margin-top:8px;
-    }
+#result{
 
-    .preview-item{
-      padding:12px 14px;
-      border-radius:16px;
-      background:#ffffff08;
-      border:1px solid #ffffff17;
-      color:var(--text);
-    }
+    margin-top:20px;
 
-    .ok{
-      color:#86efac;
-    }
+    font-size:26px;
 
-    .warn{
-      color:#fca5a5;
-    }
+    font-weight:bold;
 
-    .top-right{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
+    color:#ff1744;
 
-    .chip{
-      padding:10px 14px;
-      border-radius:999px;
-      border:1px solid #ffffff1d;
-      background:#ffffff0b;
-      color:var(--text);
-      font-size:13px;
-    }
+}
 
-    @media (max-width: 900px){
-      .hero-grid, .app{
-        grid-template-columns:1fr;
-      }
-      .flashcard{
-        height:320px;
-      }
-      .card-area{
-        min-height:auto;
-      }
-    }
+</style>
 
-    @media (max-width: 640px){
-      .choice-grid{
-        grid-template-columns:1fr;
-      }
-      .topbar{
-        flex-direction:column;
-        align-items:flex-start;
-      }
-      .top-right{
-        justify-content:flex-start;
-      }
-      .stats{
-        grid-template-columns:1fr;
-      }
-    }
-  </style>
 </head>
+
 <body>
-  <div class="bg-blur b1"></div>
-  <div class="bg-blur b2"></div>
-  <div class="bg-blur b3"></div>
 
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo">📚</div>
-        <div>
-          <h1>بطاقات المذاكرة</h1>
-          <p class="sub">بطاقات سؤال وجواب بتخزينة محفوظة باسمك</p>
-        </div>
-      </div>
+<div class="box">
 
-      <div class="top-right">
-        <div class="chip" id="currentUserChip">غير مسجل</div>
-        <button class="btn secondary" onclick="logout()">خروج</button>
-      </div>
-    </div>
+<h2>❤️ حاسبة التوافق ❤️</h2>
 
-    <!-- شاشة البداية -->
-    <section id="homeScreen" class="screen active glass hero">
-      <div class="hero-grid">
-        <div class="panel">
-          <h2 class="welcome">ابدأ بطاقاتك بطريقة مرتبة وتلقاها محفوظة كل مرة</h2>
-          <p class="desc">
-            أنشئ تخزينة جديدة باسمك أو ادخل على تخزينة موجودة، وبعدها سوّ بطاقاتك بنفسك.
-            اضغط البطاقة عشان تنقلب وتظهر الإجابة.
-          </p>
+<input type="text" id="name1" placeholder="اسمك">
 
-          <div class="choice-grid">
-            <div class="choice primary" onclick="showAuth('create')">
-              <div class="icon">✨</div>
-              <h3>إنشاء تخزينة جديدة</h3>
-              <p>تسوي حساب/تخزينة جديدة باسمك وتبدأ تحفظ بطاقاتك من الصفر.</p>
-            </div>
+<input type="text" id="name2" placeholder="اسم الحبيب">
 
-            <div class="choice" onclick="showAuth('login')">
-              <div class="icon">🔐</div>
-              <h3>الدخول لتخزينة موجودة</h3>
-              <p>إذا عندك تخزينة من قبل، اكتب اسمك وارجع لبطاقاتك.</p>
-            </div>
-          </div>
+<button onclick="calcLove()">احسب التوافق</button>
 
-          <div id="authBox" class="auth-box">
-            <div class="divider"></div>
-            <h3 id="authTitle" class="section-title">—</h3>
-            <input id="nameInput" class="input" type="text" placeholder="اكتب اسمك هنا" />
-            <div class="form-row">
-              <button class="btn" id="authBtn" onclick="handleAuth()">متابعة</button>
-              <button class="btn secondary" onclick="hideAuth()">رجوع</button>
-            </div>
-            <p id="authMsg" class="small"></p>
-          </div>
-        </div>
+<div id="result"></div>
 
-        <div class="panel">
-          <h3 class="section-title">وش تقدر تسوي؟</h3>
-          <div class="card-preview">
-            <div class="preview-item">• تضيف سؤال وجواب</div>
-            <div class="preview-item">• تقلب البطاقة بلمسة</div>
-            <div class="preview-item">• تحفظ كل شيء باسمك</div>
-            <div class="preview-item">• تمشي بين البطاقات السابقة واللاحقة</div>
-          </div>
+</div>
 
-          <div class="stats">
-            <div class="stat"><b>3D</b><span>قلب البطاقة</span></div>
-            <div class="stat"><b>💾</b><span>حفظ محلي</span></div>
-            <div class="stat"><b>⚡</b><span>خفيف وسريع</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
+<script>
 
-    <!-- شاشة التطبيق -->
-    <section id="appScreen" class="screen">
-      <div class="app">
-        <div class="panel">
-          <h3 class="section-title">إدارة البطاقات</h3>
-          <p class="mini">اسم التخزينة: <strong id="deckOwner">—</strong></p>
+let firstTime = true;
 
-          <input id="questionInput" class="input" type="text" placeholder="اكتب السؤال" />
-          <div style="height:10px"></div>
-          <textarea id="answerInput" class="input" rows="4" placeholder="اكتب الإجابة"></textarea>
+function calcLove(){
 
-          <div class="form-row">
-            <button class="btn success" onclick="addCard()">إضافة البطاقة</button>
-            <button class="btn secondary" onclick="clearFields()">مسح الحقول</button>
-            <button class="btn danger" onclick="deleteCurrentCard()">حذف البطاقة الحالية</button>
-          </div>
+    let name1 = document.getElementById("name1").value;
 
-          <div class="divider"></div>
+    let name2 = document.getElementById("name2").value;
 
-          <h3 class="section-title">البطاقات المحفوظة</h3>
-          <div id="deckList" class="deck-list"></div>
-        </div>
+    if(name1 === "" || name2 === ""){
 
-        <div class="panel card-area">
-          <div id="flashcard" class="flashcard" onclick="flipCard()">
-            <div class="flashcard-inner">
-              <div class="face front">
-                <div class="card-label">📝 السؤال</div>
-                <div id="frontText" class="card-text">أضف بطاقة أول شيء</div>
-                <div class="hint">اضغط البطاقة عشان تشوف الإجابة</div>
-              </div>
-              <div class="face back">
-                <div class="card-label">✅ الإجابة</div>
-                <div id="backText" class="card-text">—</div>
-                <div class="hint">اضغط مرة ثانية للرجوع</div>
-              </div>
-            </div>
-          </div>
+        document.getElementById("result").innerHTML = "اكتب الاسمين 😑";
 
-          <div class="card-controls">
-            <button class="btn secondary" onclick="prevCard()">السابق</button>
-            <button class="btn" onclick="flipCard()">قلب البطاقة</button>
-            <button class="btn secondary" onclick="nextCard()">التالي</button>
-          </div>
-
-          <div class="stats" style="width:min(100%,560px); margin-top:20px;">
-            <div class="stat"><b id="totalCount">0</b><span>عدد البطاقات</span></div>
-            <div class="stat"><b id="currentIndex">0</b><span>البطاقة الحالية</span></div>
-            <div class="stat"><b id="storageStatus">محفوظ</b><span>الحالة</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    let mode = "";
-    let currentUser = localStorage.getItem("flash_user") || "";
-    let cards = [];
-    let currentCardIndex = 0;
-
-    const homeScreen = document.getElementById("homeScreen");
-    const appScreen = document.getElementById("appScreen");
-    const authBox = document.getElementById("authBox");
-    const authTitle = document.getElementById("authTitle");
-    const authBtn = document.getElementById("authBtn");
-    const authMsg = document.getElementById("authMsg");
-    const nameInput = document.getElementById("nameInput");
-
-    const currentUserChip = document.getElementById("currentUserChip");
-    const deckOwner = document.getElementById("deckOwner");
-    const frontText = document.getElementById("frontText");
-    const backText = document.getElementById("backText");
-    const flashcard = document.getElementById("flashcard");
-    const deckList = document.getElementById("deckList");
-    const totalCount = document.getElementById("totalCount");
-    const currentIndex = document.getElementById("currentIndex");
-    const storageStatus = document.getElementById("storageStatus");
-
-    function deckKey(user){
-      return "flashcards_" + user.trim().toLowerCase();
-    }
-
-    function showHome(){
-      homeScreen.classList.add("active");
-      appScreen.classList.remove("active");
-      updateChip();
-    }
-
-    function showApp(){
-      homeScreen.classList.remove("active");
-      appScreen.classList.add("active");
-      updateChip();
-    }
-
-    function updateChip(){
-      currentUserChip.textContent = currentUser ? ("مرحبًا، " + currentUser) : "غير مسجل";
-      deckOwner.textContent = currentUser || "—";
-    }
-
-    function showAuth(type){
-      mode = type;
-      authBox.classList.add("active");
-      authMsg.textContent = "";
-      nameInput.value = "";
-      nameInput.focus();
-
-      if(type === "create"){
-        authTitle.textContent = "إنشاء تخزينة جديدة";
-        authBtn.textContent = "إنشاء والدخول";
-        authMsg.innerHTML = 'اكتب اسمًا جديدًا. إذا الاسم موجود من قبل، نبي اسم ثاني.';
-      } else {
-        authTitle.textContent = "الدخول لتخزينة موجودة";
-        authBtn.textContent = "دخول";
-        authMsg.innerHTML = 'اكتب اسم التخزينة نفسها بالضبط عشان نفتحها.';
-      }
-    }
-
-    function hideAuth(){
-      authBox.classList.remove("active");
-      mode = "";
-    }
-
-    function handleAuth(){
-      const name = nameInput.value.trim();
-      if(!name){
-        authMsg.innerHTML = '<span class="warn">اكتب اسم أول.</span>';
         return;
-      }
 
-      const key = deckKey(name);
-      const exists = localStorage.getItem(key);
-
-      if(mode === "create"){
-        if(exists){
-          authMsg.innerHTML = '<span class="warn">هذه التخزينة موجودة. اختر اسم ثاني.</span>';
-          return;
-        }
-        const data = { owner: name, cards: [] };
-        localStorage.setItem(key, JSON.stringify(data));
-        currentUser = name;
-        localStorage.setItem("flash_user", currentUser);
-        loadDeck();
-        showApp();
-        return;
-      }
-
-      if(mode === "login"){
-        if(!exists){
-          authMsg.innerHTML = '<span class="warn">ما لقيت تخزينة بهذا الاسم.</span>';
-          return;
-        }
-        currentUser = name;
-        localStorage.setItem("flash_user", currentUser);
-        loadDeck();
-        showApp();
-      }
     }
 
-    function loadDeck(){
-      if(!currentUser) return;
-      const data = JSON.parse(localStorage.getItem(deckKey(currentUser)) || '{"owner":"","cards":[]}');
-      cards = data.cards || [];
-      currentCardIndex = 0;
-      renderDeck();
-      renderCard();
-      updateChip();
+    let percent;
+
+    if(firstTime){
+
+        percent = "1000000%";
+
+        firstTime = false;
+
+    }else{
+
+        percent = Math.floor(Math.random()*101) + "%";
+
     }
 
-    function saveDeck(){
-      if(!currentUser) return;
-      const data = { owner: currentUser, cards };
-      localStorage.setItem(deckKey(currentUser), JSON.stringify(data));
-      storageStatus.textContent = "محفوظ";
-      setTimeout(() => storageStatus.textContent = "محفوظ", 300);
-    }
+    document.getElementById("result").innerHTML =
 
-    function addCard(){
-      const q = document.getElementById("questionInput").value.trim();
-      const a = document.getElementById("answerInput").value.trim();
+    `💖 نسبة التوافق بين ${name1} و ${name2} هي ${percent}`;
 
-      if(!q || !a){
-        alert("اكتب السؤال والإجابة أول.");
-        return;
-      }
+}
 
-      cards.push({ q, a });
-      currentCardIndex = cards.length - 1;
-      saveDeck();
-      renderDeck();
-      renderCard();
-      clearFields();
-    }
+</script>
 
-    function clearFields(){
-      document.getElementById("questionInput").value = "";
-      document.getElementById("answerInput").value = "";
-      document.getElementById("questionInput").focus();
-    }
-
-    function renderCard(){
-      if(cards.length === 0){
-        frontText.textContent = "أضف بطاقة أول شيء";
-        backText.textContent = "—";
-        totalCount.textContent = "0";
-        currentIndex.textContent = "0";
-        flashcard.classList.remove("flipped");
-        return;
-      }
-
-      const card = cards[currentCardIndex];
-      frontText.textContent = card.q;
-      backText.textContent = card.a;
-      totalCount.textContent = cards.length;
-      currentIndex.textContent = currentCardIndex + 1;
-      flashcard.classList.remove("flipped");
-    }
-
-    function renderDeck(){
-      deckList.innerHTML = "";
-
-      if(cards.length === 0){
-        deckList.innerHTML = '<div class="preview-item">ما فيه بطاقات إلى الآن. سوّ أول بطاقة وابدأ.</div>';
-        return;
-      }
-
-      cards.forEach((card, index) => {
-        const item = document.createElement("div");
-        item.className = "deck-item";
-        item.innerHTML = `
-          <div>
-            <strong>${index + 1}. ${escapeHtml(card.q)}</strong><br>
-            <span>${escapeHtml(card.a)}</span>
-          </div>
-          <button class="btn secondary" style="padding:9px 12px;border-radius:12px;" onclick="goToCard(${index})">فتح</button>
-        `;
-        deckList.appendChild(item);
-      });
-    }
-
-    function goToCard(index){
-      currentCardIndex = index;
-      renderCard();
-      flashcard.classList.remove("flipped");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    function nextCard(){
-      if(cards.length === 0) return;
-      currentCardIndex = (currentCardIndex + 1) % cards.length;
-      renderCard();
-    }
-
-    function prevCard(){
-      if(cards.length === 0) return;
-      currentCardIndex = (currentCardIndex - 1 + cards.length) % cards.length;
-      renderCard();
-    }
-
-    function flipCard(){
-      if(cards.length === 0) return;
-      flashcard.classList.toggle("flipped");
-    }
-
-    function deleteCurrentCard(){
-      if(cards.length === 0) return;
-      const ok = confirm("تبغى تحذف البطاقة الحالية؟");
-      if(!ok) return;
-
-      cards.splice(currentCardIndex, 1);
-      if(currentCardIndex >= cards.length) currentCardIndex = Math.max(0, cards.length - 1);
-      saveDeck();
-      renderDeck();
-      renderCard();
-    }
-
-    function logout(){
-      currentUser = "";
-      localStorage.removeItem("flash_user");
-      cards = [];
-      currentCardIndex = 0;
-      updateChip();
-      showHome();
-    }
-
-    function escapeHtml(str){
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    nameInput.addEventListener("keydown", (e) => {
-      if(e.key === "Enter") handleAuth();
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if(!appScreen.classList.contains("active")) return;
-      if(e.key === "ArrowRight") prevCard();
-      if(e.key === "ArrowLeft") nextCard();
-      if(e.key === " ") {
-        e.preventDefault();
-        flipCard();
-      }
-    });
-
-    // تشغيل تلقائي إذا فيه مستخدم محفوظ
-    updateChip();
-    if(currentUser){
-      const saved = localStorage.getItem(deckKey(currentUser));
-      if(saved){
-        loadDeck();
-        showApp();
-      } else {
-        localStorage.removeItem("flash_user");
-        currentUser = "";
-        showHome();
-      }
-    } else {
-      showHome();
-    }
-  </script>
 </body>
+
 </html>
