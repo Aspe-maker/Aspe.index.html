@@ -2,63 +2,52 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Satellite Simulator</title>
 
 <style>
-
 body{
-margin:0;
-overflow:hidden;
-background:black;
-touch-action:none;
+    margin:0;
+    overflow:hidden;
+    background:black;
 }
 
 #info{
-position:absolute;
-top:10px;
-left:10px;
-color:white;
-font-family:Arial;
-background:rgba(0,0,0,.5);
-padding:10px;
-border-radius:10px;
-z-index:100;
+    position:absolute;
+    top:10px;
+    left:10px;
+    color:white;
+    font-family:Arial;
+    background:rgba(0,0,0,.5);
+    padding:10px;
+    border-radius:10px;
 }
-
-canvas{
-display:block;
-}
-
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
 </head>
 
 <body>
 
 <div id="info">
-🛰️ حرك إصبعك للدوران حول الأرض
+🛰️ حرك القمر الصناعي بأسهم الاتجاهات
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 
 <script>
 
 const scene = new THREE.Scene();
 
-scene.background =
-new THREE.Color(0x000010);
+scene.background = new THREE.Color(0x000011);
 
-const camera =
-new THREE.PerspectiveCamera(
+const camera = new THREE.PerspectiveCamera(
 75,
 window.innerWidth/window.innerHeight,
 0.1,
-1000
+2000
 );
 
-const renderer =
-new THREE.WebGLRenderer({
+const renderer = new THREE.WebGLRenderer({
 antialias:true
 });
 
@@ -71,14 +60,14 @@ document.body.appendChild(
 renderer.domElement
 );
 
-
-
-
+////////////////////////////////////////////////////
+// اضاءة
+////////////////////////////////////////////////////
 
 const ambient =
 new THREE.AmbientLight(
 0xffffff,
-1.2
+1.5
 );
 
 scene.add(ambient);
@@ -90,29 +79,29 @@ new THREE.DirectionalLight(
 );
 
 sun.position.set(
-20,
-20,
-20
+100,
+100,
+100
 );
 
 scene.add(sun);
 
+////////////////////////////////////////////////////
+// الأرض
+////////////////////////////////////////////////////
 
-
-
+const EARTH_RADIUS = 20;
 
 const earthGeometry =
 new THREE.SphereGeometry(
-10,
+EARTH_RADIUS,
 64,
 64
 );
 
 const earthMaterial =
-new THREE.MeshStandardMaterial({
-
-color:0x3366ff
-
+new THREE.MeshPhongMaterial({
+color:0x2c8c3c
 });
 
 const earth =
@@ -123,13 +112,13 @@ earthMaterial
 
 scene.add(earth);
 
+////////////////////////////////////////////////////
+// مباني فوق سطح الأرض
+////////////////////////////////////////////////////
 
-
-
-
-function addBuilding(
-lat,
-lon,
+function createBuilding(
+latitude,
+longitude,
 height
 ){
 
@@ -137,89 +126,81 @@ const building =
 new THREE.Mesh(
 
 new THREE.BoxGeometry(
-0.5,
+1,
 height,
-0.5
+1
 ),
 
-new THREE.MeshStandardMaterial({
-color:0xaaaaaa
+new THREE.MeshPhongMaterial({
+color:0x999999
 })
 
 );
 
-const phi =
-(90-lat)*
-Math.PI/180;
+const lat =
+THREE.MathUtils.degToRad(
+90-latitude
+);
 
-const theta =
-(lon+180)*
-Math.PI/180;
-
-const radius =
-10;
+const lon =
+THREE.MathUtils.degToRad(
+longitude
+);
 
 const x =
--radius*
-Math.sin(phi)*
-Math.cos(theta);
+(EARTH_RADIUS + height/2)
+*
+Math.sin(lat)
+*
+Math.cos(lon);
 
 const y =
-radius*
-Math.cos(phi);
+(EARTH_RADIUS + height/2)
+*
+Math.cos(lat);
 
 const z =
-radius*
-Math.sin(phi)*
-Math.sin(theta);
+(EARTH_RADIUS + height/2)
+*
+Math.sin(lat)
+*
+Math.sin(lon);
 
 building.position.set(
-x,
-y,
-z
+x,y,z
 );
 
-building.lookAt(
-0,
-0,
-0
-);
+building.lookAt(0,0,0);
 
 building.rotateX(
 Math.PI/2
 );
 
-building.translateY(
-height/2
-);
-
-scene.add(
-building
-);
+scene.add(building);
 
 }
 
+////////////////////////////////////////////////////
+// مدينة كاملة
+////////////////////////////////////////////////////
 
+for(let i=0;i<100;i++){
 
-
-
-for(let i=0;i<80;i++){
-
-addBuilding(
+createBuilding(
 
 Math.random()*180-90,
 
-Math.random()*360-180,
+Math.random()*360,
 
-Math.random()*2+0.5
+Math.random()*4+2
 
 );
 
 }
 
-
-
-
+////////////////////////////////////////////////////
+// القمر الصناعي
+////////////////////////////////////////////////////
 
 const satellite =
 new THREE.Mesh(
@@ -230,93 +211,93 @@ new THREE.BoxGeometry(
 2
 ),
 
-new THREE.MeshStandardMaterial({
-
+new THREE.MeshPhongMaterial({
 color:0xffffff
-
 })
 
 );
 
-scene.add(
-satellite
-);
+scene.add(satellite);
 
+let orbitRadius = 35;
 
+let orbitAngle = 0;
 
+let orbitHeight = 5;
 
+////////////////////////////////////////////////////
+// تحكم اللاعب
+////////////////////////////////////////////////////
 
-let orbitRadius = 18;
-
-let angleX = 0;
-
-let angleY = 0;
-
-
-
-
-
-let dragging = false;
-
-let lastX = 0;
-
-let lastY = 0;
+const keys = {};
 
 document.addEventListener(
-"pointerdown",
+"keydown",
 e=>{
 
-dragging=true;
-
-lastX=e.clientX;
-
-lastY=e.clientY;
+keys[e.key]=true;
 
 }
 );
 
 document.addEventListener(
-"pointerup",
-()=>{
+"keyup",
+e=>{
 
-dragging=false;
+keys[e.key]=false;
 
 }
 );
 
-document.addEventListener(
-"pointermove",
-e=>{
+////////////////////////////////////////////////////
+// نجوم
+////////////////////////////////////////////////////
 
-if(!dragging)
-return;
+const starGeometry =
+new THREE.BufferGeometry();
 
-angleY +=
-(e.clientX-lastX)
-*0.01;
+const starVertices = [];
 
-angleX +=
-(e.clientY-lastY)
-*0.01;
+for(let i=0;i<5000;i++){
 
-angleX =
-Math.max(
--1.4,
-Math.min(
-1.4,
-angleX
+starVertices.push(
+
+(Math.random()-0.5)*2000,
+(Math.random()-0.5)*2000,
+(Math.random()-0.5)*2000
+
+);
+
+}
+
+starGeometry.setAttribute(
+
+'position',
+
+new THREE.Float32BufferAttribute(
+starVertices,
+3
 )
+
 );
 
-lastX=e.clientX;
-lastY=e.clientY;
+const stars =
+new THREE.Points(
 
-}
+starGeometry,
+
+new THREE.PointsMaterial({
+size:2,
+color:0xffffff
+})
+
 );
 
+scene.add(stars);
 
-
-
+////////////////////////////////////////////////////
+// تحديث
+////////////////////////////////////////////////////
 
 function animate(){
 
@@ -324,44 +305,53 @@ requestAnimationFrame(
 animate
 );
 
-earth.rotation.y +=
-0.001;
+if(keys["ArrowLeft"])
+orbitAngle -= 0.01;
 
-const x =
-orbitRadius*
-Math.cos(angleX)*
-Math.sin(angleY);
+if(keys["ArrowRight"])
+orbitAngle += 0.01;
 
-const y =
-orbitRadius*
-Math.sin(angleX);
+if(keys["ArrowUp"])
+orbitRadius -= 0.2;
 
-const z =
-orbitRadius*
-Math.cos(angleX)*
-Math.cos(angleY);
+if(keys["ArrowDown"])
+orbitRadius += 0.2;
 
-satellite.position.set(
-x,
-y,
-z
+orbitRadius =
+Math.max(
+25,
+Math.min(
+orbitRadius,
+80
+)
 );
 
-satellite.lookAt(
-0,
-0,
-0
-);
+satellite.position.x =
+Math.cos(orbitAngle)
+*
+orbitRadius;
+
+satellite.position.z =
+Math.sin(orbitAngle)
+*
+orbitRadius;
+
+satellite.position.y =
+orbitHeight;
+
+////////////////////////////////////////////////////
+// الكاميرا مثبتة بالقمر الصناعي
+////////////////////////////////////////////////////
 
 camera.position.copy(
 satellite.position
 );
 
 camera.lookAt(
-0,
-0,
-0
+earth.position
 );
+
+earth.rotation.y += 0.001;
 
 renderer.render(
 scene,
@@ -372,15 +362,11 @@ camera
 
 animate();
 
-
-
-
-
 window.addEventListener(
 "resize",
 ()=>{
 
-camera.aspect=
+camera.aspect =
 window.innerWidth/
 window.innerHeight;
 
