@@ -1,386 +1,387 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Satellite Simulator</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جدول مذاكرة القدرات — ٢٥ يوم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-body{
+  :root{
+    --ink:#16213E;
+    --paper:#FBF9F4;
+    --panel:#FFFFFF;
+    --gold:#B8862F;
+    --gold-soft:#F1E6D0;
+    --sage:#4C7A6B;
+    --sage-soft:#E1EBE7;
+    --line:#E7E2D6;
+    --success:#3E8E5B;
+    --success-soft:#E4F1E8;
+    --muted:#7C8598;
+  }
+  *{box-sizing:border-box;}
+  body{
     margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans Arabic', sans-serif;
+    padding:32px 16px 80px;
+  }
+  .wrap{max-width:760px; margin:0 auto;}
+
+  /* ---- Hero / progress ticket ---- */
+  .ticket{
+    background:var(--ink);
+    color:var(--paper);
+    border-radius:20px;
+    padding:28px 26px 24px;
+    position:relative;
     overflow:hidden;
-    background:black;
-}
-
-#info{
+    box-shadow:0 10px 30px rgba(22,33,62,0.18);
+  }
+  .ticket::before{
+    content:"";
     position:absolute;
-    top:10px;
-    left:10px;
-    color:white;
-    font-family:Arial;
-    background:rgba(0,0,0,.5);
-    padding:10px;
+    inset:0;
+    background:radial-gradient(circle at 85% -10%, rgba(184,134,47,0.35), transparent 55%);
+  }
+  .ticket-top{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    position:relative; z-index:1;
+  }
+  .ticket-eyebrow{
+    font-size:12px; letter-spacing:.08em; color:var(--gold); font-weight:600;
+    text-transform:uppercase;
+  }
+  .ticket h1{
+    font-family:'Tajawal', sans-serif;
+    font-weight:900;
+    font-size:26px;
+    margin:6px 0 2px;
+  }
+  .ticket-sub{ font-size:13px; color:#B9C0D4; }
+  .ring-wrap{ position:relative; width:78px; height:78px; flex-shrink:0;}
+  .ring-wrap svg{ transform:rotate(-90deg); }
+  .ring-bg{ fill:none; stroke:rgba(255,255,255,0.12); stroke-width:8; }
+  .ring-fg{ fill:none; stroke:var(--gold); stroke-width:8; stroke-linecap:round; transition:stroke-dashoffset .5s ease; }
+  .ring-label{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    flex-direction:column; line-height:1;
+  }
+  .ring-label b{ font-size:18px; font-family:'Tajawal',sans-serif; }
+  .ring-label span{ font-size:9px; color:#B9C0D4; margin-top:2px;}
+
+  .ticket-stats{
+    display:flex; gap:10px; margin-top:20px; position:relative; z-index:1;
+    flex-wrap:wrap;
+  }
+  .stat{
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:12px;
+    padding:10px 14px;
+    flex:1;
+    min-width:110px;
+  }
+  .stat b{ display:block; font-family:'Tajawal',sans-serif; font-size:19px; }
+  .stat span{ font-size:11.5px; color:#B9C0D4; }
+
+  .today-flag{
+    margin-top:16px;
+    background:rgba(184,134,47,0.16);
+    border:1px solid rgba(184,134,47,0.4);
+    color:var(--gold);
     border-radius:10px;
-}
+    padding:10px 14px;
+    font-size:13px;
+    font-weight:600;
+    position:relative; z-index:1;
+    display:flex; align-items:center; gap:8px;
+  }
+  .today-flag::before{ content:"◆"; font-size:10px; }
+
+  /* ---- Phases ---- */
+  .phase{ margin-top:30px; }
+  .phase-head{
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:12px;
+    padding-inline-start:2px;
+  }
+  .phase-num{
+    width:28px; height:28px; border-radius:50%;
+    background:var(--ink); color:var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Tajawal',sans-serif; font-weight:700; font-size:13px;
+    flex-shrink:0;
+  }
+  .phase-title{ font-family:'Tajawal',sans-serif; font-weight:700; font-size:16.5px; }
+  .phase-range{ font-size:12px; color:var(--muted); margin-inline-start:auto; }
+
+  .day-card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:10px;
+    transition:background .2s ease, border-color .2s ease, opacity .2s ease;
+  }
+  .day-card.is-today{
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px var(--gold-soft);
+  }
+  .day-card.is-done{
+    background:var(--success-soft);
+    border-color:#cfe6d7;
+  }
+  .day-card.is-done .task-name{ text-decoration:line-through; color:#7C8598; }
+  .day-card.is-done .date-label{ color:#7C8598; }
+
+  .checkbox{
+    width:26px; height:26px; border-radius:8px;
+    border:2px solid #C9CFDD;
+    flex-shrink:0;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:all .15s ease;
+    background:#fff;
+  }
+  .checkbox:hover{ border-color:var(--gold); }
+  .checkbox.checked{
+    background:var(--success);
+    border-color:var(--success);
+  }
+  .checkbox.checked::after{
+    content:"";
+    width:8px; height:13px;
+    border:solid #fff;
+    border-width:0 2.5px 2.5px 0;
+    transform:rotate(45deg);
+    margin-bottom:2px;
+  }
+
+  .day-body{ flex:1; min-width:0; }
+  .date-label{ font-size:12px; color:var(--muted); font-weight:500; }
+  .task-name{ font-size:15px; font-weight:600; margin-top:2px; }
+
+  .tag{
+    font-size:10.5px;
+    padding:3px 9px;
+    border-radius:20px;
+    font-weight:600;
+    flex-shrink:0;
+    white-space:nowrap;
+  }
+  .tag-foundation{ background:var(--sage-soft); color:var(--sage); }
+  .tag-review{ background:var(--gold-soft); color:var(--gold); }
+  .tag-drill{ background:#E4E9F5; color:#3E5798; }
+
+  footer{
+    text-align:center; margin-top:36px; font-size:12px; color:var(--muted);
+  }
+
+  @media (max-width:480px){
+    .ticket h1{ font-size:22px; }
+    .day-card{ padding:12px; gap:10px; }
+    .task-name{ font-size:14px; }
+  }
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-
 </head>
-
 <body>
+<div class="wrap">
 
-<div id="info">
-🛰️ حرك القمر الصناعي بأسهم الاتجاهات
+  <div class="ticket">
+    <div class="ticket-top">
+      <div>
+        <div class="ticket-eyebrow">خطة ٢٥ يوم</div>
+        <h1>جدول مذاكرة القدرات</h1>
+        <div class="ticket-sub">من ٦ يوليو حتى ٣٠ يوليو ٢٠٢٦</div>
+      </div>
+      <div class="ring-wrap">
+        <svg width="78" height="78" viewBox="0 0 78 78">
+          <circle class="ring-bg" cx="39" cy="39" r="33"></circle>
+          <circle class="ring-fg" id="ringFg" cx="39" cy="39" r="33" stroke-dasharray="207" stroke-dashoffset="207"></circle>
+        </svg>
+        <div class="ring-label">
+          <b id="ringPct">٠٪</b>
+          <span>مُنجز</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ticket-stats">
+      <div class="stat"><b id="statDone">0/25</b><span>أيام مكتملة</span></div>
+      <div class="stat"><b id="statLeft">25</b><span>أيام متبقية</span></div>
+      <div class="stat"><b id="statStreak">0</b><span>أيام متتالية</span></div>
+    </div>
+
+    <div class="today-flag" id="todayFlag">جارِ التحميل...</div>
+  </div>
+
+  <div id="phasesContainer"></div>
+
+  <footer>علّم كل يوم بعد إنجازه — تقدّمك يُحفظ تلقائيًا في هذا الجهاز</footer>
 </div>
 
 <script>
+const DAYS = [
+  {date:"الاثنين 6 يوليو",   task:"مقطع 1 + 2 (تأسيس)"},
+  {date:"الثلاثاء 7 يوليو",  task:"مقطع 3 + 4 (تأسيس)"},
+  {date:"الأربعاء 8 يوليو",  task:"مقطع 5 + 6 (تأسيس)"},
+  {date:"الخميس 9 يوليو",    task:"مقطع 7 + 8 (تأسيس)"},
+  {date:"الجمعة 10 يوليو",   task:"مراجعة مقاطع 1-8", review:true},
+  {date:"السبت 11 يوليو",    task:"مراجعة مقاطع 1-8", review:true},
+  {date:"الأحد 12 يوليو",    task:"مقطع 9 + 10 (تأسيس)"},
+  {date:"الاثنين 13 يوليو",  task:"مقطع 11 + 12 (تأسيس)"},
+  {date:"الثلاثاء 14 يوليو", task:"مقطع 13 + 14 (تأسيس)"},
+  {date:"الأربعاء 15 يوليو", task:"مقطع 15 + 16 (تأسيس)"},
+  {date:"الخميس 16 يوليو",   task:"مقطع 17 (تأسيس)"},
+  {date:"الجمعة 17 يوليو",   task:"مراجعة تأسيس + الـ 220 (الدفعة 1)", review:true},
+  {date:"السبت 18 يوليو",    task:"مراجعة تأسيس + الـ 220 (الدفعة 2)", review:true},
+  {date:"الأحد 19 يوليو",    task:"الـ 220 (قسم 3+4)", drill:true},
+  {date:"الاثنين 20 يوليو",  task:"الـ 220 (قسم 5+6)", drill:true},
+  {date:"الثلاثاء 21 يوليو", task:"الـ 220 (قسم 7+8)", drill:true},
+  {date:"الأربعاء 22 يوليو", task:"الـ 220 (قسم 9+10)", drill:true},
+  {date:"الخميس 23 يوليو",   task:"الـ 220 (قسم 11+12)", drill:true},
+  {date:"الجمعة 24 يوليو",   task:"مراجعة ما تم إنجازه (الـ 220)", review:true},
+  {date:"السبت 25 يوليو",    task:"مراجعة ما تم إنجازه (الـ 220)", review:true},
+  {date:"الأحد 26 يوليو",    task:"الـ 220 (قسم 13+14)", drill:true},
+  {date:"الاثنين 27 يوليو",  task:"الـ 220 (قسم 15+16)", drill:true},
+  {date:"الثلاثاء 28 يوليو", task:"الـ 220 (قسم 17+18)", drill:true},
+  {date:"الأربعاء 29 يوليو", task:"الـ 220 (قسم 19+20)", drill:true},
+  {date:"الخميس 30 يوليو",   task:"الـ 220 (قسم 21+22)", drill:true},
+];
 
-const scene = new THREE.Scene();
+const PHASES = [
+  {title:"التأسيس", range:"اليوم ١ – ١١", start:0, end:10},
+  {title:"مراجعة التأسيس + انطلاقة الـ٢٢٠", range:"اليوم ١٢ – ١٣", start:11, end:12},
+  {title:"الـ٢٢٠ — تدريب مكثف", range:"اليوم ١٤ – ١٨", start:13, end:17},
+  {title:"مراجعة شاملة", range:"اليوم ١٩ – ٢٠", start:18, end:19},
+  {title:"الـ٢٢٠ — المرحلة الأخيرة", range:"اليوم ٢١ – ٢٥", start:20, end:24},
+];
 
-scene.background = new THREE.Color(0x000011);
+const STORAGE_KEY = "qudurat-schedule-progress";
+let state = {};
 
-const camera = new THREE.PerspectiveCamera(
-75,
-window.innerWidth/window.innerHeight,
-0.1,
-2000
-);
-
-const renderer = new THREE.WebGLRenderer({
-antialias:true
-});
-
-renderer.setSize(
-window.innerWidth,
-window.innerHeight
-);
-
-document.body.appendChild(
-renderer.domElement
-);
-
-////////////////////////////////////////////////////
-// اضاءة
-////////////////////////////////////////////////////
-
-const ambient =
-new THREE.AmbientLight(
-0xffffff,
-1.5
-);
-
-scene.add(ambient);
-
-const sun =
-new THREE.DirectionalLight(
-0xffffff,
-2
-);
-
-sun.position.set(
-100,
-100,
-100
-);
-
-scene.add(sun);
-
-////////////////////////////////////////////////////
-// الأرض
-////////////////////////////////////////////////////
-
-const EARTH_RADIUS = 20;
-
-const earthGeometry =
-new THREE.SphereGeometry(
-EARTH_RADIUS,
-64,
-64
-);
-
-const earthMaterial =
-new THREE.MeshPhongMaterial({
-color:0x2c8c3c
-});
-
-const earth =
-new THREE.Mesh(
-earthGeometry,
-earthMaterial
-);
-
-scene.add(earth);
-
-////////////////////////////////////////////////////
-// مباني فوق سطح الأرض
-////////////////////////////////////////////////////
-
-function createBuilding(
-latitude,
-longitude,
-height
-){
-
-const building =
-new THREE.Mesh(
-
-new THREE.BoxGeometry(
-1,
-height,
-1
-),
-
-new THREE.MeshPhongMaterial({
-color:0x999999
-})
-
-);
-
-const lat =
-THREE.MathUtils.degToRad(
-90-latitude
-);
-
-const lon =
-THREE.MathUtils.degToRad(
-longitude
-);
-
-const x =
-(EARTH_RADIUS + height/2)
-*
-Math.sin(lat)
-*
-Math.cos(lon);
-
-const y =
-(EARTH_RADIUS + height/2)
-*
-Math.cos(lat);
-
-const z =
-(EARTH_RADIUS + height/2)
-*
-Math.sin(lat)
-*
-Math.sin(lon);
-
-building.position.set(
-x,y,z
-);
-
-building.lookAt(0,0,0);
-
-building.rotateX(
-Math.PI/2
-);
-
-scene.add(building);
-
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    state = raw ? JSON.parse(raw) : {};
+  }catch(e){ state = {}; }
+}
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e){ /* ignore if storage unavailable */ }
 }
 
-////////////////////////////////////////////////////
-// مدينة كاملة
-////////////////////////////////////////////////////
-
-for(let i=0;i<100;i++){
-
-createBuilding(
-
-Math.random()*180-90,
-
-Math.random()*360,
-
-Math.random()*4+2
-
-);
-
+function toArabicDigits(n){
+  return String(n).replace(/[0-9]/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
 }
 
-////////////////////////////////////////////////////
-// القمر الصناعي
-////////////////////////////////////////////////////
+// Map row index -> real Date object (all dates are July 2026)
+function dayDate(i){ return new Date(2026, 6, 6 + i); }
 
-const satellite =
-new THREE.Mesh(
-
-new THREE.BoxGeometry(
-1,
-1,
-2
-),
-
-new THREE.MeshPhongMaterial({
-color:0xffffff
-})
-
-);
-
-scene.add(satellite);
-
-let orbitRadius = 35;
-
-let orbitAngle = 0;
-
-let orbitHeight = 5;
-
-////////////////////////////////////////////////////
-// تحكم اللاعب
-////////////////////////////////////////////////////
-
-const keys = {};
-
-document.addEventListener(
-"keydown",
-e=>{
-
-keys[e.key]=true;
-
-}
-);
-
-document.addEventListener(
-"keyup",
-e=>{
-
-keys[e.key]=false;
-
-}
-);
-
-////////////////////////////////////////////////////
-// نجوم
-////////////////////////////////////////////////////
-
-const starGeometry =
-new THREE.BufferGeometry();
-
-const starVertices = [];
-
-for(let i=0;i<5000;i++){
-
-starVertices.push(
-
-(Math.random()-0.5)*2000,
-(Math.random()-0.5)*2000,
-(Math.random()-0.5)*2000
-
-);
-
+function isSameDay(a,b){
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
 }
 
-starGeometry.setAttribute(
-
-'position',
-
-new THREE.Float32BufferAttribute(
-starVertices,
-3
-)
-
-);
-
-const stars =
-new THREE.Points(
-
-starGeometry,
-
-new THREE.PointsMaterial({
-size:2,
-color:0xffffff
-})
-
-);
-
-scene.add(stars);
-
-////////////////////////////////////////////////////
-// تحديث
-////////////////////////////////////////////////////
-
-function animate(){
-
-requestAnimationFrame(
-animate
-);
-
-if(keys["ArrowLeft"])
-orbitAngle -= 0.01;
-
-if(keys["ArrowRight"])
-orbitAngle += 0.01;
-
-if(keys["ArrowUp"])
-orbitRadius -= 0.2;
-
-if(keys["ArrowDown"])
-orbitRadius += 0.2;
-
-orbitRadius =
-Math.max(
-25,
-Math.min(
-orbitRadius,
-80
-)
-);
-
-satellite.position.x =
-Math.cos(orbitAngle)
-*
-orbitRadius;
-
-satellite.position.z =
-Math.sin(orbitAngle)
-*
-orbitRadius;
-
-satellite.position.y =
-orbitHeight;
-
-////////////////////////////////////////////////////
-// الكاميرا مثبتة بالقمر الصناعي
-////////////////////////////////////////////////////
-
-camera.position.copy(
-satellite.position
-);
-
-camera.lookAt(
-earth.position
-);
-
-earth.rotation.y += 0.001;
-
-renderer.render(
-scene,
-camera
-);
-
+function tagFor(day){
+  if(day.review) return '<span class="tag tag-review">مراجعة</span>';
+  if(day.drill) return '<span class="tag tag-drill">الـ٢٢٠</span>';
+  return '<span class="tag tag-foundation">تأسيس</span>';
 }
 
-animate();
+function render(){
+  const container = document.getElementById('phasesContainer');
+  container.innerHTML = '';
+  PHASES.forEach((phase, pi) => {
+    const section = document.createElement('div');
+    section.className = 'phase';
+    section.innerHTML = `
+      <div class="phase-head">
+        <div class="phase-num">${toArabicDigits(pi+1)}</div>
+        <div class="phase-title">${phase.title}</div>
+        <div class="phase-range">${phase.range}</div>
+      </div>
+    `;
+    for(let i = phase.start; i <= phase.end; i++){
+      const day = DAYS[i];
+      const done = !!state[i];
+      const today = new Date();
+      const isToday = isSameDay(dayDate(i), today);
+      const card = document.createElement('div');
+      card.className = 'day-card' + (done ? ' is-done' : '') + (isToday ? ' is-today' : '');
+      card.innerHTML = `
+        <div class="checkbox${done ? ' checked' : ''}" data-idx="${i}"></div>
+        <div class="day-body">
+          <div class="date-label">${day.date}</div>
+          <div class="task-name">${day.task}</div>
+        </div>
+        ${tagFor(day)}
+      `;
+      section.appendChild(card);
+    }
+    container.appendChild(section);
+  });
 
-window.addEventListener(
-"resize",
-()=>{
-
-camera.aspect =
-window.innerWidth/
-window.innerHeight;
-
-camera.updateProjectionMatrix();
-
-renderer.setSize(
-window.innerWidth,
-window.innerHeight
-);
-
+  // attach handlers
+  container.querySelectorAll('.checkbox').forEach(box => {
+    box.addEventListener('click', () => {
+      const idx = box.getAttribute('data-idx');
+      state[idx] = !state[idx];
+      saveState();
+      render();
+      updateHero();
+    });
+  });
 }
-);
 
+function updateHero(){
+  const total = DAYS.length;
+  const doneCount = Object.values(state).filter(Boolean).length;
+  const pct = Math.round((doneCount/total)*100);
+
+  document.getElementById('statDone').textContent = `${toArabicDigits(doneCount)}/${toArabicDigits(total)}`;
+  document.getElementById('statLeft').textContent = toArabicDigits(total - doneCount);
+  document.getElementById('ringPct').textContent = toArabicDigits(pct) + '٪';
+
+  const circumference = 207;
+  const offset = circumference - (pct/100)*circumference;
+  document.getElementById('ringFg').style.strokeDashoffset = offset;
+
+  // streak: consecutive completed days counting back from most recent completed
+  let streak = 0;
+  for(let i = total-1; i >= 0; i--){
+    if(state[i]) streak++;
+    else break;
+  }
+  document.getElementById('statStreak').textContent = toArabicDigits(streak);
+
+  // today flag
+  const today = new Date();
+  let todayIdx = -1;
+  for(let i=0;i<total;i++){ if(isSameDay(dayDate(i), today)){ todayIdx = i; break; } }
+  const flag = document.getElementById('todayFlag');
+  if(todayIdx === -1){
+    if(today < dayDate(0)){
+      flag.textContent = "الخطة تبدأ يوم " + DAYS[0].date;
+    }else{
+      flag.textContent = "انتهت أيام الخطة — أحسنت على المتابعة!";
+    }
+  }else{
+    const doneToday = !!state[todayIdx];
+    flag.textContent = doneToday
+      ? `أنجزت مهمة اليوم: ${DAYS[todayIdx].task} ✓`
+      : `مهمة اليوم: ${DAYS[todayIdx].task}`;
+  }
+}
+
+loadState();
+render();
+updateHero();
 </script>
-
 </body>
 </html>
