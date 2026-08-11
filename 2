@@ -1,440 +1,608 @@
-```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>التحصيلي المبكر</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#F7F4EE;
-    --card:#FFFFFF;
-    --ink:#1E1B16;
-    --ink-soft:#6B6459;
-    --line:#E7E1D6;
-    --math:#2F5FE0;
-    --math-soft:#EAEFFD;
-    --bio:#B8892E;
-    --bio-soft:#FBF1DF;
-    --phys:#1C8F5E;
-    --phys-soft:#E5F5EC;
-    --chem:#7B4FE0;
-    --chem-soft:#F0EAFB;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--bg);
-    color:var(--ink);
-    font-family:'Tajawal',sans-serif;
-    min-height:100vh;
-    padding:24px 16px 60px;
-  }
-  .wrap{max-width:760px;margin:0 auto;}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study World - عالم المذاكرة ثلاثي الأبعاد</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            background-color: #111;
+        }
 
-  /* header */
-  header{margin-bottom:28px;}
-  .brand{
-    display:flex;align-items:center;justify-content:space-between;gap:16px;
-    margin-bottom:20px;
-  }
-  .brand h1{
-    font-size:26px;font-weight:800;margin:0;letter-spacing:-0.5px;
-  }
-  .brand h1 span{color:var(--math);}
-  .brand .tagline{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
 
-  .overall-card{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:20px;
-    padding:20px 22px;
-    display:flex;align-items:center;gap:20px;
-  }
-  .ring-wrap{position:relative;width:76px;height:76px;flex:none;}
-  .ring-wrap svg{transform:rotate(-90deg);width:76px;height:76px;}
-  .ring-bg{fill:none;stroke:var(--line);stroke-width:8;}
-  .ring-fg{fill:none;stroke:var(--math);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .6s ease;}
-  .ring-label{
-    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font-weight:800;font-size:16px;
-  }
-  .overall-text{flex:1;}
-  .overall-text .big{font-weight:800;font-size:16px;margin-bottom:2px;}
-  .overall-text .small{font-size:12.5px;color:var(--ink-soft);}
+        /* واجهة التعليمات وعلامة التصويب */
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
+        }
 
-  /* subject grid */
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-  .subject-card{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:18px;
-    padding:18px 16px;
-    cursor:pointer;
-    text-align:right;
-    transition:transform .15s ease, box-shadow .15s ease;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .subject-card:active{transform:scale(.97);}
-  .subject-card:hover{box-shadow:0 6px 18px rgba(0,0,0,.06);}
-  .subject-card .icon{
-    width:40px;height:40px;border-radius:12px;
-    display:flex;align-items:center;justify-content:center;
-    font-size:19px;margin-bottom:12px;
-  }
-  .subject-card .name{font-weight:800;font-size:16px;margin-bottom:8px;}
-  .subject-card .bar-track{
-    background:var(--line);height:7px;border-radius:5px;overflow:hidden;margin-bottom:6px;
-  }
-  .subject-card .bar-fill{height:100%;border-radius:5px;transition:width .5s ease;}
-  .subject-card .meta{font-size:12px;color:var(--ink-soft);}
+        #instructions {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 10;
+            font-size: 14px;
+            line-height: 1.6;
+        }
 
-  .math .icon{background:var(--math-soft);color:var(--math);}
-  .bio .icon{background:var(--bio-soft);color:var(--bio);}
-  .phys .icon{background:var(--phys-soft);color:var(--phys);}
-  .chem .icon{background:var(--chem-soft);color:var(--chem);}
-  .math .bar-fill{background:var(--math);}
-  .bio .bar-fill{background:var(--bio);}
-  .phys .bar-fill{background:var(--phys);}
-  .chem .bar-fill{background:var(--chem);}
+        /* شريط الـ Hotbar السفلي */
+        #hotbar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 12px;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
 
-  /* subject detail view */
-  .back-btn{
-    display:inline-flex;align-items:center;gap:6px;
-    background:none;border:none;color:var(--ink-soft);
-    font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;
-    cursor:pointer;padding:8px 0;margin-bottom:12px;
-  }
-  .back-btn:hover{color:var(--ink);}
+        .hotbar-slot {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
 
-  .subject-header{
-    display:flex;align-items:center;gap:14px;margin-bottom:18px;
-  }
-  .subject-header .icon-lg{
-    width:52px;height:52px;border-radius:16px;flex:none;
-    display:flex;align-items:center;justify-content:center;font-size:24px;
-  }
-  .subject-header .title{font-size:22px;font-weight:800;}
-  .subject-header .sub-progress{font-size:13px;color:var(--ink-soft);margin-top:2px;}
+        .hotbar-slot.active {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.3);
+            transform: scale(1.05);
+        }
 
-  .subject-bar-track{
-    background:var(--line);height:9px;border-radius:6px;overflow:hidden;margin-bottom:26px;
-  }
-  .subject-bar-fill{height:100%;border-radius:6px;transition:width .5s ease;}
+        /* قائمة العناصر الإضافية (Item Menu) */
+        #item-menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid #444;
+            border-radius: 12px;
+            padding: 20px;
+            width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            display: none;
+            z-index: 20;
+            color: white;
+        }
 
-  .section-block{margin-bottom:22px;}
-  .section-title{
-    display:flex;align-items:center;justify-content:space-between;
-    font-weight:700;font-size:14.5px;color:var(--ink-soft);
-    padding:0 4px 10px;
-    border-bottom:1px solid var(--line);
-    margin-bottom:8px;
-  }
-  .section-title .count{font-weight:500;font-size:12.5px;}
+        #item-menu h2 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 20px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
 
-  .lesson-row{
-    display:flex;align-items:center;gap:12px;
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:13px 14px;
-    margin-bottom:8px;
-    cursor:pointer;
-    transition:background .15s ease, border-color .15s ease;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .lesson-row:active{transform:scale(.99);}
-  .checkbox{
-    width:22px;height:22px;border-radius:7px;border:2px solid var(--line);
-    flex:none;display:flex;align-items:center;justify-content:center;
-    transition:background .15s ease, border-color .15s ease;
-  }
-  .checkbox svg{width:13px;height:13px;opacity:0;transition:opacity .15s ease;}
-  .lesson-row.done .checkbox svg{opacity:1;}
-  .lesson-name{font-size:15px;font-weight:500;flex:1;transition:color .15s ease;}
-  .lesson-row.done .lesson-name{color:var(--ink-soft);text-decoration:line-through;text-decoration-thickness:1.5px;}
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
 
-  .math-row.done{background:var(--math-soft);border-color:var(--math);}
-  .math-row.done .checkbox{background:var(--math);border-color:var(--math);}
-  .bio-row.done{background:var(--bio-soft);border-color:var(--bio);}
-  .bio-row.done .checkbox{background:var(--bio);border-color:var(--bio);}
-  .phys-row.done{background:var(--phys-soft);border-color:var(--phys);}
-  .phys-row.done .checkbox{background:var(--phys);border-color:var(--phys);}
-  .chem-row.done{background:var(--chem-soft);border-color:var(--chem);}
-  .chem-row.done .checkbox{background:var(--chem);border-color:var(--chem);}
+        .menu-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
 
-  .empty-note{
-    font-size:13px;color:var(--ink-soft);
-    background:var(--card);border:1px dashed var(--line);
-    border-radius:14px;padding:16px;text-align:center;
-  }
+        .menu-item:hover {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: #4CAF50;
+        }
 
-  .footer-note{text-align:center;font-size:11.5px;color:var(--ink-soft);margin-top:30px;}
+        .menu-item span {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 5px;
+        }
 
-  @media (max-width:420px){
-    .grid{grid-template-columns:1fr;}
-  }
-</style>
+        .menu-item label {
+            font-size: 12px;
+            display: block;
+            color: #ccc;
+            cursor: pointer;
+        }
+
+        /* نافذة كتابة النصوص والسبورة */
+        #text-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid #444;
+            border-radius: 12px;
+            padding: 20px;
+            width: 300px;
+            display: none;
+            z-index: 30;
+            color: white;
+            text-align: center;
+        }
+
+        #text-modal input {
+            width: 90%;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 6px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        #text-modal button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #text-modal button:hover {
+            background: #45a049;
+        }
+    </style>
 </head>
 <body>
-<div class="wrap">
 
-  <header id="home-header">
-    <div class="brand">
-      <div>
-        <h1>التحصيلي <span>المبكر</span></h1>
-        <div class="tagline">تابع تقدمك في مواد التأسيس الأربع</div>
-      </div>
+    <div id="crosshair"></div>
+    
+    <div id="instructions">
+        <h3>Study World - التعليمات</h3>
+        <b>W A S D</b>: الحركة<br>
+        <b>المؤشر (Mouse)</b>: النظر والتوجيه<br>
+        <b>Click Left</b>: وضع العنصر الحالي<br>
+        <b>R</b>: تدوير العنصر المختار<br>
+        <b>Delete</b>: حذف العنصر الموجه إليه<br>
+        <b>E</b>: فتح قائمة العناصر الكاملة<br>
+        <b>Esc</b>: إغلاق القوائم وتحرير الماوس
     </div>
-    <div class="overall-card">
-      <div class="ring-wrap">
-        <svg viewBox="0 0 76 76">
-          <circle class="ring-bg" cx="38" cy="38" r="32"></circle>
-          <circle class="ring-fg" id="overall-ring" cx="38" cy="38" r="32" stroke-dasharray="201" stroke-dashoffset="201"></circle>
-        </svg>
-        <div class="ring-label" id="overall-percent">0%</div>
-      </div>
-      <div class="overall-text">
-        <div class="big" id="overall-count">0 من 0 درسًا</div>
-        <div class="small">التقدم الإجمالي في كل المواد</div>
-      </div>
+
+    <div id="hotbar">
+        <div class="hotbar-slot active" data-id="bulb">💡</div>
+        <div class="hotbar-slot" data-id="lightning">⚡</div>
+        <div class="hotbar-slot" data-id="car">🚗</div>
+        <div class="hotbar-slot" data-id="magnet">🧲</div>
+        <div class="hotbar-slot" data-id="dna">🧬</div>
+        <div class="hotbar-slot" data-id="flask">🧪</div>
+        <div class="hotbar-slot" data-id="board">📝</div>
+        <div class="hotbar-slot" data-id="text">💬</div>
     </div>
-  </header>
 
-  <main id="home-view" class="grid"></main>
-
-  <main id="subject-view" style="display:none;"></main>
-
-  <div class="footer-note">اضغط على أي درس لتحديده كمكتمل — يُحفظ تقدمك تلقائيًا</div>
-</div>
-
-<script>
-const DATA = {
-  math: {
-    name: "الرياضيات",
-    icon: "∑",
-    className: "math",
-    sections: [
-      { title: "أولى ثانوي", lessons: ["التبرير والبرهان","المسلمات والعلاقات الهندسية","المستقيم","المثلث","المضلعات والأشكال الرباعية","التشابه","التحويلات الهندسية","الدائرة"] },
-      { title: "ثاني ثانوي", lessons: ["الأعداد الحقيقية والدوال","دوال خاصة","المتباينات","المصفوفات","الأعداد المركبة والمعادلة التربيعية","كثيرات الحدود","العمليات على الدوال"] },
-      { title: "ثالث ثانوي", lessons: ["الدالة الجذرية","العلاقات والدوال النسبية","المتتابعات والمتسلسلات","نظرية ذات الحدين","الاحتمالات","حساب المثلثات"] }
-    ]
-  },
-  bio: {
-    name: "الأحياء",
-    icon: "❁",
-    className: "bio",
-    sections: [
-      { title: "أحياء 1", lessons: ["دراسة الحياة","تنظيم تنوع الحياة","البكتيريا والفيروسات","الطلائعيات","الفطريات","صور تلخيصية للحيوانات","مدخل إلى الحيوانات","الديدان والرخويات","المفصليات"] },
-      { title: "أحياء 2", lessons: ["شوكيات الجلد واللافقاريات الحبلية","طائفة الأسماك","طائفة البرمائيات","طائفة الزواحف","طائفة الطيور","طائفة الثدييات","النباتات اللاوعائية","النباتات الوعائية اللابذرية","النباتات الوعائية البذرية","الخلايا والأنسجة النباتية","الهرمونات واستجابة النباتات","النباتات الزهرية وتكاثرها"] },
-      { title: "أحياء 3", lessons: ["الجهاز الهيكلي","الجهاز العضلي","الجهاز العصبي","تنظيم الجهاز العصبي","الجهاز الدوراني","الجهازان التنفسي والاخراجي","الجهاز الهضمي","التغذية","جهاز الغدد الصم","جهاز التكاثر في الإنسان","مراحل نمو الجنين","جهاز المناعة"] },
-      { title: "أحياء 4", lessons: ["التراكيب الخلوية والعضيات","كيمياء الخلية","الطاقة الخلوية","البناء الضوئي والتنفس الخلوي","التكاثر الخلوي","الانقسام المنصف","الوراثة المندلية","ملخص الوراثة المندلية","الوراثة المعقدة والبشرية","المادة الوراثية"] },
-      { title: "علم البيئة", lessons: ["المخلوقات الحية وعلاقاتها المتبادلة","انتقال الطاقة في النظام البيئي","تدوير المواد","المجتمعات والمناطق الحيوية","الأنظمة البيئية المائية","علم بيئة الجماعات الحيوية","التنوع الحيوي والمحافظة عليه","سلوك الحيوان"] }
-    ]
-  },
-  phys: {
-    name: "الفيزياء",
-    icon: "⚡",
-    className: "phys",
-    sections: [
-      { title: "أولى ثانوي", lessons: ["مدخل إلى علم الفيزياء","الإزاحة والسرعة والتسارع","التسارع والسقوط الحر","القوى والوزن وقوانين نيوتن","المتجهات والاحتكاك والحركة المائلة","المقذوف والحركة الدائرية"] },
-      { title: "ثاني ثانوي", lessons: ["الجاذبية","الحركة الدورانية","الاتزان والدفع والزخم","الشغل والطاقة","القدرة والآلات","الحرارة","تغيرات الحالة والديناميكا الحرارية"] },
-      { title: "ثالث ثانوي", lessons: [] }
-    ]
-  },
-  chem: {
-    name: "الكيمياء",
-    icon: "⚗",
-    className: "chem",
-    sections: [
-      { title: "كيمياء 1 - أولى ثانوي", lessons: ["مقدمة في علم الكيمياء","الخواص والتغيرات والمخاليط","تركيب الذرة","العنصر والمركب والتفاعلات الكيميائية","الحسابات الكيميائية"] },
-      { title: "كيمياء 2 - ثاني ثانوي", lessons: ["الضوء والكم والذرة ومستوياتها","التوزيع الالكتروني","الجدول الدوري الحديث","تصنيف العناصر وتدرج خواصها","ملخص الجدول الدوري","الروابط والمركبات الأيونية","الرابطة الفلزية والتساهمية","تراكيب لويس وأشكال الجزيئات","الكهروسالبية والقوى بين الجزيئات"] },
-      { title: "كيمياء 3", lessons: ["المادة الغازية","المواد السائلة والصلبة","الكيمياء الحرارية","تغيرات الحالة والطاقة والحرارة","سرعة التفاعلات الكيميائية","الاتزان الكيميائي"] },
-      { title: "كيمياء 4", lessons: ["الهيدروكربونات","متشكلات الهيدروكربونات","مشتقات الهيدروكربونات","تفاعلات المشتقات","البوليمرات","الكيمياء الحيوية","قوانين وحسابات الغازات"] }
-    ]
-  }
-};
-
-let completed = new Set();
-let storageReady = false;
-
-async function loadProgress(){
-  try{
-    const res = await window.storage.get('completed-lessons', false);
-    if(res && res.value){
-      const arr = JSON.parse(res.value);
-      completed = new Set(arr);
-    }
-  }catch(e){
-    completed = new Set();
-  }
-  storageReady = true;
-  renderHome();
-}
-
-async function saveProgress(){
-  try{
-    await window.storage.set('completed-lessons', JSON.stringify(Array.from(completed)), false);
-  }catch(e){
-    console.error('تعذر حفظ التقدم', e);
-  }
-}
-
-function lessonKey(subjectId, sectionIdx, lessonIdx){
-  return subjectId + ':' + sectionIdx + ':' + lessonIdx;
-}
-
-function subjectTotals(subjectId){
-  const subj = DATA[subjectId];
-  let total = 0, done = 0;
-  subj.sections.forEach((sec, si)=>{
-    sec.lessons.forEach((_, li)=>{
-      total++;
-      if(completed.has(lessonKey(subjectId, si, li))) done++;
-    });
-  });
-  return {total, done};
-}
-
-function overallTotals(){
-  let total = 0, done = 0;
-  Object.keys(DATA).forEach(id=>{
-    const t = subjectTotals(id);
-    total += t.total; done += t.done;
-  });
-  return {total, done};
-}
-
-function updateOverallCard(){
-  const {total, done} = overallTotals();
-  const pct = total ? Math.round((done/total)*100) : 0;
-  const circumference = 201;
-  const offset = circumference - (pct/100)*circumference;
-  document.getElementById('overall-ring').style.strokeDashoffset = offset;
-  document.getElementById('overall-percent').textContent = pct + '%';
-  document.getElementById('overall-count').textContent = done + ' من ' + total + ' درسًا';
-}
-
-function renderHome(){
-  updateOverallCard();
-  const home = document.getElementById('home-view');
-  home.innerHTML = '';
-  Object.keys(DATA).forEach(id=>{
-    const subj = DATA[id];
-    const {total, done} = subjectTotals(id);
-    const pct = total ? Math.round((done/total)*100) : 0;
-    const card = document.createElement('div');
-    card.className = 'subject-card ' + subj.className;
-    card.innerHTML = `
-      <div class="icon">${subj.icon}</div>
-      <div class="name">${subj.name}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-      <div class="meta">${done} من ${total} درسًا · ${pct}%</div>
-    `;
-    card.addEventListener('click', ()=>openSubject(id));
-    home.appendChild(card);
-  });
-  document.getElementById('home-view').style.display = 'grid';
-  document.getElementById('subject-view').style.display = 'none';
-  document.getElementById('home-header').style.display = 'block';
-}
-
-function openSubject(id){
-  const subj = DATA[id];
-  const view = document.getElementById('subject-view');
-  const {total, done} = subjectTotals(id);
-  const pct = total ? Math.round((done/total)*100) : 0;
-
-  let html = `
-    <button class="back-btn" id="back-btn">→ &nbsp;العودة إلى المواد</button>
-    <div class="subject-header">
-      <div class="icon-lg ${subj.className}" style="background:var(--${cssVarBase(subj.className)}-soft);color:var(--${cssVarBase(subj.className)});">${subj.icon}</div>
-      <div>
-        <div class="title">${subj.name}</div>
-        <div class="sub-progress">${done} من ${total} درسًا مكتملة · ${pct}%</div>
-      </div>
+    <div id="item-menu">
+        <h2>قائمة العناصر (Creative Mode)</h2>
+        <div class="menu-grid" id="menu-grid"></div>
     </div>
-    <div class="subject-bar-track"><div class="subject-bar-fill" id="subject-bar" style="width:${pct}%;background:var(--${cssVarBase(subj.className)})"></div></div>
-  `;
 
-  subj.sections.forEach((sec, si)=>{
-    html += `<div class="section-block">
-      <div class="section-title"><span>${sec.title}</span><span class="count" id="sec-count-${si}"></span></div>`;
-    if(sec.lessons.length === 0){
-      html += `<div class="empty-note">لا توجد دروس مضافة بعد لهذا المستوى</div>`;
-    } else {
-      sec.lessons.forEach((lesson, li)=>{
-        const key = lessonKey(id, si, li);
-        const isDone = completed.has(key);
-        html += `
-          <div class="lesson-row ${subj.className}-row ${isDone ? 'done':''}" data-subject="${id}" data-section="${si}" data-lesson="${li}">
-            <div class="checkbox">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            </div>
-            <div class="lesson-name">${lesson}</div>
-          </div>`;
-      });
-    }
-    html += `</div>`;
-  });
+    <div id="text-modal">
+        <h3>اكتب محتوى السبورة / النص</h3>
+        <input type="text" id="text-input" placeholder="اكتب هنا...">
+        <br>
+        <button id="save-text-btn">تأكيد</button>
+    </div>
 
-  view.innerHTML = html;
-  view.style.display = 'block';
-  document.getElementById('home-view').style.display = 'none';
-  document.getElementById('home-header').style.display = 'none';
+    <div id="canvas-container"></div>
 
-  document.getElementById('back-btn').addEventListener('click', renderHome);
+    <!-- استدعاء مكتبة Three.js ومكتبة التحكم -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
 
-  view.querySelectorAll('.lesson-row').forEach(row=>{
-    row.addEventListener('click', ()=>{
-      const subjectId = row.dataset.subject;
-      const si = row.dataset.section;
-      const li = row.dataset.lesson;
-      const key = lessonKey(subjectId, si, li);
-      if(completed.has(key)) completed.delete(key);
-      else completed.add(key);
-      row.classList.toggle('done');
-      updateSubjectProgress(subjectId);
-      updateOverallCard();
-      saveProgress();
-    });
-  });
+    <script>
+        // تعريف قائمة العناصر المتاحة
+        const availableItems = {
+            bulb: { name: 'لمبة', icon: '💡', type: 'model', color: 0xfffaa0 },
+            lightning: { name: 'برق', icon: '⚡', type: 'model', color: 0x00ffff },
+            car: { name: 'سيارة', icon: '🚗', type: 'model', color: 0xff3333 },
+            magnet: { name: 'مغناطيس', icon: '🧲', type: 'model', color: 0x3333ff },
+            dna: { name: 'DNA', icon: '🧬', type: 'model', color: 0x33ff33 },
+            flask: { name: 'دورق', icon: '🧪', type: 'model', color: 0xff66cc },
+            board: { name: 'سبورة', icon: '📝', type: 'board', color: 0x224422 },
+            text: { name: 'نص ثلاثي الأبعاد', icon: '💬', type: 'text', color: 0xffffff },
+            math_shape: { name: 'شكل هندسي', icon: '📐', type: 'model', color: 0xff9900 },
+            clock: { name: 'ساعة', icon: '⏰', type: 'model', color: 0xaaaaaa }
+        };
 
-  updateSectionCounts(id);
-}
+        let currentSelectedItem = 'bulb';
+        let scene, camera, renderer, controls;
+        let objectsInWorld = [];
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let prevTime = performance.now();
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        
+        let isMenuOpen = false;
+        let isTextModalOpen = false;
+        let pendingTextPosition = null;
 
-function cssVarBase(className){
-  return className;
-}
+        init();
+        animate();
 
-function updateSubjectProgress(id){
-  const subj = DATA[id];
-  const {total, done} = subjectTotals(id);
-  const pct = total ? Math.round((done/total)*100) : 0;
-  const bar = document.getElementById('subject-bar');
-  if(bar) bar.style.width = pct + '%';
-  const subProgressEl = document.querySelector('.sub-progress');
-  if(subProgressEl) subProgressEl.textContent = `${done} من ${total} درسًا مكتملة · ${pct}%`;
-  updateSectionCounts(id);
-}
+        function init() {
+            // إعداد المشهد الأساسي
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a);
+            scene.fog = new THREE.FogExp2(0x1a1a1a, 0.015);
 
-function updateSectionCounts(id){
-  const subj = DATA[id];
-  subj.sections.forEach((sec, si)=>{
-    const total = sec.lessons.length;
-    let done = 0;
-    sec.lessons.forEach((_, li)=>{ if(completed.has(lessonKey(id, si, li))) done++; });
-    const el = document.getElementById('sec-count-'+si);
-    if(el) el.textContent = total ? `${done} / ${total}` : '';
-  });
-}
+            // إعداد الكاميرا
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 2, 10);
 
-loadProgress();
-</script>
+            // إعداد المرتسم (Renderer)
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // إعداد التحكم (PointerLockControls)
+            controls = new THREE.PointerLockControls(camera, document.body);
+            
+            document.addEventListener('click', () => {
+                if (!isMenuOpen && !isTextModalOpen) {
+                    controls.lock();
+                }
+            });
+
+            // الإضاءة
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(20, 40, 20);
+            dirLight.castShadow = true;
+            scene.add(dirLight);
+
+            // إنشاء البيئة والشقق الأربع
+            createEnvironment();
+
+            // ملء قائمة الـ Items في واجهة Creative Mode
+            populateItemMenu();
+
+            // الأحداث وحركة الكيبورد
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+            document.addEventListener('mousedown', onMouseDown);
+
+            // ربط أزرار الـ Hotbar
+            document.querySelectorAll('.hotbar-slot').forEach(slot => {
+                slot.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.hotbar-slot').forEach(s => s.classList.remove('active'));
+                    slot.classList.add('active');
+                    currentSelectedItem = slot.getAttribute('data-id');
+                });
+            });
+
+            // تحميل العالم المحفوظ سابقاً
+            loadWorld();
+        }
+
+        function createEnvironment() {
+            // الأرضية العامة
+            const floorGeo = new THREE.PlaneGeometry(100, 100);
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            // تصميم الشقق الأربع (الرياضيات، الأحياء، الكيمياء، الفيزياء)
+            const apartments = [
+                { name: 'الرياضيات', color: 0x1e3d59, x: -15, z: -15 },
+                { name: 'الأحياء', color: 0x17b978, x: 15, z: -15 },
+                { name: 'الكيمياء', color: 0xff6e40, x: -15, z: 15 },
+                { name: 'الفيزياء', color: 0xffc107, x: 15, z: 15 }
+            ];
+
+            apartments.forEach(apt => {
+                const group = new THREE.Group();
+
+                // أرضية الشقة
+                const aptFloor = new THREE.Mesh(
+                    new THREE.BoxGeometry(12, 0.2, 12),
+                    new THREE.MeshStandardMaterial({ color: apt.color, roughness: 0.5 })
+                );
+                aptFloor.position.set(apt.x, 0.1, apt.z);
+                aptFloor.receiveShadow = true;
+                scene.add(aptFloor);
+
+                // جدران الشقة الخلفية والجانبية
+                const wallMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.9 });
+                
+                const wall1 = new THREE.Mesh(new THREE.BoxGeometry(12, 4, 0.5), wallMat);
+                wall1.position.set(apt.x, 2, apt.z - 6);
+                scene.add(wall1);
+
+                const wall2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4, 12), wallMat);
+                wall2.position.set(apt.x - 6, 2, apt.z);
+                scene.add(wall2);
+
+                // طاولة مركزية في كل شقة كمبدأ أثاث أساسي
+                const tableTop = new THREE.Mesh(
+                    new THREE.BoxGeometry(4, 0.2, 2),
+                    new THREE.MeshStandardMaterial({ color: 0x5c4033 })
+                );
+                tableTop.position.set(apt.x, 1, apt.z);
+                tableTop.castShadow = true;
+                tableTop.receiveShadow = true;
+                scene.add(tableTop);
+
+                // أرجل الطاولة
+                for(let dx of [-1.8, 1.8]) {
+                    for(let dz of [-0.8, 0.8]) {
+                        const leg = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.1, 0.1, 1),
+                            new THREE.MeshStandardMaterial({ color: 0x111111 })
+                        );
+                        leg.position.set(apt.x + dx, 0.5, apt.z + dz);
+                        scene.add(leg);
+                    }
+                }
+            });
+        }
+
+        function populateItemMenu() {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = '';
+            for (let key in availableItems) {
+                const item = availableItems[key];
+                const div = document.createElement('div');
+                div.className = 'menu-item';
+                div.innerHTML = `<span>${item.icon}</span><label>${item.name}</label>`;
+                div.onclick = () => {
+                    currentSelectedItem = key;
+                    toggleItemMenu();
+                };
+                grid.appendChild(div);
+            }
+        }
+
+        function toggleItemMenu() {
+            isMenuOpen = !isMenuOpen;
+            const menu = document.getElementById('item-menu');
+            if (isMenuOpen) {
+                menu.style.display = 'block';
+                controls.unlock();
+            } else {
+                menu.style.display = 'none';
+            }
+        }
+
+        function onKeyDown(event) {
+            switch (event.code) {
+                case 'KeyW': moveForward = true; break;
+                case 'KeyS': moveBackward = true; break;
+                case 'KeyA': moveLeft = true; break;
+                case 'KeyD': moveRight = true; break;
+                case 'KeyE': toggleItemMenu(); break;
+                case 'KeyR': rotateSelectedObject(); break;
+                case 'Delete': removeAimedObject(); break;
+                case 'Escape': 
+                    if (isMenuOpen) toggleItemMenu();
+                    if (isTextModalOpen) closeTextModal();
+                    break;
+            }
+        }
+
+        function onKeyUp(event) {
+            switch (event.code) {
+                case 'KeyW': moveForward = false; break;
+                case 'KeyS': moveBackward = false; break;
+                case 'KeyA': moveLeft = false; break;
+                case 'KeyD': moveRight = false; break;
+            }
+        }
+
+        function onMouseDown(event) {
+            if (event.button === 0 && controls.isLocked) { // Left Click للوضع
+                placeItem();
+            }
+        }
+
+        function placeItem() {
+            const itemData = availableItems[currentSelectedItem];
+            if (!itemData) return;
+
+            // تحديد مكان الوضع أمام الكاميرا مباشرة
+            const distance = 3;
+            const position = new THREE.Vector3();
+            camera.getWorldPosition(position);
+            const direction = new THREE.Vector3();
+            camera.getWorldDirection(direction);
+            position.addScaledVector(direction, distance);
+
+            if (itemData.type === 'board' || itemData.type === 'text') {
+                pendingTextPosition = position;
+                openTextModal(itemData.type === 'board' ? 'اكتب محتوى السبورة...' : 'اكتب النص هنا...');
+            } else {
+                create3DModelItem(currentSelectedItem, position, itemData.color, 'عنصر قياسي');
+                saveWorld();
+            }
+        }
+
+        function create3DModelItem(type, position, color, textContent) {
+            let geometry, material, mesh;
+
+            if (type === 'board' || type === 'text') {
+                // إنشاء سبورة أو نص كلوحة تظهر الكلام
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 256;
+                const context = canvas.getContext('2d');
+                context.fillStyle = type === 'board' ? '#1b3a1b' : '#222222';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                context.fillStyle = '#ffffff';
+                context.font = '36px sans-serif';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.fillText(textContent || 'ملاحظة', canvas.width / 2, canvas.height / 2);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                geometry = new THREE.BoxGeometry(2, 1.2, 0.1);
+                material = new THREE.MeshStandardMaterial({ map: texture });
+            } else {
+                geometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+                material = new THREE.MeshStandardMaterial({ color: color, roughness: 0.3 });
+            }
+
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.copy(position);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            
+            // تخزين نوع البيانات للحفظ لاحقاً
+            mesh.userData = { type: type, itemKey: type, text: textContent };
+            
+            scene.add(mesh);
+            objectsInWorld.push(mesh);
+        }
+
+        function openTextModal(placeholder) {
+            isTextModalOpen = true;
+            controls.unlock();
+            const modal = document.getElementById('text-modal');
+            const input = document.getElementById('text-input');
+            input.value = '';
+            input.placeholder = placeholder;
+            modal.style.display = 'block';
+            input.focus();
+        }
+
+        function closeTextModal() {
+            isTextModalOpen = false;
+            document.getElementById('text-modal').style.display = 'none';
+        }
+
+        document.getElementById('save-text-btn').onclick = () => {
+            const text = document.getElementById('text-input').value;
+            if (pendingTextPosition && text) {
+                create3DModelItem(currentSelectedItem, pendingTextPosition, 0xffffff, text);
+                saveWorld();
+            }
+            closeTextModal();
+        };
+
+        function rotateSelectedObject() {
+            // تدوير أقرب عنصر أمام اللاعب
+            if (objectsInWorld.length > 0) {
+                const obj = objectsInWorld[objectsInWorld.length - 1];
+                obj.rotation.y += Math.PI / 4;
+                saveWorld();
+            }
+        }
+
+        function removeAimedObject() {
+            if (objectsInWorld.length > 0) {
+                const obj = objectsInWorld.pop();
+                scene.remove(obj);
+                saveWorld();
+            }
+        }
+
+        function saveWorld() {
+            const data = objectsInWorld.map(obj => ({
+                type: obj.userData.type,
+                itemKey: obj.userData.itemKey,
+                text: obj.userData.text,
+                position: { x: obj.position.x, y: obj.position.y, z: obj.position.z },
+                rotation: { y: obj.rotation.y }
+            }));
+            localStorage.setItem('study_world_data', JSON.stringify(data));
+        }
+
+        function loadWorld() {
+            const saved = localStorage.getItem('study_world_data');
+            if (!saved) return;
+            try {
+                const data = JSON.parse(saved);
+                data.forEach(item => {
+                    const itemDef = availableItems[item.itemKey];
+                    const color = itemDef ? itemDef.color : 0xffffff;
+                    create3DModelItem(item.itemKey, new THREE.Vector3(item.position.x, item.position.y, item.position.z), color, item.text);
+                    if (objectsInWorld.length > 0) {
+                        objectsInWorld[objectsInWorld.length - 1].rotation.y = item.rotation.y;
+                    }
+                });
+            } catch (e) {
+                console.error("خطأ في استرجاع العالم المحفوظ", e);
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = performance.now();
+            if (controls.isLocked) {
+                const delta = (time - prevTime) / 1000;
+
+                velocity.x -= velocity.x * 10.0 * delta;
+                velocity.z -= velocity.z * 10.0 * delta;
+
+                direction.z = Number(moveForward) - Number(moveBackward);
+                direction.x = Number(moveRight) - Number(moveLeft);
+                direction.normalize();
+
+                if (moveForward || moveBackward) velocity.z -= direction.z * 40.0 * delta;
+                if (moveLeft || moveRight) velocity.x -= direction.x * 40.0 * delta;
+
+                controls.moveRight(-velocity.x * delta);
+                controls.moveForward(-velocity.z * delta);
+            }
+
+            prevTime = time;
+            renderer.render(scene, camera);
+        }
+    </script>
 </body>
 </html>
-```
-
-هذا نفس ملف `index.html` اللي رفعته لك بالأعلى — تقدر تنسخه مباشرة أو تفتح الملف اللي شاركته وتحمّله من هناك.
