@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -258,13 +259,21 @@ const DATA = {
 
 let completed = new Set();
 let storageReady = false;
+const STORAGE_KEY = 'altahsili-almubakkir-progress';
+const hasAppStorage = (typeof window !== 'undefined' && window.storage && typeof window.storage.get === 'function');
 
 async function loadProgress(){
   try{
-    const res = await window.storage.get('completed-lessons', false);
-    if(res && res.value){
-      const arr = JSON.parse(res.value);
-      completed = new Set(arr);
+    if(hasAppStorage){
+      const res = await window.storage.get('completed-lessons', false);
+      if(res && res.value){
+        completed = new Set(JSON.parse(res.value));
+      }
+    } else if(typeof localStorage !== 'undefined'){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        completed = new Set(JSON.parse(raw));
+      }
     }
   }catch(e){
     completed = new Set();
@@ -274,8 +283,13 @@ async function loadProgress(){
 }
 
 async function saveProgress(){
+  const arr = Array.from(completed);
   try{
-    await window.storage.set('completed-lessons', JSON.stringify(Array.from(completed)), false);
+    if(hasAppStorage){
+      await window.storage.set('completed-lessons', JSON.stringify(arr), false);
+    } else if(typeof localStorage !== 'undefined'){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    }
   }catch(e){
     console.error('تعذر حفظ التقدم', e);
   }
@@ -434,3 +448,4 @@ loadProgress();
 </script>
 </body>
 </html>
+```
